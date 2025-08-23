@@ -6,15 +6,27 @@ pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
 
-    #[error("{0}")]
-    Common(#[from] seimoney_common::errors::ContractError),
-
     #[error("Unauthorized")]
-    Unauthorized {},
+    Unauthorized,
 
-    #[error("Only recipient can claim transfer")]
-    OnlyRecipientCanClaim {},
+    #[error("Invalid funds")]
+    InvalidFunds,
 
-    #[error("Only sender can refund transfer")]
-    OnlySenderCanRefund {},
+    #[error("Transfer not found")]
+    NotFound,
+
+    #[error("Already claimed or refunded")]
+    AlreadyFinalized,
+
+    #[error("Not recipient")]
+    NotRecipient,
+
+    #[error("Not sender")]
+    NotSender,
+
+    #[error("Expired")]
+    Expired,
+
+    #[error("Not yet expired")]
+    NotExpired,
 }

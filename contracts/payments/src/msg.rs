@@ -1,71 +1,49 @@
-use cosmwasm_std::{Addr, Coin, Timestamp};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-use seimoney_common::TransferInfo;
+use cosmwasm_std::{Coin};
+use cosmwasm_schema::{cw_serde, QueryResponses};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct InstantiateMsg {
-    pub admin: String,
     pub default_denom: String,
-    pub fee_bps: Option<u16>,
+    pub admin: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum ExecuteMsg {
     CreateTransfer {
         recipient: String,
-        amount: Coin,
         remark: Option<String>,
-        expiry_ts: Option<Timestamp>,
+        expiry_ts: Option<u64>,
     },
-    ClaimTransfer {
-        id: u64,
-    },
-    RefundTransfer {
-        id: u64,
-    },
-    UpdateConfig {
-        admin: Option<String>,
-        default_denom: Option<String>,
-        fee_bps: Option<u16>,
-    },
+    ClaimTransfer { id: u64 },
+    RefundTransfer { id: u64 },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
+#[derive(QueryResponses)]
 pub enum QueryMsg {
+    #[returns(ConfigResp)]
     Config {},
+    #[returns(TransferResp)]
     GetTransfer { id: u64 },
-    ListBySender {
-        sender: String,
-        start_after: Option<u64>,
-        limit: Option<u32>,
-    },
-    ListByRecipient {
-        recipient: String,
-        start_after: Option<u64>,
-        limit: Option<u32>,
-    },
-    ListAll {
-        start_after: Option<u64>,
-        limit: Option<u32>,
-    },
+    #[returns(Vec<TransferResp>)]
+    ListBySender { sender: String, start_after: Option<u64>, limit: Option<u32> },
+    #[returns(Vec<TransferResp>)]
+    ListByRecipient { recipient: String, start_after: Option<u64>, limit: Option<u32> },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct ConfigResponse {
-    pub admin: Addr,
+#[cw_serde]
+pub struct ConfigResp {
+    pub admin: String,
     pub default_denom: String,
-    pub fee_bps: u16,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TransferResponse {
-    pub transfer: TransferInfo,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TransfersResponse {
-    pub transfers: Vec<TransferInfo>,
+#[cw_serde]
+pub struct TransferResp {
+    pub id: u64,
+    pub sender: String,
+    pub recipient: String,
+    pub amount: Coin,
+    pub remark: Option<String>,
+    pub expiry_ts: Option<u64>,
+    pub status: String,
 }
