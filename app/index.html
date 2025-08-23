@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeiMoney - Decentralized Payment Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@cosmjs/cosmwasm-stargate@0.32.2/build/index.js"></script>
+    <script src="https://unpkg.com/@cosmjs/proto-signing@0.32.2/build/index.js"></script>
+    <script src="https://unpkg.com/@cosmjs/stargate@0.32.2/build/index.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-coins text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">SeiMoney</h1>
+                        <p class="text-blue-100">Decentralized Payment Platform</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="connectWallet" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                        <i class="fas fa-wallet mr-2"></i>
+                        Connect Wallet
+                    </button>
+                    <div id="walletInfo" class="hidden">
+                        <span id="walletAddress" class="text-sm bg-blue-800 px-3 py-1 rounded-full"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Status Messages -->
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
+
+        <!-- Contract Info -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                Contract Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contract Address</label>
+                    <input type="text" id="contractAddress" placeholder="sei1..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">RPC Network</label>
+                    <input type="text" id="rpcEndpoint" value="https://rpc.atlantic-2.seinetwork.io:443"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            <button id="loadContract" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-download mr-2"></i>
+                Load Contract
+            </button>
+        </div>
+
+        <!-- Contract Config -->
+        <div id="configSection" class="hidden bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-cog text-green-500 mr-2"></i>
+                Contract Configuration
+            </h2>
+            <div id="configData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Actions -->
+        <div id="actionsSection" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Create Transfer -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-paper-plane text-blue-500 mr-2"></i>
+                        Create Transfer
+                    </h3>
+                    <form id="createTransferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Recipient</label>
+                            <input type="text" id="recipient" placeholder="sei1..." required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Amount (SEI)</label>
+                            <input type="number" id="amount" step="0.000001" min="0.000001" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Expiry (hours)</label>
+                            <input type="number" id="expiryHours" value="24" min="1" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Memo (optional)</label>
+                            <textarea id="memo" rows="2" placeholder="Note..."
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-send mr-2"></i>
+                            Create Transfer
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Query Transfer -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-search text-green-500 mr-2"></i>
+                        Search Transfer
+                    </h3>
+                    <form id="queryTransferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Transfer ID</label>
+                            <input type="text" id="transferId" placeholder="1" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>
+                            Search
+                        </button>
+                    </form>
+                    <div id="transferDetails" class="hidden mt-4 p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+            </div>
+
+            <!-- Transfer Actions -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-hand-holding-usd text-purple-500 mr-2"></i>
+                        Claim Transfer
+                    </h3>
+                    <form id="claimTransferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Transfer ID</label>
+                            <input type="text" id="claimTransferId" placeholder="1" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-hand-holding-usd mr-2"></i>
+                            Claim Transfer
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-undo text-red-500 mr-2"></i>
+                        Refund Transfer
+                    </h3>
+                    <form id="refundTransferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Transfer ID</label>
+                            <input type="text" id="refundTransferId" placeholder="1" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">
+                            <i class="fas fa-undo mr-2"></i>
+                            Refund Transfer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- My Transfers -->
+            <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-list text-indigo-500 mr-2"></i>
+                    My Transfers
+                </h3>
+                <div class="flex space-x-4 mb-4">
+                    <button id="loadSentTransfers" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Sent Transfers
+                    </button>
+                    <button id="loadReceivedTransfers" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Received Transfers
+                    </button>
+                </div>
+                <div id="transfersList" class="space-y-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 SeiMoney. All rights reserved.</p>
+            <p class="text-gray-400 mt-2">Decentralized payment platform built on Sei Network</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

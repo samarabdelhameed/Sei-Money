@@ -3,9 +3,10 @@ use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{
     ensure, to_json_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Timestamp, Uint128,
+    StdResult, Timestamp, Uint128, Order,
 };
 use cw2::set_contract_version;
+use cw_storage_plus::Bound;
 
 use crate::error::ContractError::*;
 use crate::error::ContractError;
@@ -144,12 +145,67 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
                 status: format!("{:?}", t.status),
             })
         }
-        QueryMsg::ListBySender { .. } => {
-            // نكملها لاحقًا (اختياري للديمو الأول)
-            to_json_binary(&Vec::<super::msg::TransferResp>::new())
+        QueryMsg::ListBySender { sender, start_after, limit } => {
+            let sender_addr = deps.api.addr_validate(&sender)?;
+            let limit = limit.unwrap_or(10).min(30) as usize;
+            let start = start_after.map(Bound::exclusive);
+            
+            let transfers: StdResult<Vec<_>> = TRANSFERS
+                .range(deps.storage, start, None, Order::Ascending)
+                .filter(|item| {
+                    if let Ok((_, transfer)) = item {
+                        transfer.sender == sender_addr
+                    } else {
+                        false
+                    }
+                })
+                .take(limit)
+                .map(|item| {
+                    let (_, transfer) = item?;
+                    Ok(super::msg::TransferResp {
+                        id: transfer.id,
+                        sender: transfer.sender.to_string(),
+                        recipient: transfer.recipient.to_string(),
+                        amount: transfer.amount,
+                        remark: transfer.remark,
+                        expiry_ts: transfer.expiry_ts,
+                        status: format!("{:?}", transfer.status),
+                    })
+                })
+                .collect();
+            
+            to_json_binary(&transfers?)
         }
-        QueryMsg::ListByRecipient { .. } => {
-            to_json_binary(&Vec::<super::msg::TransferResp>::new())
+        QueryMsg::ListByRecipient { recipient, start_after, limit } => {
+            let recipient_addr = deps.api.addr_validate(&recipient)?;
+            let limit = limit.unwrap_or(10).min(30) as usize;
+            let start = start_after.map(Bound::exclusive);
+            
+            let transfers: StdResult<Vec<_>> = TRANSFERS
+                .range(deps.storage, start, None, Order::Ascending)
+                .filter(|item| {
+                    if let Ok((_, transfer)) = item {
+                        transfer.recipient == recipient_addr
+                    } else {
+                        false
+                    }
+                })
+                .take(limit)
+                .map(|item| {
+                    let (_, transfer) = item?;
+                    Ok(super::msg::TransferResp {
+                        id: transfer.id,
+                        sender: transfer.sender.to_string(),
+                        recipient: transfer.recipient.to_string(),
+                        amount: transfer.amount,
+                        remark: transfer.remark,
+                        expiry_ts: transfer.expiry_ts,
+                        status: format!("{:?}", transfer.status),
+                    })
+                })
+                .collect();
+            
+            to_json_binary(&transfers?)
         }
     }
 }

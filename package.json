@@ -28,7 +28,16 @@
     "lint": "npm run lint:contracts && npm run lint:ts",
     "lint:contracts": "cd contracts && cargo clippy",
     "lint:ts": "eslint . --ext .ts,.tsx",
-    "clean": "rm -rf target/ && rm -rf node_modules/ && rm -rf */node_modules/"
+    "clean": "rm -rf target/ && rm -rf node_modules/ && rm -rf */node_modules/",
+    "contracts:status": "cd contracts && ./scripts/check-deployment-status.sh",
+    "contracts:deploy": "cd contracts && ./scripts/deploy_sei.sh",
+    "contracts:deploy-rest": "cd contracts && ./scripts/deploy_rest.sh",
+    "contracts:activate": "cd contracts && ./scripts/activate_account.sh",
+    "contracts:fund": "cd contracts && ./scripts/fund_wallet.sh",
+    "contracts:balance": "cd contracts && ./scripts/check_balance.sh",
+    "contracts:test": "cd contracts && ./scripts/test_contract.sh",
+    "contracts:simple-deploy": "cd contracts && ./scripts/simple_deploy.sh",
+    "contracts:final-deploy": "cd contracts && ./scripts/final_deploy.sh"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

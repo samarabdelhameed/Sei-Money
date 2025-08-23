@@ -326,3 +326,11 @@ site/
 *.wav
 *.flac
 *.aac
+# Additional security exclusions
+*.key
+*.pem
+seid
+temp_*.json
+signed_*.json
+*activate*.json
+*wasm_store*.json

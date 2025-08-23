@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin};
+use cosmwasm_std::Coin;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 
 #[cw_serde]

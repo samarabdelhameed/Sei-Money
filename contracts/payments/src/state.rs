@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Timestamp};
+use cosmwasm_std::{Addr, Coin};
 use cw_storage_plus::{Item, Map};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, schemars::JsonSchema)]
