@@ -1,0 +1,50 @@
+{
+  "name": "seimoney",
+  "version": "1.0.0",
+  "description": "AI-Powered DeFi Payments & Vaults on Sei",
+  "private": true,
+  "workspaces": [
+    "sdk",
+    "app",
+    "backend/services/*",
+    "agents/*",
+    "bots/*"
+  ],
+  "scripts": {
+    "build": "./scripts/build_wasm.sh && npm run build:sdk && npm run build:app",
+    "build:contracts": "./scripts/build_wasm.sh",
+    "build:sdk": "cd sdk && npm run build",
+    "build:app": "cd app && npm run build",
+    "deploy": "./scripts/deploy_sei.sh",
+    "gen:sdk": "./scripts/gen_ts.sh",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:app\" \"npm run dev:agents\"",
+    "dev:app": "cd app && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:agents": "cd agents && npm run dev",
+    "test": "npm run test:contracts && npm run test:sdk && npm run test:app",
+    "test:contracts": "cd contracts && cargo test",
+    "test:sdk": "cd sdk && npm test",
+    "test:app": "cd app && npm test",
+    "lint": "npm run lint:contracts && npm run lint:ts",
+    "lint:contracts": "cd contracts && cargo clippy",
+    "lint:ts": "eslint . --ext .ts,.tsx",
+    "clean": "rm -rf target/ && rm -rf node_modules/ && rm -rf */node_modules/"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "sei",
+    "defi",
+    "payments",
+    "ai",
+    "cosmwasm",
+    "blockchain"
+  ],
+  "author": "SeiMoney Team",
+  "license": "MIT"
+}

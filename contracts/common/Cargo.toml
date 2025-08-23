@@ -1,0 +1,13 @@
+[package]
+name = "seimoney-common"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cosmwasm-std = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
