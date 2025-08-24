@@ -11,6 +11,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     CreateTransfer {
         recipient: String,
+        amount: Coin,  // Added missing amount parameter
         remark: Option<String>,
         expiry_ts: Option<u64>,
     },

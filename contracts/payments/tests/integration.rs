@@ -2,8 +2,7 @@ use cosmwasm_std::{coins, Addr, Coin, Timestamp, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor};
 
 use seimoney_payments::contract::{execute, instantiate, query};
-use seimoney_payments::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, ConfigResponse, TransferResponse};
-use seimoney_payments::ContractError;
+use seimoney_payments::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, ConfigResp, TransferResp};
 
 const ADMIN: &str = "admin";
 const USER1: &str = "user1";
@@ -15,9 +14,8 @@ fn setup_contract(app: &mut App) -> Addr {
     let code_id = app.store_code(Box::new(code));
 
     let msg = InstantiateMsg {
-        admin: ADMIN.to_string(),
+        admin: Some(ADMIN.to_string()),
         default_denom: DENOM.to_string(),
-        fee_bps: Some(100), // 1%
     };
 
     app.instantiate_contract(
@@ -37,14 +35,13 @@ fn test_instantiate() {
     let contract_addr = setup_contract(&mut app);
 
     let msg = QueryMsg::Config {};
-    let res: ConfigResponse = app
+    let res: ConfigResp = app
         .wrap()
         .query_wasm_smart(contract_addr, &msg)
         .unwrap();
 
-    assert_eq!(res.admin, Addr::unchecked(ADMIN));
+    assert_eq!(res.admin, ADMIN);
     assert_eq!(res.default_denom, DENOM);
-    assert_eq!(res.fee_bps, 100);
 }
 
 #[test]
@@ -79,18 +76,17 @@ fn test_create_transfer() {
 
     // Query the transfer
     let query_msg = QueryMsg::GetTransfer { id: 1 };
-    let res: TransferResponse = app
+    let res: TransferResp = app
         .wrap()
         .query_wasm_smart(contract_addr, &query_msg)
         .unwrap();
 
-    assert_eq!(res.transfer.id, 1);
-    assert_eq!(res.transfer.sender, Addr::unchecked(USER1));
-    assert_eq!(res.transfer.recipient, Addr::unchecked(USER2));
-    assert_eq!(res.transfer.amount, Coin::new(100, DENOM));
-    assert_eq!(res.transfer.remark, Some("Test transfer".to_string()));
-    assert!(!res.transfer.claimed);
-    assert!(!res.transfer.refunded);
+    assert_eq!(res.id, 1);
+    assert_eq!(res.sender, USER1);
+    assert_eq!(res.recipient, USER2);
+    assert_eq!(res.amount, Coin::new(100, DENOM));
+    assert_eq!(res.remark, Some("Test transfer".to_string()));
+    assert_eq!(res.status, "Open");
 }
 
 #[test]
@@ -140,12 +136,12 @@ fn test_claim_transfer() {
 
     // Query the transfer to confirm it's claimed
     let query_msg = QueryMsg::GetTransfer { id: 1 };
-    let res: TransferResponse = app
+    let res: TransferResp = app
         .wrap()
         .query_wasm_smart(contract_addr, &query_msg)
         .unwrap();
 
-    assert!(res.transfer.claimed);
+    assert_eq!(res.status, "Claimed");
 }
 
 #[test]
@@ -162,8 +158,14 @@ fn test_refund_transfer() {
     ))
     .unwrap();
 
-    // Create transfer with expiry
-    let expiry = Timestamp::from_seconds(1000);
+    // Create transfer with expiry (future time)
+    let expiry = 2000u64;
+    
+    // Set block time to a known value before creating transfer
+    app.update_block(|block| {
+        block.time = Timestamp::from_seconds(1000);
+    });
+    
     let msg = ExecuteMsg::CreateTransfer {
         recipient: USER2.to_string(),
         amount: Coin::new(100, DENOM),
@@ -201,12 +203,12 @@ fn test_refund_transfer() {
 
     // Query the transfer to confirm it's refunded
     let query_msg = QueryMsg::GetTransfer { id: 1 };
-    let res: TransferResponse = app
+    let res: TransferResp = app
         .wrap()
         .query_wasm_smart(contract_addr, &query_msg)
         .unwrap();
 
-    assert!(res.transfer.refunded);
+    assert_eq!(res.status, "Refunded");
 }
 
 #[test]

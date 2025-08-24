@@ -1,6 +1,11 @@
 [workspace]
 members = [
     "payments",
+    "groups",
+    "pots",
+    "alias",
+    "risk_escrow",
+    "vaults",
 ]
 resolver = "2"
 

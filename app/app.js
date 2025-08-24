@@ -1,0 +1,2 @@
+// SeiMoney Application JavaScript
+

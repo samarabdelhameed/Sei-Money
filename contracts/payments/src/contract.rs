@@ -33,7 +33,7 @@ pub fn instantiate(deps: DepsMut, _env: Env, info: MessageInfo, msg: Instantiate
 #[entry_point]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::CreateTransfer { recipient, remark, expiry_ts } => exec_create(deps, env, info, recipient, remark, expiry_ts),
+        ExecuteMsg::CreateTransfer { recipient, amount, remark, expiry_ts } => exec_create(deps, env, info, recipient, amount, remark, expiry_ts),
         ExecuteMsg::ClaimTransfer { id } => exec_claim(deps, env, info, id),
         ExecuteMsg::RefundTransfer { id } => exec_refund(deps, env, info, id),
     }
@@ -52,12 +52,17 @@ fn exec_create(
     env: Env,
     info: MessageInfo,
     recipient: String,
+    amount: Coin,
     remark: Option<String>,
     expiry_ts: Option<u64>,
 ) -> Result<Response, ContractError> {
     let cfg = CONFIG.load(deps.storage)?;
     let rcpt = deps.api.addr_validate(&recipient)?;
-    let amount = must_one_fund(&info, &cfg.default_denom)?;
+    
+    // Validate that the amount matches the funds sent
+    let sent_funds = must_one_fund(&info, &amount.denom)?;
+    ensure!(sent_funds.amount == amount.amount, InvalidFunds);
+    ensure!(sent_funds.denom == amount.denom, InvalidFunds);
 
     if let Some(ts) = expiry_ts {
         ensure!(Timestamp::from_seconds(ts) > env.block.time, Expired);
