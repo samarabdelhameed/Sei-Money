@@ -1,0 +1,65 @@
+{
+  "name": "sei-money-sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for Sei Money DeFi Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "sei",
+    "defi",
+    "cosmwasm",
+    "blockchain",
+    "payments",
+    "vaults",
+    "groups",
+    "pots",
+    "alias",
+    "risk-escrow"
+  ],
+  "author": "Sei Money Team",
+  "license": "MIT",
+  "dependencies": {
+    "@cosmjs/cosmwasm-stargate": "^0.32.1",
+    "@cosmjs/stargate": "^0.32.1",
+    "@cosmjs/proto-signing": "^0.32.1",
+    "@cosmjs/amino": "^0.32.1",
+    "@cosmjs/crypto": "^0.32.1",
+    "@cosmjs/encoding": "^0.32.1",
+    "@cosmjs/math": "^0.32.1",
+    "@cosmjs/utils": "^0.32.1",
+    "cosmjs-types": "^0.9.0",
+    "long": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/long": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sei-money/sei-money-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sei-money/sei-money-sdk/issues"
+  },
+  "homepage": "https://github.com/sei-money/sei-money-sdk#readme"
+}
