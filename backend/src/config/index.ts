@@ -6,17 +6,18 @@ dotenv.config();
 export const config = {
   // Network configuration
   chainId: process.env['CHAIN_ID'] || 'atlantic-2',
-  rpcUrl: process.env['RPC_URL'] || 'https://sei-testnet-rpc.polkachu.com',
-  restUrl: process.env['REST_URL'] || 'https://sei-testnet-rest.polkachu.com',
+  rpcUrl: process.env['RPC_URL'] || 'https://rpc.atlantic-2.seinetwork.io:443',
+  restUrl: process.env['REST_URL'] || 'https://rest.atlantic-2.seinetwork.io:443',
   denom: process.env['DENOM'] || 'usei',
 
-  // Smart contract addresses
+  // Smart contract addresses (REAL DEPLOYED CONTRACTS)
   contracts: {
-    payments: process.env['CONTRACT_PAYMENTS'] || 'sei1placeholder123456789',
-    groups: process.env['CONTRACT_GROUPS'] || 'sei1placeholder123456789',
-    pots: process.env['CONTRACT_POTS'] || 'sei1placeholder123456789',
-    vaults: process.env['CONTRACT_VAULTS'] || 'sei1placeholder123456789',
-    escrow: process.env['CONTRACT_ESCROW'] || 'sei1placeholder123456789',
+    payments: process.env['CONTRACT_PAYMENTS'] || 'sei1kfpm92hs5gsmp84098wc3jpy2a440l50cq2ycsxlkpnlaygl9azqdhsygg',
+    groups: process.env['CONTRACT_GROUPS'] || 'sei1vq3ncyvf4k22lc0xhm7x6dtkn6jyxkexa2xy6uk2sj33dysnyy2syn73qt',
+    pots: process.env['CONTRACT_POTS'] || 'sei1c5d4flfqv3zjms0g894z82hnhv62h2vjr9hgd05c6xh456q8xjfq8f3qmj',
+    vaults: process.env['CONTRACT_VAULTS'] || 'sei12k2yxf3cyec8p89qtgm5w30m4g2775tn7j8wx4jpuallygu45r9qs68u2h',
+    escrow: process.env['CONTRACT_ESCROW'] || 'sei1q3gqr9ywvma6j6kja67n4h7fxz790x5lhj4v5phv2za0v7wsp5qqkrz0pj',
+    alias: process.env['CONTRACT_ALIAS'] || 'sei1thjuavd70uq7txe79uj8pfy2vfyl3zvmenkyxh6ew4vag9mckq4qrtjav4',
   },
 
   // Database
@@ -33,6 +34,7 @@ export const config = {
   security: {
     internalSecret: process.env['INTERNAL_SHARED_SECRET'] || 'dev-internal-secret-key-123',
     jwtSecret: process.env['JWT_SECRET'] || 'dev-jwt-secret-key-123',
+    internalApiKey: process.env['INTERNAL_API_KEY'] || 'dev-internal-api-key-123',
   },
 
   // Notification services
@@ -71,7 +73,7 @@ export const config = {
 
   // Server
   server: {
-    port: parseInt(process.env['PORT'] || '3000'),
+    port: parseInt(process.env['PORT'] || '3001'),
     host: process.env['HOST'] || '0.0.0.0',
   },
 } as const;
@@ -89,6 +91,9 @@ export function validateConfig(): void {
     if (!process.env['JWT_SECRET']) {
       process.env['JWT_SECRET'] = 'dev-jwt-secret-key-123';
     }
+    if (!process.env['INTERNAL_API_KEY']) {
+      process.env['INTERNAL_API_KEY'] = 'dev-internal-api-key-123';
+    }
     
     console.log('✅ Development configuration validated');
     return;
@@ -104,6 +109,7 @@ export function validateConfig(): void {
     'DATABASE_URL',
     'INTERNAL_SHARED_SECRET',
     'JWT_SECRET',
+    'INTERNAL_API_KEY',
   ];
 
   const missing = required.filter(key => !process.env[key]);

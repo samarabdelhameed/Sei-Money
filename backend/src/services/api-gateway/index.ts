@@ -1,8 +1,15 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
+import helmet from 'helmet';
 import { config } from '../../config';
 import { logger } from '../../lib/logger';
 import { healthRoutes } from './routes/health';
+import { transfersRoutes } from './routes/transfers';
+import { vaultsRoutes } from './routes/vaults';
+import { groupsRoutes } from './routes/groups';
+import { potsRoutes } from './routes/pots';
+import { escrowRoutes } from './routes/escrow';
 
 export class ApiGateway {
   private fastify: any;
@@ -20,6 +27,9 @@ export class ApiGateway {
 
   async start(): Promise<void> {
     try {
+      // Security middleware
+      await this.fastify.register(helmet);
+
       // CORS - optimized for development
       await this.fastify.register(cors, {
         origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'],
@@ -27,8 +37,34 @@ export class ApiGateway {
         maxAge: 86400, // Cache preflight for 24 hours
       });
 
-      // Routes - only health for now
+      // Rate limiting
+      await this.fastify.register(rateLimit, {
+        max: 100,
+        timeWindow: '1 minute',
+        allowList: ['127.0.0.1', '::1'],
+        errorResponseBuilder: (_request: any, context: any) => ({
+          code: 429,
+          error: 'Too Many Requests',
+          message: `Rate limit exceeded, retry in ${context.after}`,
+          retryAfter: context.after,
+        }),
+      });
+
+      // Global preHandler for logging
+      this.fastify.addHook('preHandler', async (request: any, reply: any) => {
+        logger.info(`${request.method} ${request.url}`, {
+          ip: request.ip,
+          userAgent: request.headers['user-agent'],
+        });
+      });
+
+      // Routes
       await this.fastify.register(healthRoutes, { prefix: '/health' });
+      await this.fastify.register(transfersRoutes, { prefix: '/api/v1/transfers' });
+      await this.fastify.register(vaultsRoutes, { prefix: '/api/v1/vaults' });
+      await this.fastify.register(groupsRoutes, { prefix: '/api/v1/groups' });
+      await this.fastify.register(potsRoutes, { prefix: '/api/v1/pots' });
+      await this.fastify.register(escrowRoutes, { prefix: '/api/v1/escrow' });
 
       // Quick test route
       this.fastify.get('/', async (_request: any, reply: any) => {
@@ -37,6 +73,14 @@ export class ApiGateway {
           version: '1.0.0',
           status: 'running',
           timestamp: new Date().toISOString(),
+          endpoints: {
+            health: '/health',
+            transfers: '/api/v1/transfers',
+            vaults: '/api/v1/vaults',
+            groups: '/api/v1/groups',
+            pots: '/api/v1/pots',
+            escrow: '/api/v1/escrow',
+          }
         });
       });
 
@@ -62,6 +106,7 @@ export class ApiGateway {
       });
 
       logger.info(`API Gateway started on ${config.server.host}:${config.server.port}`);
+      logger.info('Registered routes: health, transfers, vaults, groups, pots, escrow');
     } catch (error) {
       logger.error('Failed to start API Gateway:', error);
       throw error;
