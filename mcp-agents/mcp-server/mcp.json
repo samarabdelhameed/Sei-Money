@@ -1,0 +1,100 @@
+{
+  "name": "seimoney-mcp",
+  "version": "1.0.0",
+  "description": "SeiMoney MCP tools for wallet monitoring, meme coin tracking, NFT analytics, and rebalancing simulations",
+  "tools": [
+    {
+      "name": "watchWallet",
+      "description": "Monitor wallet activity and set up alerts for transactions",
+      "input": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Sei wallet address to monitor"
+          },
+          "alertThreshold": {
+            "type": "number",
+            "description": "Alert threshold in USEI (optional)",
+            "default": 1000000
+          }
+        },
+        "required": ["address"]
+      }
+    },
+    {
+      "name": "trackMemeCoin",
+      "description": "Track meme coin flows and holder statistics",
+      "input": {
+        "type": "object",
+        "properties": {
+          "denom": {
+            "type": "string",
+            "description": "Token denomination to track"
+          },
+          "timeframe": {
+            "type": "string",
+            "enum": ["1h", "24h", "7d", "30d"],
+            "description": "Tracking timeframe",
+            "default": "24h"
+          }
+        },
+        "required": ["denom"]
+      }
+    },
+    {
+      "name": "trackNftLifetime",
+      "description": "Track NFT collection lifecycle analytics",
+      "input": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "NFT collection address or name"
+          },
+          "includeMetadata": {
+            "type": "boolean",
+            "description": "Include metadata analysis",
+            "default": false
+          }
+        },
+        "required": ["collection"]
+      }
+    },
+    {
+      "name": "rebalanceWhatIf",
+      "description": "Simulate portfolio rebalancing with different scenarios",
+      "input": {
+        "type": "object",
+        "properties": {
+          "signals": {
+            "type": "object",
+            "description": "Market signals for rebalancing",
+            "properties": {
+              "prices": {
+                "type": "object",
+                "description": "Current prices"
+              },
+              "apr": {
+                "type": "object",
+                "description": "APR rates by protocol"
+              },
+              "risk": {
+                "type": "number",
+                "description": "Risk score 0-100"
+              }
+            },
+            "required": ["prices", "apr", "risk"]
+          },
+          "model": {
+            "type": "string",
+            "enum": ["markowitz", "bandit", "rl"],
+            "description": "Optimization model to use",
+            "default": "rl"
+          }
+        },
+        "required": ["signals"]
+      }
+    }
+  ]
+}

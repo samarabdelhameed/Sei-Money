@@ -1,0 +1,5 @@
+packages:
+  - 'risk-agent'
+  - 'scheduler-agent'
+  - 'rebalancer-agent'
+  - 'mcp-server'

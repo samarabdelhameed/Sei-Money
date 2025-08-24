@@ -1,0 +1,26 @@
+{
+  "name": "@seimoney/mcp-agents",
+  "version": "1.0.0",
+  "description": "AI-powered agents with MCP integration for SeiMoney DeFi platform",
+  "private": true,
+  "workspaces": [
+    "risk-agent",
+    "scheduler-agent",
+    "rebalancer-agent",
+    "mcp-server"
+  ],
+  "scripts": {
+    "dev:all": "concurrently \"pnpm --filter risk-agent dev\" \"pnpm --filter scheduler-agent dev\" \"pnpm --filter rebalancer-agent dev\" \"pnpm --filter mcp-server dev\"",
+    "build:all": "pnpm --filter risk-agent build && pnpm --filter scheduler-agent build && pnpm --filter rebalancer-agent build && pnpm --filter mcp-server build",
+    "start:all": "concurrently \"pnpm --filter risk-agent start\" \"pnpm --filter scheduler-agent start\" \"pnpm --filter rebalancer-agent start\" \"pnpm --filter mcp-server start\"",
+    "test:all": "pnpm --filter risk-agent test && pnpm --filter scheduler-agent test && pnpm --filter rebalancer-agent test && pnpm --filter mcp-server test"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
