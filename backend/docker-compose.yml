@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: seimoney-postgres
+    environment:
+      POSTGRES_DB: seimoney
+      POSTGRES_USER: seimoney
+      POSTGRES_PASSWORD: seimoney123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seimoney"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: seimoney-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: seimoney-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://seimoney:seimoney123@postgres:5432/seimoney
+      REDIS_URL: redis://redis:6379
+      CHAIN_ID: sei-testnet-1
+      RPC_URL: https://rpc.testnet.sei.io
+      REST_URL: https://rest.testnet.sei.io
+      DENOM: usei
+      CONTRACT_PAYMENTS: sei1...
+      CONTRACT_GROUPS: sei1...
+      CONTRACT_POTS: sei1...
+      CONTRACT_VAULTS: sei1...
+      CONTRACT_ESCROW: sei1...
+      INTERNAL_SHARED_SECRET: your-super-secret-key-here
+      JWT_SECRET: your-jwt-secret-here
+      TELEGRAM_BOT_TOKEN: your-telegram-bot-token
+      SMTP_URL: smtp://user:pass@smtp.gmail.com:587
+      VAPID_PUBLIC_KEY: your-vapid-public-key
+      VAPID_PRIVATE_KEY: your-vapid-private-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
