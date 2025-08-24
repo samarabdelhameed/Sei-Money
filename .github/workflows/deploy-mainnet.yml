@@ -1,0 +1,74 @@
+name: 🚀 Deploy to Mainnet
+
+on:
+  release:
+    types: [ published ]
+    tags:
+      - 'v*'
+
+env:
+  CHAIN_ID: sei-1
+  DENOM: usei
+  RPC_URL: https://rpc.sei.io
+  REST_URL: https://rest.sei.io
+
+jobs:
+  deploy-mainnet:
+    name: 🚀 Deploy to Sei Mainnet
+    runs-on: ubuntu-latest
+    environment: sei-mainnet
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download WASM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-contracts
+          path: contracts/
+
+      - name: 🦀 Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: 🛠️ Install Sei CLI
+        run: |
+          curl -s https://get.sei.io/install.sh | bash
+          echo "$HOME/.sei/bin" >> $GITHUB_PATH
+
+      - name: 🔑 Setup mainnet wallet
+        run: |
+          echo "${{ secrets.SEI_MAINNET_MNEMONIC }}" | seid keys add mainnet-deployer --recover
+          seid config chain-id sei-1
+          seid config node https://rpc.sei.io
+
+      - name: 🚀 Deploy contracts to mainnet
+        run: |
+          chmod +x scripts/deploy_sei.sh
+          export CHAIN_ID=sei-1
+          export RPC_URL=https://rpc.sei.io
+          export WALLET=mainnet-deployer
+          ./scripts/deploy_sei.sh payments
+          ./scripts/deploy_sei.sh groups
+          ./scripts/deploy_sei.sh pots
+          ./scripts/deploy_sei.sh alias
+          ./scripts/deploy_sei.sh risk_escrow
+          ./scripts/deploy_sei.sh vaults
+
+      - name: 📢 Create deployment summary
+        run: |
+          echo "## 🚀 Mainnet Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Contracts Deployed:" >> $GITHUB_STEP_SUMMARY
+          echo "- payments" >> $GITHUB_STEP_SUMMARY
+          echo "- groups" >> $GITHUB_STEP_SUMMARY
+          echo "- pots" >> $GITHUB_STEP_SUMMARY
+          echo "- alias" >> $GITHUB_STEP_SUMMARY
+          echo "- risk_escrow" >> $GITHUB_STEP_SUMMARY
+          echo "- vaults" >> $GITHUB_STEP_SUMMARY

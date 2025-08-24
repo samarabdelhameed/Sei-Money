@@ -1,0 +1,11 @@
+name: sei-testnet
+url: https://sei.explorers.guru
+on:
+  branch:
+    - main
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches:
+      - main

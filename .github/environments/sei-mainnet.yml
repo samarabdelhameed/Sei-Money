@@ -1,0 +1,11 @@
+name: sei-mainnet
+url: https://sei.explorers.guru
+on:
+  branch:
+    - main
+  workflow_run:
+    workflows: ["🚀 Deploy to Mainnet"]
+    types:
+      - completed
+    branches:
+      - main

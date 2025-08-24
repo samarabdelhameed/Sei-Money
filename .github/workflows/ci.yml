@@ -1,0 +1,257 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Build and Test Contracts
+  build-test-contracts:
+    name: 🏗️ Build & Test Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: 📦 Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: 🧪 Run Rust tests
+        run: |
+          cd contracts
+          cargo test --workspace --locked --verbose
+
+      - name: 🏗️ Build WASM contracts
+        run: |
+          chmod +x scripts/build_wasm.sh
+          ./scripts/build_wasm.sh
+
+      - name: 📦 Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-contracts
+          path: contracts/*/target/wasm32-unknown-unknown/release/*.wasm
+          retention-days: 30
+
+  # Build and Test Backend
+  build-test-backend:
+    name: 🚀 Build & Test Backend
+    runs-on: ubuntu-latest
+    needs: build-test-contracts
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 📥 Install dependencies
+        run: |
+          cd backend
+          pnpm install --frozen-lockfile
+
+      - name: 🔍 Lint backend
+        run: |
+          cd backend
+          pnpm lint
+
+      - name: 🧪 Run backend tests
+        run: |
+          cd backend
+          pnpm test
+
+      - name: 🏗️ Build backend
+        run: |
+          cd backend
+          pnpm build
+
+  # Build and Test Frontend
+  build-test-frontend:
+    name: 🎨 Build & Test Frontend
+    runs-on: ubuntu-latest
+    needs: build-test-contracts
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 📥 Install dependencies
+        run: |
+          cd app
+          pnpm install --frozen-lockfile
+
+      - name: 🔍 Lint frontend
+        run: |
+          cd app
+          pnpm lint
+
+      - name: 🧪 Run frontend tests
+        run: |
+          cd app
+          pnpm test
+
+      - name: 🏗️ Build frontend
+        run: |
+          cd app
+          pnpm build
+
+  # Generate TypeScript SDK
+  generate-sdk:
+    name: 🔧 Generate TypeScript SDK
+    runs-on: ubuntu-latest
+    needs: build-test-contracts
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install cosmwasm-ts-codegen
+        run: npm install -g @cosmwasm/ts-codegen
+
+      - name: 🔧 Generate SDK
+        run: |
+          chmod +x scripts/gen_ts.sh
+          ./scripts/gen_ts.sh
+
+      - name: 📦 Upload SDK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk
+          path: SDK/src/gen/
+          retention-days: 30
+
+  # Deploy to Sei Testnet (on release)
+  deploy-testnet:
+    name: 🚀 Deploy to Sei Testnet
+    runs-on: ubuntu-latest
+    needs: [build-test-contracts, build-test-backend, build-test-frontend, generate-sdk]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment: sei-testnet
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download WASM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-contracts
+
+      - name: 🦀 Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: 🛠️ Install Sei CLI
+        run: |
+          curl -s https://get.sei.io/install.sh | bash
+          echo "$HOME/.sei/bin" >> $GITHUB_PATH
+
+      - name: 🔑 Setup wallet
+        run: |
+          echo "${{ secrets.SEI_MNEMONIC }}" | seid keys add deployer --recover
+          seid config chain-id sei-testnet-1
+          seid config node https://rpc.testnet.sei.io
+
+      - name: 🚀 Deploy contracts
+        run: |
+          chmod +x scripts/deploy_sei.sh
+          source scripts/env.sh
+          export WALLET=deployer
+          ./scripts/deploy_sei.sh payments
+          ./scripts/deploy_sei.sh groups
+          ./scripts/deploy_sei.sh pots
+          ./scripts/deploy_sei.sh alias
+          ./scripts/deploy_sei.sh risk_escrow
+          ./scripts/deploy_sei.sh vaults
+
+  # Security and Quality Checks
+  security-checks:
+    name: 🔒 Security & Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 🔍 Run security audit
+        run: |
+          cd backend && pnpm audit --audit-level moderate
+          cd ../app && pnpm audit --audit-level moderate
+
+      - name: 🔍 Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: ${{ github.event.pull_request.base.sha || github.sha }}
+          head: ${{ github.sha }}
+
+  # Notify on completion
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [build-test-contracts, build-test-backend, build-test-frontend, generate-sdk, security-checks]
+    if: always()
+    steps:
+      - name: 📊 Job status
+        run: |
+          echo "✅ All jobs completed!"
+          echo "🏗️ Contracts: ${{ needs.build-test-contracts.result }}"
+          echo "🚀 Backend: ${{ needs.build-test-backend.result }}"
+          echo "🎨 Frontend: ${{ needs.build-test-frontend.result }}"
+          echo "🔧 SDK: ${{ needs.generate-sdk.result }}"
+          echo "🔒 Security: ${{ needs.security-checks.result }}"

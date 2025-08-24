@@ -1,0 +1,121 @@
+name: 🌙 Nightly Checks
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 🔍 Run security audit
+        run: |
+          cd backend && pnpm audit --audit-level moderate
+          cd ../app && pnpm audit --audit-level moderate
+          cd ../SDK && pnpm audit --audit-level moderate
+
+      - name: 🔍 Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: HEAD~1
+          head: HEAD
+
+  dependency-update:
+    name: 📦 Dependency Updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 🔍 Check for outdated dependencies
+        run: |
+          cd backend && pnpm outdated
+          cd ../app && pnpm outdated
+          cd ../SDK && pnpm outdated
+
+  contract-health:
+    name: 🏗️ Contract Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: 🧪 Run contract tests
+        run: |
+          cd contracts
+          cargo test --workspace --locked
+
+      - name: 🏗️ Build contracts
+        run: |
+          chmod +x scripts/build_wasm.sh
+          ./scripts/build_wasm.sh
+
+  network-status:
+    name: 🌐 Network Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Install Sei CLI
+        run: |
+          curl -s https://get.sei.io/install.sh | bash
+          echo "$HOME/.sei/bin" >> $GITHUB_PATH
+
+      - name: 🔍 Check testnet status
+        run: |
+          seid status --node https://rpc.testnet.sei.io
+
+      - name: 🔍 Check mainnet status
+        run: |
+          seid status --node https://rpc.sei.io
+
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [security-audit, dependency-update, contract-health, network-status]
+    if: always()
+    steps:
+      - name: 📊 Nightly check results
+        run: |
+          echo "## 🌙 Nightly Checks Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Security Audit:** ${{ needs.security-audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Dependency Check:** ${{ needs.dependency-update.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Contract Health:** ${{ needs.contract-health.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Network Status:** ${{ needs.network-status.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
