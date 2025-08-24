@@ -1,0 +1,315 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique // Sei wallet address
+  username  String?  @unique
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sentTransfers     Transfer[] @relation("TransferSender")
+  receivedTransfers Transfer[] @relation("TransferRecipient")
+  groupMemberships  GroupMember[]
+  potContributions  PotContribution[]
+  vaultDeposits     VaultDeposit[]
+  escrowCases       EscrowCase[] @relation("EscrowSender")
+  notifications     Notification[]
+
+  @@index([address])
+  @@index([username])
+}
+
+model TransferMeta {
+  id          String   @id @default(cuid())
+  transferId  String   @unique // On-chain transfer ID
+  sender      String   // Sei address
+  recipient   String   // Sei address
+  amount      String   // Amount in usei
+  denom       String   @default("usei")
+  expiry      DateTime
+  metadata    String?  // JSON string
+  status      TransferStatus @default(PENDING)
+  txHash      String?  // Transaction hash
+  blockHeight Int?     // Block height when created
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  transfer   Transfer? @relation(fields: [transferId], references: [id])
+
+  @@index([sender])
+  @@index([recipient])
+  @@index([status])
+  @@index([blockHeight])
+}
+
+model Transfer {
+  id          String   @id @default(cuid())
+  sender      String   // Sei address
+  recipient   String   // Sei address
+  amount      String   // Amount in usei
+  denom       String   @default("usei")
+  expiry      DateTime
+  metadata    String?  // JSON string
+  status      TransferStatus @default(PENDING)
+  txHash      String?  // Transaction hash
+  blockHeight Int?     // Block height when created
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  senderUser     User?         @relation("TransferSender", fields: [sender], references: [address])
+  recipientUser  User?         @relation("TransferRecipient", fields: [recipient], references: [address])
+  transferMeta   TransferMeta?
+
+  @@index([sender])
+  @@index([recipient])
+  @@index([status])
+  @@index([blockHeight])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  groupId     String   @unique // On-chain group ID
+  name        String
+  description String?
+  members     GroupMember[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([groupId])
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Pot {
+  id            String   @id @default(cuid())
+  potId         String   @unique // On-chain pot ID
+  name          String
+  description   String?
+  targetAmount  String   // Target amount in usei
+  currentAmount String   @default("0") // Current amount in usei
+  expiry        DateTime
+  status        PotStatus @default(ACTIVE)
+  contributors  PotContribution[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([potId])
+  @@index([status])
+}
+
+model PotContribution {
+  id        String   @id @default(cuid())
+  potId     String
+  userId    String
+  amount    String   // Amount contributed in usei
+  txHash    String?  // Transaction hash
+  createdAt DateTime @default(now())
+
+  // Relations
+  pot  Pot  @relation(fields: [potId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([potId])
+  @@index([userId])
+}
+
+model Vault {
+  id            String   @id @default(cuid())
+  vaultId       String   @unique // On-chain vault ID
+  name          String
+  description   String?
+  strategy      String
+  riskLevel     VaultRiskLevel
+  totalDeposits String   @default("0") // Total deposits in usei
+  totalValue    String   @default("0") // Current total value in usei
+  apr           String   @default("0") // Annual percentage rate
+  status        VaultStatus @default(ACTIVE)
+  deposits      VaultDeposit[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vaultId])
+  @@index([strategy])
+  @@index([status])
+}
+
+model VaultDeposit {
+  id        String   @id @default(cuid())
+  vaultId   String
+  userId    String
+  amount    String   // Amount deposited in usei
+  shares    String   // Vault shares received
+  txHash    String?  // Transaction hash
+  createdAt DateTime @default(now())
+
+  // Relations
+  vault Vault @relation(fields: [vaultId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([vaultId])
+  @@index([userId])
+}
+
+model EscrowCase {
+  id         String   @id @default(cuid())
+  escrowId   String   @unique // On-chain escrow ID
+  sender     String   // Sei address
+  recipient  String   // Sei address
+  amount     String   // Amount in usei
+  denom      String   @default("usei")
+  expiry     DateTime
+  conditions String?  // JSON string
+  status     EscrowStatus @default(PENDING)
+  txHash     String?  // Transaction hash
+  blockHeight Int?    // Block height when created
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  senderUser User? @relation("EscrowSender", fields: [sender], references: [address])
+
+  @@index([escrowId])
+  @@index([sender])
+  @@index([recipient])
+  @@index([status])
+  @@index([blockHeight])
+}
+
+model EventLog {
+  id          String   @id @default(cuid())
+  eventType   String   // e.g., "create_transfer", "claim_transfer"
+  contract    String   // Contract address
+  data        Json     // Event data
+  txHash      String   // Transaction hash
+  blockHeight Int      // Block height
+  blockTime   DateTime // Block timestamp
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([contract])
+  @@index([blockHeight])
+  @@index([txHash])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?    // Additional data
+  channels  NotificationChannel[] // Multiple channels
+  status    NotificationStatus @default(PENDING)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+}
+
+model NotificationDelivery {
+  id             String   @id @default(cuid())
+  notificationId String
+  channel        NotificationChannel
+  status         DeliveryStatus @default(PENDING)
+  error          String?
+  sentAt         DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([notificationId])
+  @@index([channel])
+  @@index([status])
+}
+
+// Enums
+enum TransferStatus {
+  PENDING
+  CLAIMED
+  REFUNDED
+  EXPIRED
+}
+
+enum PotStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum VaultRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum VaultStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum EscrowStatus {
+  PENDING
+  RELEASED
+  REFUNDED
+  EXPIRED
+}
+
+enum NotificationType {
+  TRANSFER_CREATED
+  TRANSFER_CLAIMED
+  TRANSFER_REFUNDED
+  VAULT_REBALANCED
+  VAULT_HARVESTED
+  ESCROW_DISPUTED
+  ESCROW_RESOLVED
+  POT_COMPLETED
+}
+
+enum NotificationChannel {
+  TELEGRAM
+  EMAIL
+  WEBPUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}

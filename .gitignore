@@ -10,6 +10,8 @@ target/
 *.wasm.gz
 artifacts/
 build/
+dist/
+backend/dist/
 
 # IDE files
 .vscode/
