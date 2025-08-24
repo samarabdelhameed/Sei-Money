@@ -3,6 +3,10 @@
 .env.local
 .env.production
 .env.staging
+.env.development
+.env.test
+**/.env
+**/.env.*
 
 # Build artifacts
 target/
@@ -44,6 +48,22 @@ seid.exe
 deployer_info.json
 *.key
 *.pem
+*.seed
+*.mnemonic
+
+# MCP Agents specific
+mcp-agents/**/.env*
+mcp-agents/**/secrets/
+mcp-agents/**/keys/
+mcp-agents/**/*.key
+mcp-agents/**/*.pem
+
+# API Keys and secrets
+**/config/secrets.json
+**/config/keys.json
+**/*secret*
+**/*key*
+**/*token*
 
 # Test coverage
 coverage/
