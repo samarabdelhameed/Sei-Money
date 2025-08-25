@@ -41,11 +41,11 @@ app.post("/risk/score", async (req, reply) => {
   try {
     const input = req.body as RiskInput;
     
-    // Run all policies in parallel
+    // Run all policies in parallel with real blockchain data
     const [rep, amt, vel] = await Promise.all([
       addressReputation(input.from),
-      amountAnomaly(input.amount),
-      velocity(input.context)
+      amountAnomaly(input.amount, input.from),
+      velocity(input.context, input.from)
     ]);
 
     const score = combine(
@@ -60,6 +60,16 @@ app.post("/risk/score", async (req, reply) => {
       reasons: [rep.reason, amt.reason, vel.reason], 
       recommendation: rec 
     };
+
+    // Log the analysis for monitoring
+    app.log.info({
+      address: input.from,
+      action: input.action,
+      amount: input.amount,
+      scores: { reputation: rep.score, anomaly: amt.score, velocity: vel.score },
+      finalScore: score,
+      recommendation: rec
+    }, 'Risk analysis completed');
 
     // Optional: send decision to API with HMAC signature
     if (process.env.API_URL && SECRET) {
@@ -90,8 +100,8 @@ app.post("/risk/batch", async (req, reply) => {
       inputs.map(async (input) => {
         const [rep, amt, vel] = await Promise.all([
           addressReputation(input.from),
-          amountAnomaly(input.amount),
-          velocity(input.context)
+          amountAnomaly(input.amount, input.from),
+          velocity(input.context, input.from)
         ]);
 
         const score = combine(
@@ -110,6 +120,7 @@ app.post("/risk/batch", async (req, reply) => {
       })
     );
 
+    app.log.info({ batchSize: inputs.length }, 'Batch risk analysis completed');
     return reply.send(results);
   } catch (error) {
     app.log.error(error);

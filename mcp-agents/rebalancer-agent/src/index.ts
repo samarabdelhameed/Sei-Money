@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import { cfg } from "./config";
 import { optimize } from "./optimizer";
 import { runRebalance, runBatchRebalance, dryRunRebalance } from "./run";
+import { getMarketData, getVaultPerformance } from "./services/marketDataService";
 import type { RebalanceRequest, Signals } from "./types";
 
 const app = Fastify({ logger: true });
@@ -20,7 +21,7 @@ app.get("/health", async () => ({
   timestamp: new Date().toISOString()
 }));
 
-// Generate allocation plan without execution
+// Generate allocation plan with real market data
 app.post("/rebalance/plan", async (req, reply) => {
   try {
     const { signals, model = "rl", constraints } = req.body as {
@@ -29,12 +30,25 @@ app.post("/rebalance/plan", async (req, reply) => {
       constraints?: RebalanceRequest["constraints"];
     };
     
-    const plan = optimize(signals, model, constraints);
+    // Get real market data
+    const marketData = await getMarketData();
+    const enhancedSignals = {
+      ...signals,
+      marketData,
+      realVaultPerformance: await Promise.all(
+        marketData.map(async (vault: any) => ({
+          vaultId: vault.id,
+          performance: await getVaultPerformance(vault.id).catch(() => null)
+        }))
+      )
+    };
+    
+    const plan = optimize(enhancedSignals, model, constraints);
     
     return reply.send({
       plan,
       model,
-      signals,
+      signals: enhancedSignals,
       constraints,
       timestamp: new Date().toISOString()
     });

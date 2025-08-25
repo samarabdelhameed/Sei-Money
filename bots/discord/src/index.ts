@@ -483,9 +483,23 @@ process.once('SIGTERM', () => {
 });
 
 // Start the bot
-client.login(config.token).then(() => {
-  logger.info('🚀 SeiMoney Discord Bot started successfully!');
-}).catch((error) => {
-  logger.error('Failed to start Discord bot', { error });
-  process.exit(1);
-});
+if (config.token === 'test_discord_bot_token' || !config.token || config.token === 'dummy-token-for-development') {
+  // Development mode - don't actually start the bot
+  logger.info('🚀 SeiMoney Discord Bot started in DEVELOPMENT MODE!');
+  logger.info('📱 Bot is running in mock mode (no real Discord connection)');
+  logger.info(`🔗 RPC URL: ${config.rpcUrl}`);
+  logger.info(`💰 Payments Contract: ${config.contracts.payments}`);
+  
+  // Keep the process alive
+  setInterval(() => {
+    logger.info('Discord bot is running in development mode...');
+  }, 30000);
+} else {
+  // Production mode - start the actual bot
+  client.login(config.token).then(() => {
+    logger.info('🚀 SeiMoney Discord Bot started successfully!');
+  }).catch((error) => {
+    logger.error('Failed to start Discord bot', { error });
+    process.exit(1);
+  });
+}

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -31,30 +31,6 @@ model User {
   @@index([username])
 }
 
-model TransferMeta {
-  id          String   @id @default(cuid())
-  transferId  String   @unique // On-chain transfer ID
-  sender      String   // Sei address
-  recipient   String   // Sei address
-  amount      String   // Amount in usei
-  denom       String   @default("usei")
-  expiry      DateTime
-  metadata    String?  // JSON string
-  status      TransferStatus @default(PENDING)
-  txHash      String?  // Transaction hash
-  blockHeight Int?     // Block height when created
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  transfer   Transfer? @relation(fields: [transferId], references: [id])
-
-  @@index([sender])
-  @@index([recipient])
-  @@index([status])
-  @@index([blockHeight])
-}
-
 model Transfer {
   id          String   @id @default(cuid())
   sender      String   // Sei address
@@ -63,16 +39,15 @@ model Transfer {
   denom       String   @default("usei")
   expiry      DateTime
   metadata    String?  // JSON string
-  status      TransferStatus @default(PENDING)
+  status      String   @default("PENDING") // PENDING, CLAIMED, REFUNDED, EXPIRED
   txHash      String?  // Transaction hash
   blockHeight Int?     // Block height when created
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  senderUser     User?         @relation("TransferSender", fields: [sender], references: [address])
-  recipientUser  User?         @relation("TransferRecipient", fields: [recipient], references: [address])
-  transferMeta   TransferMeta?
+  senderUser     User? @relation("TransferSender", fields: [sender], references: [address])
+  recipientUser  User? @relation("TransferRecipient", fields: [recipient], references: [address])
 
   @@index([sender])
   @@index([recipient])
@@ -115,7 +90,7 @@ model Pot {
   targetAmount  String   // Target amount in usei
   currentAmount String   @default("0") // Current amount in usei
   expiry        DateTime
-  status        PotStatus @default(ACTIVE)
+  status        String   @default("ACTIVE") // ACTIVE, COMPLETED, EXPIRED
   contributors  PotContribution[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -146,11 +121,11 @@ model Vault {
   name          String
   description   String?
   strategy      String
-  riskLevel     VaultRiskLevel
+  riskLevel     String   // LOW, MEDIUM, HIGH
   totalDeposits String   @default("0") // Total deposits in usei
   totalValue    String   @default("0") // Current total value in usei
   apr           String   @default("0") // Annual percentage rate
-  status        VaultStatus @default(ACTIVE)
+  status        String   @default("ACTIVE") // ACTIVE, PAUSED, CLOSED
   deposits      VaultDeposit[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -186,7 +161,7 @@ model EscrowCase {
   denom      String   @default("usei")
   expiry     DateTime
   conditions String?  // JSON string
-  status     EscrowStatus @default(PENDING)
+  status     String   @default("PENDING") // PENDING, RELEASED, REFUNDED, EXPIRED
   txHash     String?  // Transaction hash
   blockHeight Int?    // Block height when created
   createdAt  DateTime @default(now())
@@ -206,7 +181,7 @@ model EventLog {
   id          String   @id @default(cuid())
   eventType   String   // e.g., "create_transfer", "claim_transfer"
   contract    String   // Contract address
-  data        Json     // Event data
+  data        String   // Event data (JSON string)
   txHash      String   // Transaction hash
   blockHeight Int      // Block height
   blockTime   DateTime // Block timestamp
@@ -221,12 +196,12 @@ model EventLog {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      NotificationType
+  type      String   // TRANSFER_CREATED, TRANSFER_CLAIMED, etc.
   title     String
   message   String
-  data      Json?    // Additional data
-  channels  NotificationChannel[] // Multiple channels
-  status    NotificationStatus @default(PENDING)
+  data      String?  // Additional data (JSON string)
+  channels  String   // Comma-separated channels (TELEGRAM,EMAIL,WEBPUSH)
+  status    String   @default("PENDING") // PENDING, SENT, FAILED
   sentAt    DateTime?
   createdAt DateTime @default(now())
 
@@ -241,8 +216,8 @@ model Notification {
 model NotificationDelivery {
   id             String   @id @default(cuid())
   notificationId String
-  channel        NotificationChannel
-  status         DeliveryStatus @default(PENDING)
+  channel        String   // TELEGRAM, EMAIL, WEBPUSH
+  status         String   @default("PENDING") // PENDING, SENT, FAILED
   error          String?
   sentAt         DateTime?
   createdAt      DateTime @default(now())
@@ -250,66 +225,4 @@ model NotificationDelivery {
   @@index([notificationId])
   @@index([channel])
   @@index([status])
-}
-
-// Enums
-enum TransferStatus {
-  PENDING
-  CLAIMED
-  REFUNDED
-  EXPIRED
-}
-
-enum PotStatus {
-  ACTIVE
-  COMPLETED
-  EXPIRED
-}
-
-enum VaultRiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum VaultStatus {
-  ACTIVE
-  PAUSED
-  CLOSED
-}
-
-enum EscrowStatus {
-  PENDING
-  RELEASED
-  REFUNDED
-  EXPIRED
-}
-
-enum NotificationType {
-  TRANSFER_CREATED
-  TRANSFER_CLAIMED
-  TRANSFER_REFUNDED
-  VAULT_REBALANCED
-  VAULT_HARVESTED
-  ESCROW_DISPUTED
-  ESCROW_RESOLVED
-  POT_COMPLETED
-}
-
-enum NotificationChannel {
-  TELEGRAM
-  EMAIL
-  WEBPUSH
-}
-
-enum NotificationStatus {
-  PENDING
-  SENT
-  FAILED
-}
-
-enum DeliveryStatus {
-  PENDING
-  SENT
-  FAILED
 }

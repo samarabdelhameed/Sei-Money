@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Home, CreditCard, Users, PiggyBank, Vault, Shield, User, BarChart3, Settings, HelpCircle, Bot } from 'lucide-react';
+import { Home, CreditCard, Users, PiggyBank, Vault, Shield, User, BarChart3, Settings, HelpCircle, Bot, TestTube } from 'lucide-react';
 import { NeonButton } from '../ui/NeonButton';
 import { NeonText } from '../ui/NeonText';
+import { WalletConnection } from '../ui/WalletConnection';
+import { ConnectionStatus } from '../ui/ConnectionStatus';
+import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
 
 interface NavbarProps {
@@ -23,12 +26,14 @@ const navigationItems = [
 ];
 
 const secondaryItems = [
+  { id: 'wallet-test', label: 'Wallet Test', icon: TestTube },
   { id: 'settings', label: 'Settings', icon: Settings },
   { id: 'help', label: 'Help', icon: HelpCircle },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
-  const [walletConnected, setWalletConnected] = useState(false);
+  const { state, actions } = useApp();
+  const [showWalletConnection, setShowWalletConnection] = useState(false);
 
   return (
     <motion.nav 
@@ -125,13 +130,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
               })}
             </div>
 
+            {/* Connection Status */}
+            <ConnectionStatus className="hidden sm:block" />
+
             {/* Wallet Connection */}
-            {walletConnected ? (
+            {state.isWalletConnected ? (
               <div className="flex items-center space-x-3">
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm text-white font-medium">sei1abc...xyz</div>
+                  <div className="text-sm text-white font-medium">
+                    {state.wallet?.address ? `${state.wallet.address.slice(0, 8)}...${state.wallet.address.slice(-4)}` : 'sei1abc...xyz'}
+                  </div>
                   <div className="text-xs" style={{ color: colors.neonGreen }}>
-                    1,234.56 SEI
+                    {state.wallet?.balance ? `${state.wallet.balance.toFixed(2)} SEI` : '0.00 SEI'}
                   </div>
                 </div>
                 <div 
@@ -145,12 +155,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
             ) : (
               <NeonButton
                 color="green"
-                onClick={() => setWalletConnected(true)}
+                onClick={() => setShowWalletConnection(true)}
               >
                 <span className="hidden sm:inline">Connect Wallet</span>
                 <span className="sm:hidden">Connect</span>
               </NeonButton>
             )}
+
+            {/* Wallet Connection Modal */}
+            <WalletConnection
+              isOpen={showWalletConnection}
+              onClose={() => setShowWalletConnection(false)}
+            />
           </div>
         </div>
 

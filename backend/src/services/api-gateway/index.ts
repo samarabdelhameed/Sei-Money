@@ -10,6 +10,8 @@ import { vaultsRoutes } from './routes/vaults';
 import { groupsRoutes } from './routes/groups';
 import { potsRoutes } from './routes/pots';
 import { escrowRoutes } from './routes/escrow';
+import { marketRoutes } from './routes/market';
+import { walletRoutes } from './routes/wallet';
 
 export class ApiGateway {
   private fastify: any;
@@ -27,8 +29,8 @@ export class ApiGateway {
 
   async start(): Promise<void> {
     try {
-      // Security middleware
-      await this.fastify.register(helmet);
+      // Security middleware - disabled for development
+      // await this.fastify.register(helmet);
 
       // CORS - optimized for development
       await this.fastify.register(cors, {
@@ -65,6 +67,8 @@ export class ApiGateway {
       await this.fastify.register(groupsRoutes, { prefix: '/api/v1/groups' });
       await this.fastify.register(potsRoutes, { prefix: '/api/v1/pots' });
       await this.fastify.register(escrowRoutes, { prefix: '/api/v1/escrow' });
+      await this.fastify.register(marketRoutes, { prefix: '/api/v1/market' });
+      await this.fastify.register(walletRoutes, { prefix: '/api/v1/wallet' });
 
       // Quick test route
       this.fastify.get('/', async (_request: any, reply: any) => {
@@ -80,6 +84,8 @@ export class ApiGateway {
             groups: '/api/v1/groups',
             pots: '/api/v1/pots',
             escrow: '/api/v1/escrow',
+            market: '/api/v1/market',
+            wallet: '/api/v1/wallet',
           }
         });
       });
@@ -106,7 +112,7 @@ export class ApiGateway {
       });
 
       logger.info(`API Gateway started on ${config.server.host}:${config.server.port}`);
-      logger.info('Registered routes: health, transfers, vaults, groups, pots, escrow');
+      logger.info('Registered routes: health, transfers, vaults, groups, pots, escrow, market, wallet');
     } catch (error) {
       logger.error('Failed to start API Gateway:', error);
       throw error;

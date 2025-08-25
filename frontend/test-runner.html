@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeiMoney Frontend Testing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .test-button {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+        }
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-passed { color: #00ff88; }
+        .status-failed { color: #ff4757; }
+        .status-warning { color: #ffa502; }
+        .instructions {
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .quick-commands {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .command-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .command-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #00ff88;
+        }
+        .command-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 SeiMoney Frontend Testing Suite</h1>
+            <p>Comprehensive testing for all screens, integrations, and user workflows</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instructions</h3>
+            <p>1. Make sure your SeiMoney frontend is running on <strong>http://localhost:5173</strong></p>
+            <p>2. Open your browser's Developer Console (F12)</p>
+            <p>3. Use the buttons below or run commands directly in the console</p>
+            <p>4. Check the results and fix any issues found</p>
+        </div>
+
+        <div class="quick-commands">
+            <div class="command-card">
+                <div class="command-title">🏠 Test Current Screen</div>
+                <div class="command-code">SeiMoneyQuickTest.testCurrentScreen()</div>
+                <button class="test-button" onclick="testCurrentScreen()">Run Test</button>
+            </div>
+
+            <div class="command-card">
+                <div class="command-title">🌐 Test API Integration</div>
+                <div class="command-code">SeiMoneyQuickTest.testAPIConnectivity()</div>
+                <button class="test-button" onclick="testAPI()">Run Test</button>
+            </div>
+
+            <div class="command-card">
+                <div class="command-title">👛 Test Wallet Detection</div>
+                <div class="command-code">SeiMoneyQuickTest.testWalletDetection()</div>
+                <button class="test-button" onclick="testWallets()">Run Test</button>
+            </div>
+
+            <div class="command-card">
+                <div class="command-title">📊 Test Data Validation</div>
+                <div class="command-code">SeiMoneyQuickTest.testDataValidation()</div>
+                <button class="test-button" onclick="testData()">Run Test</button>
+            </div>
+
+            <div class="command-card">
+                <div class="command-title">👆 Test User Interactions</div>
+                <div class="command-code">SeiMoneyQuickTest.testUserInteractions()</div>
+                <button class="test-button" onclick="testInteractions()">Run Test</button>
+            </div>
+
+            <div class="command-card">
+                <div class="command-title">🚀 Run All Quick Tests</div>
+                <div class="command-code">SeiMoneyQuickTest.runAllQuickTests()</div>
+                <button class="test-button" onclick="runAllTests()">Run All</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Specific Screen Tests</h3>
+            <button class="test-button" onclick="testScreen('home')">Test Home Screen</button>
+            <button class="test-button" onclick="testScreen('dashboard')">Test Dashboard</button>
+            <button class="test-button" onclick="testScreen('payments')">Test Payments</button>
+            <button class="test-button" onclick="testScreen('ai-agent')">Test AI Agent</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Integration Tests</h3>
+            <button class="test-button" onclick="testIntegration('api')">Test Backend API</button>
+            <button class="test-button" onclick="testIntegration('contracts')">Test Smart Contracts</button>
+            <button class="test-button" onclick="testIntegration('wallet')">Test Wallet Integration</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ Utilities</h3>
+            <button class="test-button" onclick="addTestIds()">Add Test IDs</button>
+            <button class="test-button" onclick="openApp()">Open SeiMoney App</button>
+            <button class="test-button" onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <h4>📊 Test Results</h4>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check if SeiMoney app is available
+        let appWindow = null;
+        
+        function openApp() {
+            appWindow = window.open('http://localhost:5173', 'seiMoney', 'width=1200,height=800');
+            if (appWindow) {
+                showResult('✅ SeiMoney app opened in new window');
+                
+                // Wait for app to load and inject testing
+                setTimeout(() => {
+                    try {
+                        if (appWindow.SeiMoneyQuickTest) {
+                            showResult('✅ Testing suite detected in app');
+                        } else {
+                            showResult('⚠️ Testing suite not yet loaded in app');
+                        }
+                    } catch (e) {
+                        showResult('⚠️ Cannot access app window (CORS or loading)');
+                    }
+                }, 3000);
+            } else {
+                showResult('❌ Failed to open app - check if localhost:5173 is running');
+            }
+        }
+
+        function getTestingContext() {
+            // Try to get testing context from app window or current window
+            if (appWindow && appWindow.SeiMoneyQuickTest) {
+                return appWindow.SeiMoneyQuickTest;
+            } else if (window.SeiMoneyQuickTest) {
+                return window.SeiMoneyQuickTest;
+            } else {
+                showResult('❌ Testing suite not available. Please open the SeiMoney app first.');
+                return null;
+            }
+        }
+
+        async function testCurrentScreen() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('🔍 Testing current screen...');
+            try {
+                const results = await testing.testCurrentScreen();
+                displayResults(results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testAPI() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('🌐 Testing API connectivity...');
+            try {
+                const results = await testing.testAPIConnectivity();
+                displayResults(results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testWallets() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('👛 Testing wallet detection...');
+            try {
+                const results = await testing.testWalletDetection();
+                displayResults(results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testData() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('📊 Testing data validation...');
+            try {
+                const results = await testing.testDataValidation();
+                displayResults(results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testInteractions() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('👆 Testing user interactions...');
+            try {
+                const results = await testing.testUserInteractions();
+                displayResults(results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            const testing = getTestingContext();
+            if (!testing) return;
+            
+            showResult('🚀 Running all quick tests...');
+            try {
+                const result = await testing.runAllQuickTests();
+                showResult(`📊 Summary: ${result.summary.passed} passed, ${result.summary.failed} failed, ${result.summary.warnings} warnings`);
+                displayResults(result.results);
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testScreen(screenName) {
+            if (window.SeiMoneyTesting) {
+                showResult(`🔍 Testing ${screenName} screen...`);
+                try {
+                    const results = await window.SeiMoneyTesting.testScreen(screenName);
+                    displayResults(results);
+                } catch (error) {
+                    showResult(`❌ Error: ${error.message}`);
+                }
+            } else {
+                showResult('❌ SeiMoneyTesting not available. Please open the app first.');
+            }
+        }
+
+        async function testIntegration(type) {
+            if (window.SeiMoneyTesting) {
+                showResult(`🔗 Testing ${type} integration...`);
+                try {
+                    const results = await window.SeiMoneyTesting.testIntegration(type);
+                    displayResults(results);
+                } catch (error) {
+                    showResult(`❌ Error: ${error.message}`);
+                }
+            } else {
+                showResult('❌ SeiMoneyTesting not available. Please open the app first.');
+            }
+        }
+
+        function addTestIds() {
+            if (appWindow && appWindow.addTestIds) {
+                const count = appWindow.addTestIds();
+                showResult(`🏷️ Added ${count} test IDs to elements`);
+            } else if (window.addTestIds) {
+                const count = window.addTestIds();
+                showResult(`🏷️ Added ${count} test IDs to elements`);
+            } else {
+                showResult('❌ addTestIds function not available');
+            }
+        }
+
+        function showResult(message) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('results-content');
+            
+            resultsDiv.style.display = 'block';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const resultLine = document.createElement('div');
+            resultLine.innerHTML = `[${timestamp}] ${message}`;
+            
+            contentDiv.appendChild(resultLine);
+            contentDiv.scrollTop = contentDiv.scrollHeight;
+        }
+
+        function displayResults(results) {
+            if (!Array.isArray(results)) return;
+            
+            results.forEach(result => {
+                const statusClass = `status-${result.status}`;
+                const icon = result.status === 'passed' ? '✅' : 
+                           result.status === 'failed' ? '❌' : '⚠️';
+                
+                showResult(`${icon} <span class="${statusClass}">${result.testName}</span>: ${result.details}`);
+                
+                if (result.errors && result.errors.length > 0) {
+                    result.errors.forEach(error => {
+                        showResult(`   🔸 ${error}`);
+                    });
+                }
+            });
+        }
+
+        function clearResults() {
+            const contentDiv = document.getElementById('results-content');
+            contentDiv.innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+        }
+
+        // Auto-open app on load
+        window.addEventListener('load', () => {
+            showResult('🧪 SeiMoney Testing Interface loaded');
+            showResult('💡 Click "Open SeiMoney App" to start testing');
+        });
+    </script>
+</body>
+</html>

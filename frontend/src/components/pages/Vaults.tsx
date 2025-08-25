@@ -1,423 +1,745 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard } from '../ui/GlassCard';
 import { NeonButton } from '../ui/NeonButton';
 import { NeonText } from '../ui/NeonText';
+import { LineChart } from '../charts/LineChart';
+import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
 import { 
-  Shield, 
-  Lock, 
-  Plus, 
-  Eye, 
-  EyeOff, 
-  Copy, 
-  Download,
-  Upload,
-  Trash2,
-  Settings,
-  Key,
-  FileText,
-  Image,
-  Video,
-  Music
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  PieChart, 
+  ArrowUpRight, 
+  ArrowDownLeft,
+  Loader2,
+  RefreshCw,
+  AlertCircle,
+  Info,
+  Target,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
-interface VaultItem {
-  id: string;
-  name: string;
-  type: 'password' | 'document' | 'image' | 'video' | 'audio' | 'other';
-  size?: string;
-  lastModified: string;
-  encrypted: boolean;
+interface VaultPosition {
+  vaultId: string;
+  shares: number;
+  value: number;
+  entryPrice: number;
+  pnl: number;
+  pnlPercentage: number;
+  depositedAt: Date;
 }
 
-interface Vault {
-  id: string;
-  name: string;
-  description: string;
-  itemCount: number;
-  totalSize: string;
-  createdAt: string;
-  items: VaultItem[];
+interface DepositModalData {
+  vaultId: string;
+  amount: string;
+  isProcessing: boolean;
 }
 
-const mockVaults: Vault[] = [
-  {
-    id: '1',
-    name: 'Personal Documents',
-    description: 'Important personal files and documents',
-    itemCount: 12,
-    totalSize: '45.2 MB',
-    createdAt: '2024-01-15',
-    items: [
-      { id: '1', name: 'Passport.pdf', type: 'document', size: '2.1 MB', lastModified: '2024-01-20', encrypted: true },
-      { id: '2', name: 'Bank_Statement.pdf', type: 'document', size: '1.8 MB', lastModified: '2024-01-18', encrypted: true },
-      { id: '3', name: 'ID_Card.jpg', type: 'image', size: '0.5 MB', lastModified: '2024-01-15', encrypted: true },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Crypto Keys',
-    description: 'Cryptocurrency wallet keys and recovery phrases',
-    itemCount: 8,
-    totalSize: '2.1 KB',
-    createdAt: '2024-01-10',
-    items: [
-      { id: '4', name: 'BTC_Wallet_Key', type: 'password', lastModified: '2024-01-22', encrypted: true },
-      { id: '5', name: 'ETH_Recovery_Phrase', type: 'password', lastModified: '2024-01-20', encrypted: true },
-      { id: '6', name: 'Wallet_Backup.json', type: 'document', size: '1.2 KB', lastModified: '2024-01-15', encrypted: true },
-    ]
-  },
-  {
-    id: '3',
-    name: 'Media Vault',
-    description: 'Private photos and videos',
-    itemCount: 25,
-    totalSize: '1.2 GB',
-    createdAt: '2024-01-05',
-    items: [
-      { id: '7', name: 'Family_Photo.jpg', type: 'image', size: '3.2 MB', lastModified: '2024-01-25', encrypted: true },
-      { id: '8', name: 'Vacation_Video.mp4', type: 'video', size: '125 MB', lastModified: '2024-01-23', encrypted: true },
-    ]
-  }
-];
+interface WithdrawModalData {
+  vaultId: string;
+  shares: string;
+  isProcessing: boolean;
+}
 
 export const Vaults: React.FC = () => {
-  const [selectedVault, setSelectedVault] = useState<Vault | null>(null);
-  const [showCreateVault, setShowCreateVault] = useState(false);
-  const [newVaultName, setNewVaultName] = useState('');
-  const [newVaultDescription, setNewVaultDescription] = useState('');
-  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
+  const { state, actions } = useApp();
+  const [selectedVault, setSelectedVault] = useState<string | null>(null);
+  const [depositModal, setDepositModal] = useState<DepositModalData | null>(null);
+  const [withdrawModal, setWithdrawModal] = useState<WithdrawModalData | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [userPositions, setUserPositions] = useState<VaultPosition[]>([]);
 
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'document': return <FileText className="w-5 h-5" />;
-      case 'image': return <Image className="w-5 h-5" />;
-      case 'video': return <Video className="w-5 h-5" />;
-      case 'audio': return <Music className="w-5 h-5" />;
-      case 'password': return <Key className="w-5 h-5" />;
-      default: return <FileText className="w-5 h-5" />;
+  // Calculate total portfolio value in vaults
+  const totalVaultValue = useMemo(() => {
+    return userPositions.reduce((total, position) => total + position.value, 0);
+  }, [userPositions]);
+
+  // Calculate total PnL
+  const totalPnL = useMemo(() => {
+    return userPositions.reduce((total, position) => total + position.pnl, 0);
+  }, [userPositions]);
+
+  // Get vault statistics
+  const vaultStats = useMemo(() => {
+    const activeVaults = state.vaults.filter(v => v.isActive);
+    const totalTvl = activeVaults.reduce((sum, v) => sum + v.tvl, 0);
+    const avgApy = activeVaults.length > 0 ? 
+      activeVaults.reduce((sum, v) => sum + v.apy, 0) / activeVaults.length : 0;
+    
+    return {
+      totalVaults: activeVaults.length,
+      totalTvl,
+      avgApy,
+      userPositions: userPositions.length
+    };
+  }, [state.vaults, userPositions]);
+
+  // Mock user positions (replace with real data from contracts)
+  useEffect(() => {
+    if (state.isWalletConnected && state.vaults.length > 0) {
+      // Mock positions - replace with real contract queries
+      const mockPositions: VaultPosition[] = state.vaults.slice(0, 2).map((vault, index) => ({
+        vaultId: vault.id,
+        shares: 100 + index * 50,
+        value: (100 + index * 50) * 1.15, // Mock 15% gain
+        entryPrice: 1.0,
+        pnl: (100 + index * 50) * 0.15,
+        pnlPercentage: 15,
+        depositedAt: new Date(Date.now() - (index + 1) * 7 * 24 * 60 * 60 * 1000)
+      }));
+      setUserPositions(mockPositions);
+    }
+  }, [state.isWalletConnected, state.vaults]);
+
+  // Get risk level color
+  const getRiskColor = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'low': return colors.neonGreen;
+      case 'medium': return colors.warning;
+      case 'high': return colors.error;
+      default: return colors.textMuted;
     }
   };
 
-  const togglePasswordVisibility = (itemId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [itemId]: !prev[itemId]
-    }));
-  };
-
-  const handleCreateVault = () => {
-    if (newVaultName.trim()) {
-      // Here you would typically call an API to create the vault
-      console.log('Creating vault:', { name: newVaultName, description: newVaultDescription });
-      setShowCreateVault(false);
-      setNewVaultName('');
-      setNewVaultDescription('');
+  // Get risk level icon
+  const getRiskIcon = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'low': return <Target className="w-4 h-4" />;
+      case 'medium': return <Activity className="w-4 h-4" />;
+      case 'high': return <TrendingUp className="w-4 h-4" />;
+      default: return <BarChart3 className="w-4 h-4" />;
     }
   };
 
-  if (selectedVault) {
-    return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSelectedVault(null)}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                <motion.div
-                  whileHover={{ x: -2 }}
-                  className="text-white"
-                >
-                  ←
-                </motion.div>
-              </button>
-              <div>
-                <NeonText className="text-3xl font-bold mb-2">
-                  {selectedVault.name}
-                </NeonText>
-                <p className="text-gray-400">{selectedVault.description}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <NeonButton variant="secondary" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload
-              </NeonButton>
-              <NeonButton variant="secondary" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </NeonButton>
-            </div>
-          </div>
+  // Handle deposit
+  const handleDeposit = async () => {
+    if (!depositModal || !state.isWalletConnected) return;
 
-          {/* Vault Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: `${colors.neonGreen}20` }}>
-                  <FileText className="w-6 h-6" style={{ color: colors.neonGreen }} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{selectedVault.itemCount}</p>
-                  <p className="text-gray-400">Items</p>
-                </div>
-              </div>
-            </GlassCard>
+    const amount = parseFloat(depositModal.amount);
+    if (isNaN(amount) || amount <= 0) {
+      setFormErrors({ amount: 'Please enter a valid amount' });
+      return;
+    }
 
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: `${colors.neonPurple}20` }}>
-                  <Shield className="w-6 h-6" style={{ color: colors.neonPurple }} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{selectedVault.totalSize}</p>
-                  <p className="text-gray-400">Total Size</p>
-                </div>
-              </div>
-            </GlassCard>
+    if (state.wallet && amount > state.wallet.balance) {
+      setFormErrors({ amount: 'Insufficient balance' });
+      return;
+    }
 
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: `${colors.neonBlue}20` }}>
-                  <Lock className="w-6 h-6" style={{ color: colors.neonBlue }} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">100%</p>
-                  <p className="text-gray-400">Encrypted</p>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
+    setDepositModal(prev => prev ? { ...prev, isProcessing: true } : null);
+    
+    try {
+      // This would call the real vault deposit API
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Mock delay
+      
+      actions.addNotification(`Successfully deposited ${amount} SEI to vault!`, 'success');
+      setDepositModal(null);
+      setFormErrors({});
+      
+      // Refresh vault data
+      await actions.loadVaults();
+      
+    } catch (error) {
+      console.error('Deposit error:', error);
+      actions.addNotification('Failed to deposit to vault', 'error');
+    } finally {
+      setDepositModal(prev => prev ? { ...prev, isProcessing: false } : null);
+    }
+  };
 
-          {/* Vault Items */}
-          <GlassCard className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-white">Vault Contents</h3>
-              <NeonButton size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Item
-              </NeonButton>
-            </div>
+  // Handle withdraw
+  const handleWithdraw = async () => {
+    if (!withdrawModal || !state.isWalletConnected) return;
 
-            <div className="space-y-3">
-              {selectedVault.items.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-white/10">
-                      {getFileIcon(item.type)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">{item.name}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        {item.size && <span>{item.size}</span>}
-                        <span>Modified: {item.lastModified}</span>
-                        {item.encrypted && (
-                          <span className="flex items-center gap-1">
-                            <Lock className="w-3 h-3" />
-                            Encrypted
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+    const shares = parseFloat(withdrawModal.shares);
+    const position = userPositions.find(p => p.vaultId === withdrawModal.vaultId);
+    
+    if (isNaN(shares) || shares <= 0) {
+      setFormErrors({ shares: 'Please enter a valid amount' });
+      return;
+    }
 
-                  <div className="flex items-center gap-2">
-                    {item.type === 'password' && (
-                      <button
-                        onClick={() => togglePasswordVisibility(item.id)}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                      >
-                        {showPasswords[item.id] ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    )}
-                    <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-                      <Download className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors text-red-400">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </GlassCard>
-        </div>
-      </div>
-    );
-  }
+    if (position && shares > position.shares) {
+      setFormErrors({ shares: 'Insufficient shares' });
+      return;
+    }
+
+    setWithdrawModal(prev => prev ? { ...prev, isProcessing: true } : null);
+    
+    try {
+      // This would call the real vault withdraw API
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Mock delay
+      
+      actions.addNotification(`Successfully withdrew ${shares} shares from vault!`, 'success');
+      setWithdrawModal(null);
+      setFormErrors({});
+      
+      // Refresh vault data
+      await actions.loadVaults();
+      
+    } catch (error) {
+      console.error('Withdraw error:', error);
+      actions.addNotification('Failed to withdraw from vault', 'error');
+    } finally {
+      setWithdrawModal(prev => prev ? { ...prev, isProcessing: false } : null);
+    }
+  };
+
+  // Auto-refresh vault data
+  useEffect(() => {
+    if (state.isWalletConnected) {
+      const interval = setInterval(() => {
+        actions.loadVaults();
+      }, 60000); // Refresh every minute
+      
+      return () => clearInterval(interval);
+    }
+  }, [state.isWalletConnected]);
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <NeonText className="text-4xl font-bold mb-2">
-              AI Vaults
-            </NeonText>
-            <p className="text-xl" style={{ color: colors.textMuted }}>
-              Secure, encrypted storage for your most important files
+    <div className="min-h-screen p-6 space-y-6">
+      {/* Header */}
+      <motion.div
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div>
+          <h1 className="text-3xl font-bold text-white">
+            AI <NeonText color="purple" glow>Vaults</NeonText>
+          </h1>
+          <p className="mt-2" style={{ color: colors.textMuted }}>
+            Automated DeFi strategies with AI-powered optimization
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => actions.loadVaults()}
+            disabled={state.isLoading}
+            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-gray-400 hover:text-white"
+          >
+            <RefreshCw 
+              size={16} 
+              className={state.isLoading ? 'animate-spin' : ''} 
+            />
+          </button>
+          <div className="text-right">
+            <p className="text-sm" style={{ color: colors.textMuted }}>Total Portfolio</p>
+            <p className="text-xl font-bold" style={{ color: colors.neonPurple }}>
+              {totalVaultValue.toFixed(2)} SEI
             </p>
           </div>
-          <NeonButton onClick={() => setShowCreateVault(true)}>
-            <Plus className="w-5 h-5 mr-2" />
-            Create Vault
-          </NeonButton>
         </div>
+      </motion.div>
 
-        {/* Security Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <GlassCard className="p-6 text-center">
-            <div className="p-4 rounded-full mx-auto mb-4 w-fit" style={{ backgroundColor: `${colors.neonGreen}20` }}>
-              <Shield className="w-8 h-8" style={{ color: colors.neonGreen }} />
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Military-Grade Encryption</h3>
-            <p className="text-gray-400">AES-256 encryption protects your data</p>
-          </GlassCard>
-
-          <GlassCard className="p-6 text-center">
-            <div className="p-4 rounded-full mx-auto mb-4 w-fit" style={{ backgroundColor: `${colors.neonPurple}20` }}>
-              <Lock className="w-8 h-8" style={{ color: colors.neonPurple }} />
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Zero-Knowledge Architecture</h3>
-            <p className="text-gray-400">Only you can access your data</p>
-          </GlassCard>
-
-          <GlassCard className="p-6 text-center">
-            <div className="p-4 rounded-full mx-auto mb-4 w-fit" style={{ backgroundColor: `${colors.neonBlue}20` }}>
-              <Key className="w-8 h-8" style={{ color: colors.neonBlue }} />
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Biometric Access</h3>
-            <p className="text-gray-400">Secure access with your fingerprint</p>
-          </GlassCard>
-        </div>
-
-        {/* Vaults Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockVaults.map((vault) => (
-            <motion.div
-              key={vault.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.3 }}
+      {/* Vault Statistics */}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        <GlassCard glow="purple" className="p-6">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ background: colors.gradientPurple }}
             >
-              <GlassCard 
-                className="p-6 cursor-pointer hover:bg-white/10 transition-colors"
-                onClick={() => setSelectedVault(vault)}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: `${colors.neonGreen}20` }}>
-                    <Shield className="w-6 h-6" style={{ color: colors.neonGreen }} />
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-400">
-                    <Lock className="w-3 h-3" />
-                    Encrypted
+              <PieChart size={24} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Active Vaults</p>
+              <p className="text-xl font-bold text-white">
+                {state.isLoading ? (
+                  <div className="animate-pulse bg-gray-600 h-6 w-8 rounded"></div>
+                ) : (
+                  vaultStats.totalVaults
+                )}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard glow="green" className="p-6">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ background: colors.gradientGreen }}
+            >
+              <DollarSign size={24} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Total TVL</p>
+              <p className="text-xl font-bold text-white">
+                {state.isLoading ? (
+                  <div className="animate-pulse bg-gray-600 h-6 w-20 rounded"></div>
+                ) : (
+                  `${vaultStats.totalTvl.toFixed(0)} SEI`
+                )}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ background: colors.gradientNeon }}
+            >
+              <TrendingUp size={24} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Avg APY</p>
+              <p className="text-xl font-bold text-white">
+                {state.isLoading ? (
+                  <div className="animate-pulse bg-gray-600 h-6 w-12 rounded"></div>
+                ) : (
+                  `${vaultStats.avgApy.toFixed(1)}%`
+                )}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${colors.warning}, ${colors.warning}dd)` }}
+            >
+              <Target size={24} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm" style={{ color: colors.textMuted }}>My Positions</p>
+              <p className="text-xl font-bold text-white">
+                {userPositions.length}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      {/* My Positions */}
+      {state.isWalletConnected && userPositions.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white">My Positions</h3>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm" style={{ color: colors.textMuted }}>Total P&L</p>
+                  <p className={`text-lg font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} SEI
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {userPositions.map((position) => {
+                const vault = state.vaults.find(v => v.id === position.vaultId);
+                if (!vault) return null;
+
+                return (
+                  <motion.div
+                    key={position.vaultId}
+                    className="p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: colors.glass,
+                      borderColor: colors.glassBorder,
+                    }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+                          style={{ background: colors.gradientPurple }}
+                        >
+                          <PieChart size={20} className="text-white" />
+                        </div>
+                        
+                        <div>
+                          <p className="text-white font-medium">{vault.name}</p>
+                          <p className="text-sm" style={{ color: colors.textMuted }}>
+                            {position.shares.toFixed(2)} shares • Deposited {position.depositedAt.toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-white">
+                          {position.value.toFixed(2)} SEI
+                        </p>
+                        <p className={`text-sm ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {position.pnl >= 0 ? '+' : ''}{position.pnl.toFixed(2)} SEI ({position.pnlPercentage >= 0 ? '+' : ''}{position.pnlPercentage.toFixed(1)}%)
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 flex space-x-2">
+                      <NeonButton 
+                        size="sm" 
+                        variant="outline" 
+                        color="green"
+                        onClick={() => setDepositModal({ vaultId: vault.id, amount: '', isProcessing: false })}
+                      >
+                        <ArrowUpRight size={14} className="mr-1" />
+                        Deposit
+                      </NeonButton>
+                      <NeonButton 
+                        size="sm" 
+                        variant="outline" 
+                        color="purple"
+                        onClick={() => setWithdrawModal({ vaultId: vault.id, shares: '', isProcessing: false })}
+                      >
+                        <ArrowDownLeft size={14} className="mr-1" />
+                        Withdraw
+                      </NeonButton>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </GlassCard>
+        </motion.div>
+      )}
+
+      {/* Available Vaults */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+      >
+        <GlassCard className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-white">Available Vaults</h3>
+            {!state.isWalletConnected && (
+              <div className="text-sm text-gray-400">
+                Connect wallet to deposit
+              </div>
+            )}
+          </div>
+
+          {state.isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse p-6 rounded-lg border" style={{ backgroundColor: colors.glass, borderColor: colors.glassBorder }}>
+                  <div className="space-y-4">
+                    <div className="bg-gray-600 h-6 w-3/4 rounded"></div>
+                    <div className="bg-gray-600 h-4 w-full rounded"></div>
+                    <div className="bg-gray-600 h-4 w-1/2 rounded"></div>
                   </div>
                 </div>
-
-                <h3 className="text-xl font-semibold text-white mb-2">{vault.name}</h3>
-                <p className="text-gray-400 mb-4 text-sm">{vault.description}</p>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Items:</span>
-                    <span className="text-white">{vault.itemCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Size:</span>
-                    <span className="text-white">{vault.totalSize}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Created:</span>
-                    <span className="text-white">{vault.createdAt}</span>
-                  </div>
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Create Vault Modal */}
-        {showCreateVault && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowCreateVault(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <GlassCard className="p-6 w-full max-w-md">
-                <h3 className="text-xl font-semibold text-white mb-4">Create New Vault</h3>
+              ))}
+            </div>
+          ) : state.vaults.length === 0 ? (
+            <div className="text-center py-12">
+              <PieChart size={48} className="mx-auto mb-4 opacity-50 text-gray-400" />
+              <p className="text-lg text-white mb-2">No vaults available</p>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                Vaults will appear here when they are deployed
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {state.vaults.filter(vault => vault.isActive).map((vault, index) => {
+                const userPosition = userPositions.find(p => p.vaultId === vault.id);
                 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Vault Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newVaultName}
-                      onChange={(e) => setNewVaultName(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-white/40"
-                      placeholder="Enter vault name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={newVaultDescription}
-                      onChange={(e) => setNewVaultDescription(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-white/40 resize-none"
-                      rows={3}
-                      placeholder="Enter vault description"
-                    />
-                  </div>
-                </div>
+                return (
+                  <motion.div
+                    key={vault.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                  >
+                    <GlassCard className="p-6 hover:border-opacity-60 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div 
+                          className="w-12 h-12 rounded-lg flex items-center justify-center"
+                          style={{ background: colors.gradientPurple }}
+                        >
+                          <PieChart size={24} className="text-white" />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="flex items-center space-x-1 px-2 py-1 rounded-full text-xs"
+                            style={{ 
+                              backgroundColor: `${getRiskColor(vault.riskLevel)}20`,
+                              color: getRiskColor(vault.riskLevel)
+                            }}
+                          >
+                            {getRiskIcon(vault.riskLevel)}
+                            <span>{vault.riskLevel.toUpperCase()}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="flex gap-3 mt-6">
-                  <NeonButton 
-                    variant="secondary" 
-                    onClick={() => setShowCreateVault(false)}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </NeonButton>
-                  <NeonButton 
-                    onClick={handleCreateVault}
-                    className="flex-1"
-                  >
-                    Create Vault
-                  </NeonButton>
+                      <h3 className="text-xl font-semibold text-white mb-2">{vault.name}</h3>
+                      <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
+                        {vault.description}
+                      </p>
+
+                      <div className="space-y-3 mb-6">
+                        <div className="flex justify-between">
+                          <span className="text-sm" style={{ color: colors.textMuted }}>APY</span>
+                          <span className="text-sm font-bold" style={{ color: colors.neonGreen }}>
+                            {vault.apy.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm" style={{ color: colors.textMuted }}>TVL</span>
+                          <span className="text-sm text-white">
+                            {vault.tvl.toFixed(0)} SEI
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm" style={{ color: colors.textMuted }}>Min Deposit</span>
+                          <span className="text-sm text-white">
+                            {vault.minDeposit} SEI
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm" style={{ color: colors.textMuted }}>Strategy</span>
+                          <span className="text-sm text-white">
+                            {vault.strategy}
+                          </span>
+                        </div>
+                      </div>
+
+                      {userPosition ? (
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-lg" style={{ backgroundColor: `${colors.neonPurple}10` }}>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm" style={{ color: colors.textMuted }}>Your Position</span>
+                              <span className="text-sm font-bold text-white">
+                                {userPosition.value.toFixed(2)} SEI
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                              <span className="text-xs" style={{ color: colors.textMuted }}>P&L</span>
+                              <span className={`text-xs font-medium ${userPosition.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {userPosition.pnl >= 0 ? '+' : ''}{userPosition.pnl.toFixed(2)} SEI
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <NeonButton 
+                              size="sm" 
+                              color="green" 
+                              className="flex-1"
+                              disabled={!state.isWalletConnected}
+                              onClick={() => setDepositModal({ vaultId: vault.id, amount: '', isProcessing: false })}
+                            >
+                              Deposit More
+                            </NeonButton>
+                            <NeonButton 
+                              size="sm" 
+                              variant="outline" 
+                              color="purple" 
+                              className="flex-1"
+                              disabled={!state.isWalletConnected}
+                              onClick={() => setWithdrawModal({ vaultId: vault.id, shares: '', isProcessing: false })}
+                            >
+                              Withdraw
+                            </NeonButton>
+                          </div>
+                        </div>
+                      ) : (
+                        <NeonButton 
+                          className="w-full" 
+                          color="purple"
+                          disabled={!state.isWalletConnected}
+                          onClick={() => setDepositModal({ vaultId: vault.id, amount: vault.minDeposit.toString(), isProcessing: false })}
+                        >
+                          {state.isWalletConnected ? 'Deposit' : 'Connect Wallet'}
+                        </NeonButton>
+                      )}
+                    </GlassCard>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </GlassCard>
+      </motion.div>
+
+      {/* Deposit Modal */}
+      {depositModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => !depositModal.isProcessing && setDepositModal(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GlassCard className="p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold text-white mb-4">Deposit to Vault</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Amount (SEI)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.000001"
+                      min="0"
+                      value={depositModal.amount}
+                      onChange={(e) => {
+                        setDepositModal(prev => prev ? { ...prev, amount: e.target.value } : null);
+                        setFormErrors({});
+                      }}
+                      className={`w-full p-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 focus:outline-none focus:border-white/40 ${
+                        formErrors.amount ? 'border-red-500' : 'border-white/20'
+                      }`}
+                      placeholder="0.00"
+                      disabled={depositModal.isProcessing}
+                    />
+                    {state.wallet && (
+                      <div className="absolute right-3 top-3 text-sm text-gray-400">
+                        Max: {state.wallet.balance.toFixed(6)}
+                      </div>
+                    )}
+                  </div>
+                  {formErrors.amount && (
+                    <div className="flex items-center mt-1 text-red-400 text-sm">
+                      <AlertCircle size={14} className="mr-1" />
+                      {formErrors.amount}
+                    </div>
+                  )}
                 </div>
-              </GlassCard>
-            </motion.div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <NeonButton 
+                  variant="outline" 
+                  onClick={() => setDepositModal(null)}
+                  className="flex-1"
+                  disabled={depositModal.isProcessing}
+                >
+                  Cancel
+                </NeonButton>
+                <NeonButton 
+                  onClick={handleDeposit}
+                  className="flex-1"
+                  disabled={depositModal.isProcessing}
+                >
+                  {depositModal.isProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Depositing...
+                    </>
+                  ) : (
+                    'Deposit'
+                  )}
+                </NeonButton>
+              </div>
+            </GlassCard>
           </motion.div>
-        )}
-      </div>
+        </motion.div>
+      )}
+
+      {/* Withdraw Modal */}
+      {withdrawModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => !withdrawModal.isProcessing && setWithdrawModal(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GlassCard className="p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold text-white mb-4">Withdraw from Vault</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Shares to Withdraw
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.000001"
+                      min="0"
+                      value={withdrawModal.shares}
+                      onChange={(e) => {
+                        setWithdrawModal(prev => prev ? { ...prev, shares: e.target.value } : null);
+                        setFormErrors({});
+                      }}
+                      className={`w-full p-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 focus:outline-none focus:border-white/40 ${
+                        formErrors.shares ? 'border-red-500' : 'border-white/20'
+                      }`}
+                      placeholder="0.00"
+                      disabled={withdrawModal.isProcessing}
+                    />
+                    {(() => {
+                      const position = userPositions.find(p => p.vaultId === withdrawModal.vaultId);
+                      return position && (
+                        <div className="absolute right-3 top-3 text-sm text-gray-400">
+                          Max: {position.shares.toFixed(6)}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  {formErrors.shares && (
+                    <div className="flex items-center mt-1 text-red-400 text-sm">
+                      <AlertCircle size={14} className="mr-1" />
+                      {formErrors.shares}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <NeonButton 
+                  variant="outline" 
+                  onClick={() => setWithdrawModal(null)}
+                  className="flex-1"
+                  disabled={withdrawModal.isProcessing}
+                >
+                  Cancel
+                </NeonButton>
+                <NeonButton 
+                  onClick={handleWithdraw}
+                  className="flex-1"
+                  color="purple"
+                  disabled={withdrawModal.isProcessing}
+                >
+                  {withdrawModal.isProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Withdrawing...
+                    </>
+                  ) : (
+                    'Withdraw'
+                  )}
+                </NeonButton>
+              </div>
+            </GlassCard>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

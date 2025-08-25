@@ -1,68 +1,135 @@
-export async function healthRoutes(fastify: any): Promise<void> {
-  // Basic health check - cached response
-  const healthResponse = {
-    ok: true,
-    status: 'healthy',
-    service: 'seimoney-backend',
-    version: '1.0.0',
-  };
+import { FastifyInstance } from 'fastify';
+import { SDKFactory } from '../../../lib/sdk-factory';
+import { getRealDataService } from '../../../services/realDataService';
 
-  fastify.get('/', async (_request: any, reply: any) => {
-    reply
-      .header('Cache-Control', 'public, max-age=30')
-      .send({
-        ...healthResponse,
-        timestamp: new Date().toISOString(),
-      });
-  });
-
-  // Detailed health check - simplified for development
-  fastify.get('/detailed', async (_request: any, reply: any) => {
-    const health = {
+export async function healthRoutes(app: FastifyInstance): Promise<void> {
+  // Basic health check
+  app.get('/health', async (req, reply) => {
+    reply.send({
       ok: true,
       status: 'healthy',
       timestamp: new Date().toISOString(),
       service: 'seimoney-backend',
-      version: '1.0.0',
-      checks: {
-        database: 'healthy', // Skip actual DB check for speed
-        blockchain: 'healthy', // Skip actual blockchain check for speed
-        redis: 'healthy', // Skip actual Redis check for speed
-      },
-    };
-
-    reply
-      .header('Cache-Control', 'public, max-age=10')
-      .send(health);
+    });
   });
 
-  // Readiness probe for Kubernetes
-  fastify.get('/ready', async (_request: any, reply: any) => {
-    // Check if all critical services are ready
-    const isReady = true; // In real implementation, check actual service readiness
-
-    if (isReady) {
+  // Enhanced health check with real contract data
+  app.get('/health/contracts', async (req, reply) => {
+    try {
+      const health = await SDKFactory.healthCheck();
+      
       reply.send({
-        ok: true,
-        status: 'ready',
-        timestamp: new Date().toISOString(),
+        ok: health.readOnlySDK && health.enhancedSDK,
+        data: {
+          readOnlySDK: health.readOnlySDK,
+          enhancedSDK: health.enhancedSDK,
+          contracts: health.contractsHealth,
+          timestamp: new Date().toISOString(),
+        }
       });
-    } else {
-      reply.status(503).send({
+    } catch (error) {
+      reply.status(500).send({
         ok: false,
-        status: 'not_ready',
+        error: 'Health check failed',
+        details: (error as Error).message,
         timestamp: new Date().toISOString(),
       });
     }
   });
 
-  // Liveness probe for Kubernetes
-  fastify.get('/live', async (_request: any, reply: any) => {
-    // Simple check if the service is alive
-    reply.send({
-      ok: true,
-      status: 'alive',
-      timestamp: new Date().toISOString(),
-    });
+  // Wallet balance endpoint
+  app.get('/health/wallet/:address', async (req, reply) => {
+    try {
+      const { address } = req.params as { address: string };
+      const { getWalletService } = await import('../../../services/walletService');
+      const walletService = getWalletService();
+      
+      const validation = walletService.validateWalletAddress(address);
+      if (!validation.valid) {
+        reply.status(400).send({
+          ok: false,
+          error: 'Invalid wallet address',
+          details: validation.error,
+        });
+        return;
+      }
+      
+      const balance = await walletService.getWalletBalance(address);
+      
+      reply.send({
+        ok: true,
+        data: balance
+      });
+    } catch (error) {
+      reply.status(500).send({
+        ok: false,
+        error: 'Failed to get wallet balance',
+        details: (error as Error).message,
+      });
+    }
+  });
+
+  // Network status endpoint
+  app.get('/health/network', async (req, reply) => {
+    try {
+      const { getNetworkService } = await import('../../../services/networkService');
+      const networkService = getNetworkService();
+      
+      const networkHealth = await networkService.getNetworkHealth();
+      
+      reply.send({
+        ok: networkHealth.healthy,
+        data: networkHealth
+      });
+    } catch (error) {
+      reply.status(500).send({
+        ok: false,
+        error: 'Failed to get network status',
+        details: (error as Error).message,
+      });
+    }
+  });
+
+  // Real data service health check
+  app.get('/health/data-service', async (req, reply) => {
+    try {
+      const realDataService = await getRealDataService();
+      const systemHealth = await realDataService.getSystemHealth();
+      
+      reply.send({
+        ok: systemHealth.healthy,
+        data: {
+          ...systemHealth,
+          timestamp: new Date().toISOString(),
+        }
+      });
+    } catch (error) {
+      reply.status(500).send({
+        ok: false,
+        error: 'Data service health check failed',
+        details: (error as Error).message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // Market stats endpoint using real data
+  app.get('/health/market-stats', async (req, reply) => {
+    try {
+      const realDataService = await getRealDataService();
+      const marketStats = await realDataService.getMarketStats();
+      
+      reply.send({
+        ok: true,
+        data: marketStats
+      });
+    } catch (error) {
+      reply.status(500).send({
+        ok: false,
+        error: 'Failed to fetch market stats',
+        details: (error as Error).message,
+        timestamp: new Date().toISOString(),
+      });
+    }
   });
 }

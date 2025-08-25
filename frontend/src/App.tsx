@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { AppProvider, useApp } from './contexts/AppContext';
 import { Navbar } from './components/layout/Navbar';
 import { Home } from './components/pages/Home';
 import { Dashboard } from './components/pages/Dashboard';
@@ -12,10 +13,14 @@ import { Vaults } from './components/pages/Vaults';
 import { Usernames } from './components/pages/Usernames';
 import { Settings } from './components/pages/Settings';
 import { Help } from './components/pages/Help';
+import { WalletTest } from './components/pages/WalletTest';
+import { Notifications } from './components/ui/Notifications';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { colors } from './lib/colors';
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState('home');
+  const { state, actions } = useApp();
 
   const renderPage = () => {
     switch (activeTab) {
@@ -41,6 +46,8 @@ function App() {
         return <Settings />;
       case 'help':
         return <Help />;
+      case 'wallet-test':
+        return <WalletTest />;
       default:
         return <Home onNavigate={setActiveTab} />;
     }
@@ -175,7 +182,23 @@ function App() {
       >
         {renderPage()}
       </motion.main>
+
+      {/* Notifications */}
+      <Notifications 
+        notifications={state.notifications}
+        onRemove={actions.removeNotification}
+      />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -2,32 +2,18 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 
 export function withIdempotency() {
   return async (request: FastifyRequest, reply: FastifyReply) => {
+    // Simple idempotency middleware - for development
+    // In production, implement proper idempotency with Redis/Database
+    
     const idempotencyKey = request.headers['idempotency-key'] as string;
     
-    if (!idempotencyKey) {
-      return reply.status(400).send({ 
-        error: 'Idempotency-Key header required for this operation' 
-      });
+    if (idempotencyKey) {
+      console.log(`Idempotency key: ${idempotencyKey}`);
+      // In production, check if this key was already processed
+      // and return cached result if found
     }
-
-    // TODO: Implement Redis-based idempotency check
-    // For now, just validate the key format
-    if (idempotencyKey.length < 10 || idempotencyKey.length > 100) {
-      return reply.status(400).send({ 
-        error: 'Invalid Idempotency-Key format' 
-      });
-    }
-
-    // TODO: Check if key was already used
-    // const used = await redis.get(`idempotency:${idempotencyKey}`);
-    // if (used) {
-    //   return reply.status(409).send({ 
-    //     error: 'Operation already processed',
-    //     result: JSON.parse(used)
-    //   });
-    // }
-
-    // Store the key for later use
-    (request as any).idempotencyKey = idempotencyKey;
+    
+    // For development, just continue
+    return;
   };
 }

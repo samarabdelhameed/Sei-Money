@@ -192,6 +192,14 @@ bot.command('bind', async (ctx) => {
       return;
     }
 
+    // Verify address exists on blockchain
+    try {
+      const balance = await sdk.getBalance(seiAddress);
+      logger.info('Address verified on blockchain', { seiAddress, balance });
+    } catch (error) {
+      await ctx.reply('⚠️ Warning: Unable to verify address on blockchain. Address may not exist or network is unavailable.');
+    }
+
     // Bind the address
     const success = await sessionManager.bindSeiAddress(telegramId, seiAddress);
     
@@ -364,12 +372,26 @@ process.once('SIGTERM', () => {
 });
 
 // Start the bot
-bot.launch().then(() => {
-  logger.info('🚀 SeiMoney Telegram Bot started successfully!');
-  logger.info(`📱 Bot username: @${bot.botInfo?.username}`);
+if (config.token === 'dummy-token-for-development' || config.token === 'test_telegram_bot_token') {
+  // Development mode - don't actually start the bot
+  logger.info('🚀 SeiMoney Telegram Bot started in DEVELOPMENT MODE!');
+  logger.info('📱 Bot is running in mock mode (no real Telegram connection)');
   logger.info(`🔗 RPC URL: ${config.rpcUrl}`);
   logger.info(`💰 Payments Contract: ${config.contracts.payments}`);
-}).catch((error) => {
-  logger.error('Failed to start bot', { error });
-  process.exit(1);
-});
+  
+  // Keep the process alive
+  setInterval(() => {
+    logger.info('Bot is running in development mode...');
+  }, 30000);
+} else {
+  // Production mode - start the actual bot
+  bot.launch().then(() => {
+    logger.info('🚀 SeiMoney Telegram Bot started successfully!');
+    logger.info(`📱 Bot username: @${bot.botInfo?.username}`);
+    logger.info(`🔗 RPC URL: ${config.rpcUrl}`);
+    logger.info(`💰 Payments Contract: ${config.contracts.payments}`);
+  }).catch((error) => {
+    logger.error('Failed to start bot', { error });
+    process.exit(1);
+  });
+}

@@ -10,7 +10,7 @@ export const config = {
   restUrl: process.env['REST_URL'] || 'https://rest.atlantic-2.seinetwork.io:443',
   denom: process.env['DENOM'] || 'usei',
 
-  // Smart contract addresses (REAL DEPLOYED CONTRACTS)
+  // Smart contract addresses (REAL DEPLOYED CONTRACTS on Sei testnet atlantic-2)
   contracts: {
     payments: process.env['CONTRACT_PAYMENTS'] || 'sei1kfpm92hs5gsmp84098wc3jpy2a440l50cq2ycsxlkpnlaygl9azqdhsygg',
     groups: process.env['CONTRACT_GROUPS'] || 'sei1vq3ncyvf4k22lc0xhm7x6dtkn6jyxkexa2xy6uk2sj33dysnyy2syn73qt',
@@ -18,6 +18,21 @@ export const config = {
     vaults: process.env['CONTRACT_VAULTS'] || 'sei12k2yxf3cyec8p89qtgm5w30m4g2775tn7j8wx4jpuallygu45r9qs68u2h',
     escrow: process.env['CONTRACT_ESCROW'] || 'sei1q3gqr9ywvma6j6kja67n4h7fxz790x5lhj4v5phv2za0v7wsp5qqkrz0pj',
     alias: process.env['CONTRACT_ALIAS'] || 'sei1thjuavd70uq7txe79uj8pfy2vfyl3zvmenkyxh6ew4vag9mckq4qrtjav4',
+  },
+
+  // RPC endpoints with fallbacks for connection pooling
+  rpcEndpoints: [
+    process.env['RPC_URL'] || 'https://rpc.atlantic-2.seinetwork.io:443',
+    'https://rpc.atlantic-2.seinetwork.io',
+    'https://sei-testnet-rpc.polkachu.com',
+  ],
+
+  // Connection settings
+  connection: {
+    maxRetries: parseInt(process.env['MAX_RETRIES'] || '3'),
+    retryDelay: parseInt(process.env['RETRY_DELAY'] || '1000'),
+    timeout: parseInt(process.env['RPC_TIMEOUT'] || '30000'),
+    poolSize: parseInt(process.env['CONNECTION_POOL_SIZE'] || '3'),
   },
 
   // Database
@@ -78,8 +93,40 @@ export const config = {
   },
 } as const;
 
+// Contract address validation
+function validateContractAddress(address: string, contractName: string): boolean {
+  // Sei addresses start with 'sei1' and are between 58-70 characters long
+  const seiAddressRegex = /^sei1[a-z0-9]{58,70}$/;
+  
+  if (!seiAddressRegex.test(address)) {
+    console.warn(`⚠️  Invalid ${contractName} contract address format: ${address}`);
+    return false;
+  }
+  
+  return true;
+}
+
 // Validation
 export function validateConfig(): void {
+  // Validate contract addresses regardless of environment
+  const contractValidation = [
+    { name: 'PAYMENTS', address: config.contracts.payments },
+    { name: 'GROUPS', address: config.contracts.groups },
+    { name: 'POTS', address: config.contracts.pots },
+    { name: 'VAULTS', address: config.contracts.vaults },
+    { name: 'ESCROW', address: config.contracts.escrow },
+    { name: 'ALIAS', address: config.contracts.alias },
+  ];
+
+  let validContracts = 0;
+  for (const contract of contractValidation) {
+    if (validateContractAddress(contract.address, contract.name)) {
+      validContracts++;
+    }
+  }
+
+  console.log(`📋 Contract validation: ${validContracts}/${contractValidation.length} contracts have valid addresses`);
+
   // In development mode, be more lenient
   if (process.env['NODE_ENV'] === 'development' || !process.env['NODE_ENV']) {
     console.log('🔧 Development mode detected - using default values');
@@ -116,6 +163,11 @@ export function validateConfig(): void {
   
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+
+  // In production, all contracts must have valid addresses
+  if (validContracts !== contractValidation.length) {
+    throw new Error('All contract addresses must be valid in production environment');
   }
 }
 

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Integration Test - SeiMoney</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .warning { background: #5a5a2d; }
+        .info { background: #2d2d5a; }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        .address {
+            font-family: monospace;
+            background: #333;
+            padding: 5px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🦊 MetaMask Integration Test - SeiMoney</h1>
+    
+    <div class="container">
+        <h2>Connection Status</h2>
+        <div id="connectionStatus" class="status info">Not connected</div>
+        <button id="connectBtn" onclick="connectMetaMask()">Connect MetaMask</button>
+        <button id="disconnectBtn" onclick="disconnectWallet()" disabled>Disconnect</button>
+        <button id="switchNetworkBtn" onclick="switchToSeiNetwork()" disabled>Switch to Sei Network</button>
+    </div>
+
+    <div class="grid">
+        <div class="container">
+            <h3>🔗 EVM Account (Ethereum-Compatible)</h3>
+            <div id="evmInfo">
+                <p><strong>Address:</strong> <span id="evmAddress" class="address">Not connected</span></p>
+                <p><strong>Balance:</strong> <span id="evmBalance">0 SEI</span></p>
+                <p><strong>Network:</strong> <span id="currentNetwork">Unknown</span></p>
+                <button onclick="getEvmBalance()" disabled id="refreshEvmBtn">Refresh EVM Balance</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <h3>🌌 Cosmos Account (Sei Native)</h3>
+            <div id="cosmosInfo">
+                <p><strong>Address:</strong> <span id="cosmosAddress" class="address">Not connected</span></p>
+                <p><strong>Balance:</strong> <span id="cosmosBalance">0 SEI</span></p>
+                <button onclick="getCosmosBalance()" disabled id="refreshCosmosBtn">Refresh Cosmos Balance</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>🧪 Transaction Testing</h3>
+        <div>
+            <h4>Send EVM Transaction</h4>
+            <input type="text" id="evmRecipient" placeholder="Recipient EVM Address (0x...)" style="width: 300px; padding: 5px;">
+            <input type="number" id="evmAmount" placeholder="Amount in SEI" step="0.000001" style="width: 150px; padding: 5px;">
+            <button onclick="sendEvmTransaction()" disabled id="sendEvmBtn">Send EVM Transaction</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Send Cosmos Transaction</h4>
+            <input type="text" id="cosmosRecipient" placeholder="Recipient Cosmos Address (sei...)" style="width: 300px; padding: 5px;">
+            <input type="number" id="cosmosAmount" placeholder="Amount in SEI" step="0.000001" style="width: 150px; padding: 5px;">
+            <button onclick="sendCosmosTransaction()" disabled id="sendCosmosBtn">Send Cosmos Transaction</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>📊 Network Information</h3>
+        <div id="networkInfo">
+            <p><strong>EVM Chain ID:</strong> <span id="evmChainId">Unknown</span></p>
+            <p><strong>EVM RPC:</strong> <span id="evmRpc">Unknown</span></p>
+            <p><strong>Cosmos Chain ID:</strong> <span id="cosmosChainId">atlantic-2</span></p>
+            <p><strong>Cosmos RPC:</strong> <span id="cosmosRpc">https://rpc.atlantic-2.seinetwork.io:443</span></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>📝 Activity Log</h3>
+        <div id="activityLog" style="height: 200px; overflow-y: auto; background: #333; padding: 10px; border-radius: 5px;">
+            <p>Ready to test MetaMask integration...</p>
+        </div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        // Global variables
+        let metamaskConnection = null;
+        let isConnected = false;
+
+        // Sei Network Configuration
+        const SEI_CONFIG = {
+            evmChainId: '0x531', // 1329 in decimal
+            evmChainName: 'Sei Testnet EVM',
+            evmRpcUrl: 'https://evm-rpc-testnet.sei-apis.com',
+            cosmosChainId: 'atlantic-2',
+            cosmosRpcUrl: 'https://rpc.atlantic-2.seinetwork.io:443',
+            nativeCurrency: {
+                name: 'SEI',
+                symbol: 'SEI',
+                decimals: 18
+            }
+        };
+
+        // Utility functions
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('p');
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : 
+                                 type === 'success' ? '#51cf66' : 
+                                 type === 'warning' ? '#ffd43b' : '#74c0fc';
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '<p>Log cleared...</p>';
+        }
+
+        function updateConnectionStatus(status, type = 'info') {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = status;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function updateButtons(connected) {
+            document.getElementById('connectBtn').disabled = connected;
+            document.getElementById('disconnectBtn').disabled = !connected;
+            document.getElementById('switchNetworkBtn').disabled = !connected;
+            document.getElementById('refreshEvmBtn').disabled = !connected;
+            document.getElementById('refreshCosmosBtn').disabled = !connected;
+            document.getElementById('sendEvmBtn').disabled = !connected;
+            document.getElementById('sendCosmosBtn').disabled = !connected;
+        }
+
+        // Check if MetaMask is installed
+        function checkMetaMask() {
+            if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+                log('✅ MetaMask detected', 'success');
+                return true;
+            } else {
+                log('❌ MetaMask not detected. Please install MetaMask extension.', 'error');
+                updateConnectionStatus('MetaMask not installed', 'error');
+                return false;
+            }
+        }
+
+        // Convert EVM address to Cosmos address (simplified)
+        function evmToCosmosAddress(evmAddress) {
+            // This is a simplified conversion for demo purposes
+            // In production, use proper bech32 encoding
+            const addressBytes = evmAddress.slice(2); // Remove 0x
+            const cosmosAddress = 'sei1' + addressBytes.slice(0, 38).toLowerCase();
+            return cosmosAddress;
+        }
+
+        // Connect to MetaMask
+        async function connectMetaMask() {
+            if (!checkMetaMask()) return;
+
+            try {
+                log('🔄 Connecting to MetaMask...', 'info');
+                updateConnectionStatus('Connecting...', 'warning');
+
+                // Request account access
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+
+                const evmAddress = accounts[0];
+                log(`✅ Connected to account: ${evmAddress}`, 'success');
+
+                // Switch to Sei Network
+                await switchToSeiNetwork();
+
+                // Convert to Cosmos address
+                const cosmosAddress = evmToCosmosAddress(evmAddress);
+
+                metamaskConnection = {
+                    evmAddress,
+                    cosmosAddress
+                };
+
+                // Update UI
+                document.getElementById('evmAddress').textContent = evmAddress;
+                document.getElementById('cosmosAddress').textContent = cosmosAddress;
+                
+                updateConnectionStatus('Connected to MetaMask', 'success');
+                updateButtons(true);
+                isConnected = true;
+
+                // Get balances
+                await getEvmBalance();
+                await getCosmosBalance();
+
+                // Update network info
+                await updateNetworkInfo();
+
+                log('🎉 MetaMask integration successful!', 'success');
+
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+                updateConnectionStatus(`Connection failed: ${error.message}`, 'error');
+                console.error('MetaMask connection error:', error);
+            }
+        }
+
+        // Switch to Sei Network
+        async function switchToSeiNetwork() {
+            try {
+                log('🔄 Switching to Sei Network...', 'info');
+
+                // Check current network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                
+                if (chainId === SEI_CONFIG.evmChainId) {
+                    log('✅ Already on Sei Network', 'success');
+                    return;
+                }
+
+                try {
+                    // Try to switch to existing network
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: SEI_CONFIG.evmChainId }],
+                    });
+                    log('✅ Switched to Sei Network', 'success');
+                } catch (switchError) {
+                    // Network not added, add it
+                    if (switchError.code === 4902) {
+                        log('➕ Adding Sei Network to MetaMask...', 'info');
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: SEI_CONFIG.evmChainId,
+                                chainName: SEI_CONFIG.evmChainName,
+                                nativeCurrency: SEI_CONFIG.nativeCurrency,
+                                rpcUrls: [SEI_CONFIG.evmRpcUrl],
+                                blockExplorerUrls: ['https://seitrace.com'],
+                                iconUrls: ['https://sei.io/favicon.ico']
+                            }]
+                        });
+                        log('✅ Sei Network added and switched', 'success');
+                    } else {
+                        throw switchError;
+                    }
+                }
+            } catch (error) {
+                log(`❌ Failed to switch network: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Get EVM balance
+        async function getEvmBalance() {
+            if (!isConnected || !metamaskConnection) return;
+
+            try {
+                log('🔄 Getting EVM balance...', 'info');
+                
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [metamaskConnection.evmAddress, 'latest']
+                });
+
+                // Convert from wei to SEI (18 decimals)
+                const balanceInWei = BigInt(balance);
+                const balanceInSei = Number(balanceInWei) / Math.pow(10, 18);
+                
+                document.getElementById('evmBalance').textContent = `${balanceInSei.toFixed(6)} SEI`;
+                log(`💰 EVM Balance: ${balanceInSei.toFixed(6)} SEI`, 'success');
+
+            } catch (error) {
+                log(`❌ Failed to get EVM balance: ${error.message}`, 'error');
+            }
+        }
+
+        // Get Cosmos balance (simulated)
+        async function getCosmosBalance() {
+            if (!isConnected || !metamaskConnection) return;
+
+            try {
+                log('🔄 Getting Cosmos balance...', 'info');
+                
+                // This would normally query the Cosmos RPC
+                // For now, we'll simulate it
+                const cosmosBalance = '0.000000'; // Placeholder
+                
+                document.getElementById('cosmosBalance').textContent = `${cosmosBalance} SEI`;
+                log(`🌌 Cosmos Balance: ${cosmosBalance} SEI (simulated)`, 'info');
+
+            } catch (error) {
+                log(`❌ Failed to get Cosmos balance: ${error.message}`, 'error');
+            }
+        }
+
+        // Send EVM transaction
+        async function sendEvmTransaction() {
+            if (!isConnected || !metamaskConnection) return;
+
+            const recipient = document.getElementById('evmRecipient').value;
+            const amount = document.getElementById('evmAmount').value;
+
+            if (!recipient || !amount) {
+                log('❌ Please enter recipient address and amount', 'error');
+                return;
+            }
+
+            try {
+                log(`🔄 Sending ${amount} SEI to ${recipient}...`, 'info');
+
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: metamaskConnection.evmAddress,
+                        to: recipient,
+                        value: `0x${BigInt(Math.floor(parseFloat(amount) * Math.pow(10, 18))).toString(16)}`,
+                    }],
+                });
+
+                log(`✅ EVM Transaction sent! Hash: ${txHash}`, 'success');
+                log(`🔗 View on explorer: https://seitrace.com/tx/${txHash}`, 'info');
+
+                // Refresh balance after transaction
+                setTimeout(getEvmBalance, 2000);
+
+            } catch (error) {
+                log(`❌ EVM Transaction failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Send Cosmos transaction (simulated)
+        async function sendCosmosTransaction() {
+            if (!isConnected || !metamaskConnection) return;
+
+            const recipient = document.getElementById('cosmosRecipient').value;
+            const amount = document.getElementById('cosmosAmount').value;
+
+            if (!recipient || !amount) {
+                log('❌ Please enter recipient address and amount', 'error');
+                return;
+            }
+
+            try {
+                log(`🔄 Sending ${amount} SEI to ${recipient} (Cosmos)...`, 'info');
+                
+                // This would normally use CosmJS to send a Cosmos transaction
+                // For now, we'll simulate it
+                log('🌌 Cosmos transaction would be sent here (not implemented in this test)', 'warning');
+                log(`📝 From: ${metamaskConnection.cosmosAddress}`, 'info');
+                log(`📝 To: ${recipient}`, 'info');
+                log(`📝 Amount: ${amount} SEI`, 'info');
+
+            } catch (error) {
+                log(`❌ Cosmos Transaction failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Update network information
+        async function updateNetworkInfo() {
+            try {
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                document.getElementById('evmChainId').textContent = chainId;
+                document.getElementById('currentNetwork').textContent = 
+                    chainId === SEI_CONFIG.evmChainId ? 'Sei Testnet EVM' : 'Other Network';
+                
+                document.getElementById('evmRpc').textContent = SEI_CONFIG.evmRpcUrl;
+            } catch (error) {
+                log(`❌ Failed to get network info: ${error.message}`, 'error');
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            metamaskConnection = null;
+            isConnected = false;
+            
+            document.getElementById('evmAddress').textContent = 'Not connected';
+            document.getElementById('cosmosAddress').textContent = 'Not connected';
+            document.getElementById('evmBalance').textContent = '0 SEI';
+            document.getElementById('cosmosBalance').textContent = '0 SEI';
+            
+            updateConnectionStatus('Disconnected', 'info');
+            updateButtons(false);
+            
+            log('👋 Wallet disconnected', 'info');
+        }
+
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    log('🔄 Account disconnected', 'warning');
+                    disconnectWallet();
+                } else if (isConnected && accounts[0] !== metamaskConnection?.evmAddress) {
+                    log('🔄 Account changed, reconnecting...', 'info');
+                    connectMetaMask();
+                }
+            });
+
+            window.ethereum.on('chainChanged', (chainId) => {
+                log(`🔄 Network changed to: ${chainId}`, 'info');
+                updateNetworkInfo();
+                if (chainId !== SEI_CONFIG.evmChainId) {
+                    log('⚠️ Please switch back to Sei Network', 'warning');
+                }
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            checkMetaMask();
+            updateButtons(false);
+        });
+    </script>
+</body>
+</html>
