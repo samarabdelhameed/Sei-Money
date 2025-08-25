@@ -67,22 +67,22 @@ while true; do
     echo "🎯 SeiMoney Contract Interaction Menu:"
     echo "1. Show contract settings"
     echo "2. Search transfer by ID"
-    echo "3. عرض التحويلات المرسلة"
-    echo "4. عرض التحويلات المستلمة"
-    echo "5. إنشاء تحويل جديد"
-    echo "6. استلام تحويل"
-    echo "7. استرداد تحويل"
-    echo "8. فحص الرصيد"
-    echo "9. خروج"
+    echo "3. Show sent transfers"
+    echo "4. Show received transfers"
+    echo "5. Create new transfer"
+    echo "6. Claim transfer"
+    echo "7. Refund transfer"
+    echo "8. Check balance"
+    echo "9. Exit"
     echo ""
-    read -p "اختر خيار (1-9): " choice
+    read -p "Choose option (1-9): " choice
 
     case $choice in
         1)
             query_contract '{"config":{}}'
             ;;
         2)
-            read -p "أدخل رقم التحويل: " transfer_id
+            read -p "Enter transfer ID: " transfer_id
             query_contract '{"get_transfer":{"id":'$transfer_id'}}'
             ;;
         3)
@@ -92,22 +92,22 @@ while true; do
             query_contract '{"list_by_recipient":{"recipient":"'$WALLET_ADDRESS'","start_after":null,"limit":10}}'
             ;;
         5)
-            read -p "أدخل عنوان المستلم: " recipient
-            read -p "أدخل المبلغ (بـ usei): " amount
-            read -p "أدخل ساعات انتهاء الصلاحية: " hours
-            read -p "أدخل ملاحظة (اختياري): " remark
+            read -p "Enter recipient address: " recipient
+            read -p "Enter amount (in usei): " amount
+            read -p "Enter expiry hours: " hours
+            read -p "Enter remark (optional): " remark
             
             expiry=$(($(date +%s) + $hours * 3600))
             exec_msg='{"create_transfer":{"recipient":"'$recipient'","remark":"'$remark'","expiry_ts":'$expiry'}}'
             execute_contract "$exec_msg" "${amount}usei"
             ;;
         6)
-            read -p "أدخل رقم التحويل للاستلام: " transfer_id
+            read -p "Enter transfer ID to claim: " transfer_id
             exec_msg='{"claim_transfer":{"id":'$transfer_id'}}'
             execute_contract "$exec_msg" ""
             ;;
         7)
-            read -p "أدخل رقم التحويل للاسترداد: " transfer_id
+            read -p "Enter transfer ID to refund: " transfer_id
             exec_msg='{"refund_transfer":{"id":'$transfer_id'}}'
             execute_contract "$exec_msg" ""
             ;;
@@ -115,11 +115,11 @@ while true; do
             ./scripts/check-balance.sh
             ;;
         9)
-            echo "👋 وداعاً!"
+            echo "👋 Goodbye!"
             exit 0
             ;;
         *)
-            echo "❌ خيار غير صحيح. حاول مرة أخرى."
+            echo "❌ Invalid option. Try again."
             ;;
     esac
 done

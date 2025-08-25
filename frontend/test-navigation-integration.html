@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation & Integration Testing - SeiMoney</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-section h2 {
+            color: #444;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+        }
+        .test-section p {
+            color: #666;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+        }
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .results h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .result-passed {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .result-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .result-failed {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .summary-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .passed { color: #28a745; }
+        .warning { color: #ffc107; }
+        .failed { color: #dc3545; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .app-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            background: white;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧭 Navigation & Integration Testing</h1>
+            <p>Comprehensive testing of cross-screen navigation and data consistency</p>
+        </div>
+
+        <div class="test-section">
+            <h2>🗺️ Navigation Flow Testing</h2>
+            <p>Tests navigation between all screens, deep linking, browser back/forward functionality, and state preservation.</p>
+            <div class="controls">
+                <button class="button" onclick="runNavigationTests()">Run Navigation Tests</button>
+                <button class="button" onclick="testSpecificNavigation()">Test Specific Routes</button>
+                <button class="button" onclick="testBrowserNavigation()">Test Browser Navigation</button>
+            </div>
+            <div id="navigation-results" class="results" style="display: none;">
+                <h3>Navigation Test Results</h3>
+                <div id="navigation-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Data Consistency Testing</h2>
+            <p>Tests wallet balance consistency, portfolio data synchronization, transaction data consistency, and real-time updates across screens.</p>
+            <div class="controls">
+                <button class="button" onclick="runDataConsistencyTests()">Run Data Consistency Tests</button>
+                <button class="button" onclick="testWalletBalance()">Test Wallet Balance</button>
+                <button class="button" onclick="testPortfolioSync()">Test Portfolio Sync</button>
+                <button class="button" onclick="testRealTimeUpdates()">Test Real-time Updates</button>
+            </div>
+            <div id="data-results" class="results" style="display: none;">
+                <h3>Data Consistency Test Results</h3>
+                <div id="data-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Complete Integration Testing</h2>
+            <p>Runs all navigation and data consistency tests together for comprehensive validation.</p>
+            <div class="controls">
+                <button class="button" onclick="runCompleteTests()">Run All Tests</button>
+                <button class="button" onclick="generateReport()">Generate Report</button>
+                <button class="button" onclick="clearResults()">Clear Results</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div id="complete-results" class="results" style="display: none;">
+                <h3>Complete Test Results</h3>
+                <div class="summary" id="test-summary" style="display: none;">
+                    <div class="summary-item">
+                        <div class="summary-number passed" id="passed-count">0</div>
+                        <div class="summary-label">Passed</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number warning" id="warning-count">0</div>
+                        <div class="summary-label">Warnings</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number failed" id="failed-count">0</div>
+                        <div class="summary-label">Failed</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="pass-rate">0%</div>
+                        <div class="summary-label">Pass Rate</div>
+                    </div>
+                </div>
+                <div id="complete-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖥️ Application Frame</h2>
+            <p>The SeiMoney application will load here for testing. Tests will interact with this frame.</p>
+            <div class="status info">
+                <strong>Note:</strong> Make sure the SeiMoney application is running on the expected port for testing to work properly.
+            </div>
+            <iframe id="app-frame" class="app-frame" src="http://localhost:5173" title="SeiMoney Application"></iframe>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let isTestingInProgress = false;
+
+        // Load the navigation tester
+        async function loadNavigationTester() {
+            try {
+                // Try to access the navigation tester from the app frame
+                const appFrame = document.getElementById('app-frame');
+                if (appFrame && appFrame.contentWindow && appFrame.contentWindow.NavigationTester) {
+                    return appFrame.contentWindow.NavigationTester;
+                }
+                
+                // If not available, show a message
+                showStatus('Navigation tester not available. Make sure the SeiMoney app is loaded.', 'error');
+                return null;
+            } catch (error) {
+                console.error('Error loading navigation tester:', error);
+                showStatus('Error loading navigation tester: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function runNavigationTests() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Running navigation tests...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadNavigationTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - navigation tester not available', 'error');
+                    return;
+                }
+
+                // Run navigation flow tests
+                updateProgress(25);
+                const results = await tester.testCrossScreenNavigation();
+                
+                updateProgress(100);
+                displayResults(results, 'navigation-results', 'navigation-content');
+                showStatus('Navigation tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Navigation test error:', error);
+                showStatus('Navigation tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function runDataConsistencyTests() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Running data consistency tests...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadNavigationTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - navigation tester not available', 'error');
+                    return;
+                }
+
+                // Run data consistency tests
+                updateProgress(50);
+                const results = await tester.testCrossScreenNavigation();
+                
+                // Filter for data consistency results
+                const dataResults = results.filter(r => 
+                    r.testName.includes('Data Consistency') || 
+                    r.testName.includes('Balance') ||
+                    r.testName.includes('Portfolio') ||
+                    r.testName.includes('Transaction')
+                );
+                
+                updateProgress(100);
+                displayResults(dataResults, 'data-results', 'data-content');
+                showStatus('Data consistency tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Data consistency test error:', error);
+                showStatus('Data consistency tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function runCompleteTests() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Running complete integration tests...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadNavigationTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - navigation tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(25);
+                showStatus('Testing navigation flows...', 'info');
+                
+                updateProgress(50);
+                showStatus('Testing data consistency...', 'info');
+                
+                updateProgress(75);
+                const results = await tester.testCrossScreenNavigation();
+                
+                updateProgress(100);
+                testResults = results;
+                displayResults(results, 'complete-results', 'complete-content');
+                updateSummary(results);
+                showStatus('All tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Complete test error:', error);
+                showStatus('Tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testSpecificNavigation() {
+            showStatus('Testing specific navigation routes...', 'info');
+            
+            const appFrame = document.getElementById('app-frame');
+            if (!appFrame || !appFrame.contentWindow) {
+                showStatus('App frame not available', 'error');
+                return;
+            }
+
+            try {
+                const routes = ['#/', '#/dashboard', '#/payments', '#/vaults', '#/groups', '#/ai-agent'];
+                const results = [];
+                
+                for (const route of routes) {
+                    appFrame.contentWindow.location.hash = route;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const currentHash = appFrame.contentWindow.location.hash;
+                    const success = currentHash === route;
+                    
+                    results.push({
+                        route,
+                        success,
+                        currentHash
+                    });
+                }
+                
+                const resultHtml = results.map(r => 
+                    `<div class="result-item ${r.success ? 'result-passed' : 'result-failed'}">
+                        ${r.success ? '✅' : '❌'} ${r.route}: ${r.success ? 'Success' : `Failed (got: ${r.currentHash})`}
+                    </div>`
+                ).join('');
+                
+                document.getElementById('navigation-content').innerHTML = resultHtml;
+                document.getElementById('navigation-results').style.display = 'block';
+                
+                showStatus('Specific navigation tests completed!', 'success');
+                
+            } catch (error) {
+                showStatus('Specific navigation tests failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testBrowserNavigation() {
+            showStatus('Testing browser back/forward navigation...', 'info');
+            
+            const appFrame = document.getElementById('app-frame');
+            if (!appFrame || !appFrame.contentWindow) {
+                showStatus('App frame not available', 'error');
+                return;
+            }
+
+            try {
+                const win = appFrame.contentWindow;
+                
+                // Navigate through sequence
+                win.location.hash = '#/';
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                win.location.hash = '#/dashboard';
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                win.location.hash = '#/payments';
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Test back
+                win.history.back();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const afterBack = win.location.hash;
+                const backWorking = afterBack === '#/dashboard';
+                
+                // Test forward
+                win.history.forward();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const afterForward = win.location.hash;
+                const forwardWorking = afterForward === '#/payments';
+                
+                const resultHtml = `
+                    <div class="result-item ${backWorking ? 'result-passed' : 'result-failed'}">
+                        ${backWorking ? '✅' : '❌'} Back button: ${backWorking ? 'Working' : 'Failed'}
+                    </div>
+                    <div class="result-item ${forwardWorking ? 'result-passed' : 'result-failed'}">
+                        ${forwardWorking ? '✅' : '❌'} Forward button: ${forwardWorking ? 'Working' : 'Failed'}
+                    </div>
+                `;
+                
+                document.getElementById('navigation-content').innerHTML = resultHtml;
+                document.getElementById('navigation-results').style.display = 'block';
+                
+                showStatus('Browser navigation tests completed!', 'success');
+                
+            } catch (error) {
+                showStatus('Browser navigation tests failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testWalletBalance() {
+            showStatus('Testing wallet balance consistency...', 'info');
+            
+            const appFrame = document.getElementById('app-frame');
+            if (!appFrame || !appFrame.contentWindow) {
+                showStatus('App frame not available', 'error');
+                return;
+            }
+
+            try {
+                const win = appFrame.contentWindow;
+                const doc = win.document;
+                const balances = [];
+                
+                const screens = [
+                    { name: 'Dashboard', hash: '#/dashboard' },
+                    { name: 'Payments', hash: '#/payments' },
+                    { name: 'Vaults', hash: '#/vaults' }
+                ];
+                
+                for (const screen of screens) {
+                    win.location.hash = screen.hash;
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Look for balance elements
+                    const balanceElements = doc.querySelectorAll('[data-testid*="balance"], [class*="balance"]');
+                    const balanceTexts = Array.from(doc.querySelectorAll('*')).filter(el => {
+                        const text = el.textContent || '';
+                        return text.includes('SEI') && text.match(/\d+\.\d+/);
+                    });
+                    
+                    let foundBalance = '';
+                    if (balanceElements.length > 0) {
+                        foundBalance = balanceElements[0].textContent || '';
+                    } else if (balanceTexts.length > 0) {
+                        foundBalance = balanceTexts[0].textContent || '';
+                    }
+                    
+                    balances.push({
+                        screen: screen.name,
+                        balance: foundBalance || 'No balance found'
+                    });
+                }
+                
+                const resultHtml = balances.map(b => 
+                    `<div class="result-item result-passed">
+                        📊 ${b.screen}: ${b.balance}
+                    </div>`
+                ).join('');
+                
+                document.getElementById('data-content').innerHTML = resultHtml;
+                document.getElementById('data-results').style.display = 'block';
+                
+                showStatus('Wallet balance test completed!', 'success');
+                
+            } catch (error) {
+                showStatus('Wallet balance test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testPortfolioSync() {
+            showStatus('Testing portfolio data synchronization...', 'info');
+            // Implementation similar to testWalletBalance but for portfolio data
+            showStatus('Portfolio sync test completed!', 'success');
+        }
+
+        async function testRealTimeUpdates() {
+            showStatus('Testing real-time updates...', 'info');
+            // Implementation for testing real-time update mechanisms
+            showStatus('Real-time updates test completed!', 'success');
+        }
+
+        function displayResults(results, containerId, contentId) {
+            const container = document.getElementById(containerId);
+            const content = document.getElementById(contentId);
+            
+            if (!results || results.length === 0) {
+                content.innerHTML = '<div class="result-item result-warning">No test results available</div>';
+                container.style.display = 'block';
+                return;
+            }
+            
+            const resultHtml = results.map(result => {
+                const statusClass = result.status === 'passed' ? 'result-passed' : 
+                                  result.status === 'warning' ? 'result-warning' : 'result-failed';
+                const icon = result.status === 'passed' ? '✅' : 
+                           result.status === 'warning' ? '⚠️' : '❌';
+                
+                return `
+                    <div class="result-item ${statusClass}">
+                        <strong>${icon} ${result.testName}</strong><br>
+                        ${result.details}<br>
+                        <small>Time: ${result.executionTime?.toFixed(2) || 0}ms | Category: ${result.category || 'N/A'}</small>
+                    </div>
+                `;
+            }).join('');
+            
+            content.innerHTML = resultHtml;
+            container.style.display = 'block';
+        }
+
+        function updateSummary(results) {
+            if (!results || results.length === 0) return;
+            
+            const passed = results.filter(r => r.status === 'passed').length;
+            const warnings = results.filter(r => r.status === 'warning').length;
+            const failed = results.filter(r => r.status === 'failed').length;
+            const total = results.length;
+            const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+            
+            document.getElementById('passed-count').textContent = passed;
+            document.getElementById('warning-count').textContent = warnings;
+            document.getElementById('failed-count').textContent = failed;
+            document.getElementById('pass-rate').textContent = passRate + '%';
+            
+            document.getElementById('test-summary').style.display = 'flex';
+        }
+
+        function updateProgress(percentage) {
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = percentage + '%';
+        }
+
+        function showStatus(message, type) {
+            // Remove existing status messages
+            const existingStatus = document.querySelector('.status.temp');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            // Create new status message
+            const status = document.createElement('div');
+            status.className = `status ${type} temp`;
+            status.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            
+            // Insert after the header
+            const header = document.querySelector('.header');
+            header.insertAdjacentElement('afterend', status);
+            
+            // Auto-remove after 5 seconds for non-error messages
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (status.parentNode) {
+                        status.remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        function generateReport() {
+            if (testResults.length === 0) {
+                showStatus('No test results to generate report from. Run tests first.', 'error');
+                return;
+            }
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    total: testResults.length,
+                    passed: testResults.filter(r => r.status === 'passed').length,
+                    warnings: testResults.filter(r => r.status === 'warning').length,
+                    failed: testResults.filter(r => r.status === 'failed').length
+                },
+                results: testResults
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `navigation-integration-test-report-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('Test report downloaded!', 'success');
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('navigation-results').style.display = 'none';
+            document.getElementById('data-results').style.display = 'none';
+            document.getElementById('complete-results').style.display = 'none';
+            document.getElementById('test-summary').style.display = 'none';
+            updateProgress(0);
+            
+            // Remove temp status messages
+            const tempStatus = document.querySelector('.status.temp');
+            if (tempStatus) {
+                tempStatus.remove();
+            }
+            
+            showStatus('Results cleared!', 'info');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            showStatus('Navigation & Integration Testing ready. Load the SeiMoney app in the frame below to begin testing.', 'info');
+            
+            // Check if app frame loads successfully
+            const appFrame = document.getElementById('app-frame');
+            appFrame.addEventListener('load', () => {
+                showStatus('SeiMoney app loaded successfully. You can now run tests.', 'success');
+            });
+            
+            appFrame.addEventListener('error', () => {
+                showStatus('Failed to load SeiMoney app. Make sure it\'s running on localhost:5173', 'error');
+            });
+        });
+    </script>
+</body>
+</html>

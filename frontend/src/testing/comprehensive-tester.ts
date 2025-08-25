@@ -3,6 +3,10 @@
 import { TestResult, TestSuite, TestStatus, TestCategory, EnvironmentInfo, TestSummary } from './types';
 import { testUtils } from './test-utilities';
 import { DEFAULT_TEST_CONFIG } from './test-config';
+import { screenValidators } from './screen-validators';
+import { screenValidators } from './screen-validators';
+import { screenValidators } from './screen-validators';
+import { screenValidators } from './screen-validators';
 
 export class ComprehensiveTester {
   private testSuite: TestSuite;
@@ -54,6 +58,10 @@ export class ComprehensiveTester {
       // Phase 5: Error Handling Tests
       console.log('🛡️ Phase 5: Error Handling Tests');
       await this.runErrorHandlingTests();
+
+      // Phase 6: Cross-Browser and Device Compatibility Tests
+      console.log('🌐 Phase 6: Cross-Browser and Device Compatibility Tests');
+      await this.runCompatibilityTests();
 
     } catch (error) {
       console.error('❌ Comprehensive testing failed:', error);
@@ -140,65 +148,81 @@ export class ComprehensiveTester {
 
   // Phase 3: Cross-Screen Navigation Tests
   private async runNavigationTests(): Promise<void> {
-    const navigationTests = [
-      { from: 'Home', to: 'Dashboard', trigger: '[data-testid="get-started-btn"]' },
-      { from: 'Dashboard', to: 'Payments', trigger: '[data-testid="new-transfer-btn"]' },
-      { from: 'Home', to: 'Help', trigger: '[data-testid="learn-more-btn"]' }
-    ];
-
-    for (const navTest of navigationTests) {
-      try {
-        console.log(`  🧭 Testing navigation: ${navTest.from} → ${navTest.to}`);
-        
-        const result = await this.testNavigation(navTest.from, navTest.to, navTest.trigger);
-        this.testSuite.tests.push(result);
-        
-      } catch (error) {
-        console.error(`    ❌ Navigation test failed: ${navTest.from} → ${navTest.to}`, error);
-        this.testSuite.tests.push(testUtils.handleTestError(error as Error, `Navigation: ${navTest.from} → ${navTest.to}`));
-      }
+    try {
+      console.log('  🧭 Running comprehensive navigation tests...');
+      
+      // Import and use the NavigationTester
+      const { navigationTester } = await import('./navigation-tester');
+      const navigationResults = await navigationTester.testCrossScreenNavigation();
+      
+      // Add all navigation test results to the test suite
+      this.testSuite.tests.push(...navigationResults);
+      
+      console.log(`  ✅ Navigation tests completed: ${navigationResults.length} tests run`);
+      
+    } catch (error) {
+      console.error('    ❌ Navigation testing failed:', error);
+      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Cross-Screen Navigation Tests'));
     }
   }
 
   // Phase 4: Performance Tests
   private async runPerformanceTests(): Promise<void> {
     try {
-      console.log('  ⚡ Testing page load performance...');
-      const loadTimeResult = await this.testPageLoadPerformance();
-      this.testSuite.tests.push(loadTimeResult);
-
-      console.log('  📊 Testing memory usage...');
-      const memoryResult = await this.testMemoryUsage();
-      this.testSuite.tests.push(memoryResult);
-
-      console.log('  🌐 Testing API response times...');
-      const apiPerformanceResult = await this.testAPIPerformance();
-      this.testSuite.tests.push(apiPerformanceResult);
-
+      console.log('  ⚡ Running comprehensive performance and load tests...');
+      
+      // Import and use the PerformanceLoadTester
+      const { performanceLoadTester } = await import('./performance-load-tester');
+      const performanceResults = await performanceLoadTester.testPerformanceAndLoad();
+      
+      // Add all performance test results to the test suite
+      this.testSuite.tests.push(...performanceResults);
+      
+      console.log(`  ✅ Performance tests completed: ${performanceResults.length} tests run`);
+      
     } catch (error) {
       console.error('    ❌ Performance testing failed:', error);
-      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Performance Tests'));
+      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Performance and Load Tests'));
     }
   }
 
   // Phase 5: Error Handling Tests
   private async runErrorHandlingTests(): Promise<void> {
     try {
-      console.log('  🛡️ Testing network error handling...');
-      const networkErrorResult = await this.testNetworkErrorHandling();
-      this.testSuite.tests.push(networkErrorResult);
-
-      console.log('  🔒 Testing wallet error handling...');
-      const walletErrorResult = await this.testWalletErrorHandling();
-      this.testSuite.tests.push(walletErrorResult);
-
-      console.log('  📝 Testing form validation errors...');
-      const formErrorResult = await this.testFormValidationErrors();
-      this.testSuite.tests.push(formErrorResult);
-
+      console.log('  🛡️ Running comprehensive error handling tests...');
+      
+      // Import and use the ErrorEdgeCaseTester
+      const { errorEdgeCaseTester } = await import('./error-edge-case-tester');
+      const errorResults = await errorEdgeCaseTester.testErrorHandlingAndEdgeCases();
+      
+      // Add all error handling test results to the test suite
+      this.testSuite.tests.push(...errorResults);
+      
+      console.log(`  ✅ Error handling tests completed: ${errorResults.length} tests run`);
+      
     } catch (error) {
       console.error('    ❌ Error handling testing failed:', error);
-      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Error Handling Tests'));
+      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Error Handling and Edge Case Tests'));
+    }
+  }
+
+  // Phase 6: Cross-Browser and Device Compatibility Tests
+  private async runCompatibilityTests(): Promise<void> {
+    try {
+      console.log('  🌐 Running comprehensive cross-browser and device compatibility tests...');
+      
+      // Import and use the CrossBrowserDeviceTester
+      const { crossBrowserDeviceTester } = await import('./cross-browser-device-tester');
+      const compatibilityResults = await crossBrowserDeviceTester.testCrossBrowserDeviceCompatibility();
+      
+      // Add all compatibility test results to the test suite
+      this.testSuite.tests.push(...compatibilityResults);
+      
+      console.log(`  ✅ Compatibility tests completed: ${compatibilityResults.length} tests run`);
+      
+    } catch (error) {
+      console.error('    ❌ Compatibility testing failed:', error);
+      this.testSuite.tests.push(testUtils.handleTestError(error as Error, 'Cross-Browser and Device Compatibility Tests'));
     }
   }
 

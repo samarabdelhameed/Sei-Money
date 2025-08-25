@@ -1,31 +1,33 @@
-# 🤖 وكلاء SeiMoney MCP الذكيين
+# 🤖 SeiMoney MCP Smart Agents
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Sei Network](https://img.shields.io/badge/Sei-Network-red.svg)](https://sei.io/)
 
-> **وكلاء ذكاء اصطناعي على مستوى المؤسسات مع تكامل بروتوكول Model Context Protocol (MCP) لعمليات DeFi الآلية على شبكة Sei**
+> **Enterprise-level AI agents with Model Context Protocol (MCP) integration for automated DeFi operations on Sei network**
 
-## 🏆 **حالة النظام: نشط ويعمل بكامل طاقته** ✅
+## 🏆 **System Status: Active and Operating at Full Capacity** ✅
 
-### **📊 نتائج الاختبار الأخيرة**
+### **📊 Latest Test Results**
+
 ```
-📊 نتائج الاختبار: 11 نجح، 0 فشل
-🎉 جميع الاختبارات نجحت! وكلاء MCP يعملون بشكل صحيح.
+📊 Test Results: 11 passed, 0 failed
+🎉 All tests passed! MCP agents working correctly.
 
-✅ فحوصات الصحة: 4/4 وكلاء متصلون
-✅ تسجيل المخاطر: متوسط وقت الاستجابة 30ms
-✅ تخطيط الجدولة: متوسط وقت الاستجابة 45ms  
-✅ تخطيط إعادة التوازن: متوسط وقت الاستجابة 78ms
-✅ أدوات MCP: 4/4 أدوات تعمل
+✅ Health Checks: 4/4 agents connected
+✅ Risk Logging: Average response time 30ms
+✅ Scheduling Planning: Average response time 45ms
+✅ Rebalancing Planning: Average response time 78ms
+✅ MCP Tools: 4/4 tools working
 ```
 
-### **🎯 الوكلاء النشطون**
-- **🛡️ وكيل المخاطر** - تقييم مخاطر المعاملات في الوقت الفعلي
-- **⏰ وكيل الجدولة** - تحسين توقيت التنفيذ لكفاءة الغاز
-- **📈 وكيل إعادة التوازن** - تحسين المحفظة مع استراتيجيات متعددة
-- **🧰 خادم MCP** - تكامل الأدوات الخارجية والمراقبة
+### **🎯 Active Agents**
+
+- **🛡️ Risk Agent** - Real-time transaction risk assessment
+- **⏰ Scheduler Agent** - Execution timing optimization for gas efficiency
+- **📈 Rebalancer Agent** - Portfolio optimization with multiple strategies
+- **🧰 MCP Server** - External tool integration and monitoring
 
 ## 🏗️ System Architecture
 
@@ -37,30 +39,30 @@ graph TB
         SCHED[⏰ Scheduler Agent<br/>Port 7002]
         REBAL[📈 Rebalancer Agent<br/>Port 7003]
     end
-    
+
     subgraph "External Systems"
         SEI[Sei Network]
         ORACLES[Price Oracles]
         INDEXER[Blockchain Indexer]
     end
-    
+
     subgraph "Core Services"
         API[API Gateway]
         CONTRACTS[Smart Contracts]
     end
-    
+
     MCP --> RISK
     MCP --> SCHED
     MCP --> REBAL
-    
+
     RISK --> SEI
     SCHED --> SEI
     REBAL --> SEI
-    
+
     RISK --> ORACLES
     SCHED --> ORACLES
     REBAL --> ORACLES
-    
+
     MCP --> API
     API --> CONTRACTS
     CONTRACTS --> SEI
@@ -68,16 +70,17 @@ graph TB
 
 ### 🧩 Agent Components
 
-| Agent | Purpose | Key Features | Port |
-|-------|---------|--------------|------|
-| **🛡️ Risk Agent** | Transaction risk assessment | Real-time scoring, fraud detection, compliance | 7001 |
-| **⏰ Scheduler Agent** | Gas-optimized execution timing | MEV protection, cost optimization, queue management | 7002 |
-| **📈 Rebalancer Agent** | Portfolio optimization | Multi-model strategies, risk-adjusted returns | 7003 |
-| **🧰 MCP Server** | External tool integration | Wallet monitoring, analytics, simulations | 7100 |
+| Agent                   | Purpose                        | Key Features                                        | Port |
+| ----------------------- | ------------------------------ | --------------------------------------------------- | ---- |
+| **🛡️ Risk Agent**       | Transaction risk assessment    | Real-time scoring, fraud detection, compliance      | 7001 |
+| **⏰ Scheduler Agent**  | Gas-optimized execution timing | MEV protection, cost optimization, queue management | 7002 |
+| **📈 Rebalancer Agent** | Portfolio optimization         | Multi-model strategies, risk-adjusted returns       | 7003 |
+| **🧰 MCP Server**       | External tool integration      | Wallet monitoring, analytics, simulations           | 7100 |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm package manager
 - Sei Network access
@@ -106,7 +109,7 @@ pnpm run dev:all
 
 # Or start individual agents
 pnpm --filter risk-agent dev
-pnpm --filter scheduler-agent dev  
+pnpm --filter scheduler-agent dev
 pnpm --filter rebalancer-agent dev
 pnpm --filter mcp-server dev
 ```
@@ -154,91 +157,100 @@ AGENT_API_KEY=your-agent-api-key
 
 ### Agent Ports & Health Checks
 
-| Service | URL | Health Check |
-|---------|-----|--------------|
-| Risk Agent | `http://localhost:7001` | `GET /health` |
-| Scheduler Agent | `http://localhost:7002` | `GET /health` |
+| Service          | URL                     | Health Check  |
+| ---------------- | ----------------------- | ------------- |
+| Risk Agent       | `http://localhost:7001` | `GET /health` |
+| Scheduler Agent  | `http://localhost:7002` | `GET /health` |
 | Rebalancer Agent | `http://localhost:7003` | `GET /health` |
-| MCP Server | `http://localhost:7100` | `GET /health` |
+| MCP Server       | `http://localhost:7100` | `GET /health` |
 
 ## 🛠️ MCP Tools Reference
 
 ### Available Tools
 
 #### 📊 `watchWallet(address)`
+
 Monitor real-time wallet activity and transaction patterns.
 
 ```typescript
 // Example usage
-const result = await mcpClient.call('watchWallet', {
-  address: 'sei1abc123...'
+const result = await mcpClient.call("watchWallet", {
+  address: "sei1abc123...",
 });
 ```
 
 #### 🪙 `trackMemeCoin(denom, timeframe?)`
+
 Track meme coin price movements, flows, and holder analytics.
 
 ```typescript
-const memeData = await mcpClient.call('trackMemeCoin', {
-  denom: 'factory/sei1.../DOGE',
-  timeframe: '24h'
+const memeData = await mcpClient.call("trackMemeCoin", {
+  denom: "factory/sei1.../DOGE",
+  timeframe: "24h",
 });
 ```
 
 #### 🖼️ `trackNftLifetime(collection, includeMetadata?)`
+
 Comprehensive NFT collection lifecycle analytics.
 
 ```typescript
-const nftAnalytics = await mcpClient.call('trackNftLifetime', {
-  collection: 'sei-punks',
-  includeMetadata: true
+const nftAnalytics = await mcpClient.call("trackNftLifetime", {
+  collection: "sei-punks",
+  includeMetadata: true,
 });
 ```
 
 #### ⚖️ `rebalanceWhatIf(signals, model?)`
+
 Portfolio rebalancing simulation with multiple optimization models.
 
 ```typescript
-const simulation = await mcpClient.call('rebalanceWhatIf', {
+const simulation = await mcpClient.call("rebalanceWhatIf", {
   signals: {
     prices: { SEI: 0.45, USDC: 1.0 },
     apr: { Staking: 0.12, Lending: 0.08, LP: 0.15 },
-    risk: 40
+    risk: 40,
   },
-  model: 'bandit'
+  model: "bandit",
 });
 ```
 
 ## 📈 Performance Metrics
 
 ### Test Results (Latest Run)
+
 ```
 📊 Test Results: 11 passed, 0 failed
 🎉 All tests passed! MCP Agents are working correctly.
 
 ✅ Health Checks: 4/4 agents online
 ✅ Risk Scoring: 30ms average response time
-✅ Schedule Planning: 45ms average response time  
+✅ Schedule Planning: 45ms average response time
 ✅ Rebalance Planning: 78ms average response time
 ✅ MCP Tools: 4/4 tools functional
 ```
 
 ### Optimization Models Performance
 
-| Model | Confidence | Risk Score | Projected APR | Use Case |
-|-------|------------|------------|---------------|----------|
-| **Markowitz** | 75% | 38 | 12.37% | Risk-adjusted optimization |
-| **Bandit** | 75% | 38 | 12.37% | Multi-armed exploration |
-| **RL** | 55% | 35 | Variable | Reinforcement learning |
+| Model         | Confidence | Risk Score | Projected APR | Use Case                   |
+| ------------- | ---------- | ---------- | ------------- | -------------------------- |
+| **Markowitz** | 75%        | 38         | 12.37%        | Risk-adjusted optimization |
+| **Bandit**    | 75%        | 38         | 12.37%        | Multi-armed exploration    |
+| **RL**        | 55%        | 35         | Variable      | Reinforcement learning     |
+
 #
+
 # 🔧 API Reference
 
 ### Risk Agent Endpoints
 
 #### `POST /risk/score`
+
 Evaluate transaction risk in real-time.
 
 **Request:**
+
 ```json
 {
   "from": "sei1abc123...",
@@ -250,6 +262,7 @@ Evaluate transaction risk in real-time.
 ```
 
 **Response:**
+
 ```json
 {
   "score": 30,
@@ -261,9 +274,11 @@ Evaluate transaction risk in real-time.
 ### Scheduler Agent Endpoints
 
 #### `POST /schedule/plan`
+
 Optimize transaction timing for gas efficiency.
 
 **Request:**
+
 ```json
 {
   "action": "harvest",
@@ -274,6 +289,7 @@ Optimize transaction timing for gas efficiency.
 ```
 
 **Response:**
+
 ```json
 {
   "request": { "action": "harvest", "targetId": 123 },
@@ -285,9 +301,11 @@ Optimize transaction timing for gas efficiency.
 ### Rebalancer Agent Endpoints
 
 #### `POST /rebalance/plan`
+
 Generate portfolio optimization strategies.
 
 **Request:**
+
 ```json
 {
   "vaultId": 456,
@@ -301,6 +319,7 @@ Generate portfolio optimization strategies.
 ```
 
 **Response:**
+
 ```json
 {
   "plan": {
@@ -320,16 +339,19 @@ Generate portfolio optimization strategies.
 ## 🏛️ Architecture Patterns
 
 ### Event-Driven Design
+
 - Asynchronous message processing
 - Real-time data streaming
 - Event sourcing for audit trails
 
 ### Microservices Architecture
+
 - Independent agent deployment
 - Service mesh communication
 - Horizontal scaling capabilities
 
 ### Risk Management
+
 - Multi-layer validation
 - Circuit breaker patterns
 - Graceful degradation
@@ -345,14 +367,18 @@ Generate portfolio optimization strategies.
 ## 📊 Monitoring & Observability
 
 ### Health Monitoring
+
 All agents expose `/health` endpoints with:
+
 - Service status
 - Uptime metrics
 - Resource utilization
 - Dependency health
 
 ### Logging
+
 Structured JSON logging with:
+
 - Request/response tracking
 - Performance metrics
 - Error categorization
@@ -361,6 +387,7 @@ Structured JSON logging with:
 ## 🚀 Deployment
 
 ### Docker Deployment
+
 ```bash
 # Build all agents
 docker-compose build
@@ -373,6 +400,7 @@ docker-compose up --scale rebalancer-agent=3
 ```
 
 ### Production Considerations
+
 - Load balancing across agent instances
 - Database connection pooling
 - Redis caching for frequently accessed data
@@ -388,6 +416,7 @@ docker-compose up --scale rebalancer-agent=3
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow TypeScript best practices
 - Maintain test coverage above 80%
 - Use conventional commit messages

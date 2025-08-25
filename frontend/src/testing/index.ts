@@ -9,6 +9,10 @@ export * from './screenshot-capture';
 export * from './test-data-manager';
 export * from './test-reporter';
 export * from './validate-infrastructure';
+export * from './navigation-tester';
+export * from './error-edge-case-tester';
+export * from './performance-load-tester';
+export * from './cross-browser-device-tester';
 
 // Main testing interface
 export { comprehensiveTester } from './comprehensive-tester';
@@ -18,6 +22,10 @@ export { screenshotCapture } from './screenshot-capture';
 export { testDataManager } from './test-data-manager';
 export { quickTests } from './quick-test';
 export { validateTestingInfrastructure } from './validate-infrastructure';
+export { navigationTester } from './navigation-tester';
+export { errorEdgeCaseTester } from './error-edge-case-tester';
+export { performanceLoadTester } from './performance-load-tester';
+export { crossBrowserDeviceTester } from './cross-browser-device-tester';
 
 // Quick test execution functions
 export const runFullTestSuite = async () => {
@@ -59,11 +67,47 @@ if (typeof window !== 'undefined') {
     taskValidator: () => import('./task-validator').then(m => m.taskValidator)
   };
   
-  // Also make TaskValidator available directly
+  // Also make TaskValidator and RealDataTester available directly
   import('./task-validator').then(({ taskValidator }) => {
     (window as any).TaskValidator = taskValidator;
   }).catch(() => {
     console.warn('TaskValidator not available');
+  });
+  
+  import('./real-data-tester').then(({ realDataTester }) => {
+    (window as any).RealDataTester = realDataTester;
+  }).catch(() => {
+    console.warn('RealDataTester not available');
+  });
+  
+  import('./auto-test-runner').then(({ autoTestRunner }) => {
+    (window as any).AutoTestRunner = autoTestRunner;
+  }).catch(() => {
+    console.warn('AutoTestRunner not available');
+  });
+  
+  import('./navigation-tester').then(({ navigationTester }) => {
+    (window as any).NavigationTester = navigationTester;
+  }).catch(() => {
+    console.warn('NavigationTester not available');
+  });
+  
+  import('./error-edge-case-tester').then(({ errorEdgeCaseTester }) => {
+    (window as any).ErrorEdgeCaseTester = errorEdgeCaseTester;
+  }).catch(() => {
+    console.warn('ErrorEdgeCaseTester not available');
+  });
+  
+  import('./performance-load-tester').then(({ performanceLoadTester }) => {
+    (window as any).PerformanceLoadTester = performanceLoadTester;
+  }).catch(() => {
+    console.warn('PerformanceLoadTester not available');
+  });
+  
+  import('./cross-browser-device-tester').then(({ crossBrowserDeviceTester }) => {
+    (window as any).CrossBrowserDeviceTester = crossBrowserDeviceTester;
+  }).catch(() => {
+    console.warn('CrossBrowserDeviceTester not available');
   });
   
   console.log('🧪 SeiMoney Testing Suite loaded!');

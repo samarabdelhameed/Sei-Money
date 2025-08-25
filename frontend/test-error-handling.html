@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handling & Edge Case Testing - SeiMoney</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-section h2 {
+            color: #444;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+        }
+        .test-section p {
+            color: #666;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+        }
+        .button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .button.secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+        .button.warning {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #ff6b6b;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .results h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .result-passed {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .result-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .result-failed {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .summary-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .passed { color: #28a745; }
+        .warning { color: #ffc107; }
+        .failed { color: #dc3545; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .app-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            background: white;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .error-simulation {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .error-simulation h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .error-simulation p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #856404;
+        }
+        .test-category {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .category-network { background: #e3f2fd; color: #1976d2; }
+        .category-wallet { background: #f3e5f5; color: #7b1fa2; }
+        .category-ui { background: #e8f5e8; color: #388e3c; }
+        .category-integration { background: #fff3e0; color: #f57c00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Error Handling & Edge Case Testing</h1>
+            <p>اختبار شامل لمعالجة الأخطاء والحالات الحدية في تطبيق SeiMoney</p>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Network Error Testing</h2>
+            <p>اختبار سيناريوهات أخطاء الشبكة وآليات التعافي</p>
+            <div class="error-simulation">
+                <h4>⚠️ تحذير: اختبار محاكاة الأخطاء</h4>
+                <p>هذه الاختبارات ستحاكي أخطاء الشبكة مؤقتاً لاختبار آليات التعافي</p>
+                <p>قد تظهر رسائل خطأ أثناء الاختبار - هذا سلوك طبيعي</p>
+            </div>
+            <div class="controls">
+                <button class="button" onclick="testAPIUnavailable()">Test API Unavailable</button>
+                <button class="button" onclick="testGracefulDegradation()">Test Graceful Degradation</button>
+                <button class="button" onclick="testRetryMechanisms()">Test Retry Mechanisms</button>
+                <button class="button" onclick="testOfflineMode()">Test Offline Mode</button>
+                <button class="button" onclick="testSlowNetwork()">Test Slow Network</button>
+            </div>
+            <div id="network-results" class="results" style="display: none;">
+                <h3>Network Error Test Results</h3>
+                <div id="network-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>💳 Wallet & Contract Error Testing</h2>
+            <p>اختبار أخطاء المحفظة والعقود الذكية وآليات التعافي</p>
+            <div class="error-simulation">
+                <h4>⚠️ تحذير: اختبار أخطاء المحفظة</h4>
+                <p>هذه الاختبارات ستحاكي أخطاء المحفظة والعقود الذكية</p>
+                <p>لن تؤثر على محفظتك الحقيقية أو أموالك</p>
+            </div>
+            <div class="controls">
+                <button class="button secondary" onclick="testWalletConnectionErrors()">Test Wallet Connection Errors</button>
+                <button class="button secondary" onclick="testContractErrors()">Test Contract Errors</button>
+                <button class="button secondary" onclick="testInsufficientBalance()">Test Insufficient Balance</button>
+                <button class="button secondary" onclick="testTransactionFailures()">Test Transaction Failures</button>
+                <button class="button secondary" onclick="testWalletSwitching()">Test Wallet Switching</button>
+            </div>
+            <div id="wallet-results" class="results" style="display: none;">
+                <h3>Wallet & Contract Error Test Results</h3>
+                <div id="wallet-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Complete Error Testing Suite</h2>
+            <p>تشغيل جميع اختبارات الأخطاء والحالات الحدية</p>
+            <div class="controls">
+                <button class="button warning" onclick="runCompleteErrorTests()">Run All Error Tests</button>
+                <button class="button" onclick="generateErrorReport()">Generate Error Report</button>
+                <button class="button" onclick="clearAllResults()">Clear All Results</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div id="complete-results" class="results" style="display: none;">
+                <h3>Complete Error Test Results</h3>
+                <div class="summary" id="test-summary" style="display: none;">
+                    <div class="summary-item">
+                        <div class="summary-number passed" id="passed-count">0</div>
+                        <div class="summary-label">Passed</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number warning" id="warning-count">0</div>
+                        <div class="summary-label">Warnings</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number failed" id="failed-count">0</div>
+                        <div class="summary-label">Failed</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="pass-rate">0%</div>
+                        <div class="summary-label">Pass Rate</div>
+                    </div>
+                </div>
+                <div id="complete-content"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖥️ Application Frame</h2>
+            <p>إطار تطبيق SeiMoney للاختبار</p>
+            <div class="status info">
+                <strong>ملاحظة:</strong> تأكد من تشغيل تطبيق SeiMoney على المنفذ المتوقع لعمل الاختبارات بشكل صحيح
+            </div>
+            <iframe id="app-frame" class="app-frame" src="http://localhost:5173" title="SeiMoney Application"></iframe>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let isTestingInProgress = false;
+
+        // Load the error edge case tester
+        async function loadErrorTester() {
+            try {
+                // Try to access the error tester from the app frame
+                const appFrame = document.getElementById('app-frame');
+                if (appFrame && appFrame.contentWindow && appFrame.contentWindow.ErrorEdgeCaseTester) {
+                    return appFrame.contentWindow.ErrorEdgeCaseTester;
+                }
+                
+                // If not available, show a message
+                showStatus('Error tester not available. Make sure the SeiMoney app is loaded.', 'error');
+                return null;
+            } catch (error) {
+                console.error('Error loading error tester:', error);
+                showStatus('Error loading error tester: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function testAPIUnavailable() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing API unavailability scenarios...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                // Filter for API unavailability results
+                const apiResults = results.filter(r => 
+                    r.testName.includes('API Unavailable') || 
+                    r.testName.includes('Backend')
+                );
+                
+                updateProgress(100);
+                displayResults(apiResults, 'network-results', 'network-content');
+                showStatus('API unavailability tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('API unavailability test error:', error);
+                showStatus('API unavailability tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testGracefulDegradation() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing graceful degradation...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const degradationResults = results.filter(r => 
+                    r.testName.includes('Graceful Degradation') || 
+                    r.testName.includes('Cached')
+                );
+                
+                updateProgress(100);
+                displayResults(degradationResults, 'network-results', 'network-content');
+                showStatus('Graceful degradation tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Graceful degradation test error:', error);
+                showStatus('Graceful degradation tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testRetryMechanisms() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing retry mechanisms...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const retryResults = results.filter(r => 
+                    r.testName.includes('Retry') || 
+                    r.testName.includes('Refresh')
+                );
+                
+                updateProgress(100);
+                displayResults(retryResults, 'network-results', 'network-content');
+                showStatus('Retry mechanism tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Retry mechanism test error:', error);
+                showStatus('Retry mechanism tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testOfflineMode() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing offline mode functionality...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const offlineResults = results.filter(r => 
+                    r.testName.includes('Offline') || 
+                    r.testName.includes('Connection')
+                );
+                
+                updateProgress(100);
+                displayResults(offlineResults, 'network-results', 'network-content');
+                showStatus('Offline mode tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Offline mode test error:', error);
+                showStatus('Offline mode tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testSlowNetwork() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing slow network conditions...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const slowNetworkResults = results.filter(r => 
+                    r.testName.includes('Slow Network') || 
+                    r.testName.includes('Timeout')
+                );
+                
+                updateProgress(100);
+                displayResults(slowNetworkResults, 'network-results', 'network-content');
+                showStatus('Slow network tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Slow network test error:', error);
+                showStatus('Slow network tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testWalletConnectionErrors() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing wallet connection errors...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const walletResults = results.filter(r => 
+                    r.testName.includes('Wallet') && r.testName.includes('Connection')
+                );
+                
+                updateProgress(100);
+                displayResults(walletResults, 'wallet-results', 'wallet-content');
+                showStatus('Wallet connection error tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Wallet connection test error:', error);
+                showStatus('Wallet connection tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testContractErrors() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing smart contract errors...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const contractResults = results.filter(r => 
+                    r.testName.includes('Contract') || 
+                    r.testName.includes('Smart Contract')
+                );
+                
+                updateProgress(100);
+                displayResults(contractResults, 'wallet-results', 'wallet-content');
+                showStatus('Smart contract error tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Contract error test error:', error);
+                showStatus('Contract error tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testInsufficientBalance() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing insufficient balance scenarios...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const balanceResults = results.filter(r => 
+                    r.testName.includes('Balance') || 
+                    r.testName.includes('Insufficient')
+                );
+                
+                updateProgress(100);
+                displayResults(balanceResults, 'wallet-results', 'wallet-content');
+                showStatus('Insufficient balance tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Insufficient balance test error:', error);
+                showStatus('Insufficient balance tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testTransactionFailures() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing transaction failure recovery...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const transactionResults = results.filter(r => 
+                    r.testName.includes('Transaction') && 
+                    (r.testName.includes('Failure') || r.testName.includes('Recovery'))
+                );
+                
+                updateProgress(100);
+                displayResults(transactionResults, 'wallet-results', 'wallet-content');
+                showStatus('Transaction failure tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Transaction failure test error:', error);
+                showStatus('Transaction failure tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function testWalletSwitching() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Testing wallet switching errors...', 'warning');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(50);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                const switchingResults = results.filter(r => 
+                    r.testName.includes('Switching') || 
+                    r.testName.includes('Switch')
+                );
+                
+                updateProgress(100);
+                displayResults(switchingResults, 'wallet-results', 'wallet-content');
+                showStatus('Wallet switching tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Wallet switching test error:', error);
+                showStatus('Wallet switching tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        async function runCompleteErrorTests() {
+            if (isTestingInProgress) return;
+            
+            isTestingInProgress = true;
+            showStatus('Running complete error handling test suite...', 'info');
+            updateProgress(0);
+            
+            try {
+                const tester = await loadErrorTester();
+                if (!tester) {
+                    showStatus('Cannot run tests - error tester not available', 'error');
+                    return;
+                }
+
+                updateProgress(25);
+                showStatus('Testing network error scenarios...', 'info');
+                
+                updateProgress(50);
+                showStatus('Testing wallet and contract errors...', 'info');
+                
+                updateProgress(75);
+                const results = await tester.testErrorHandlingAndEdgeCases();
+                
+                updateProgress(100);
+                testResults = results;
+                displayResults(results, 'complete-results', 'complete-content');
+                updateSummary(results);
+                showStatus('All error handling tests completed!', 'success');
+                
+            } catch (error) {
+                console.error('Complete error test error:', error);
+                showStatus('Error handling tests failed: ' + error.message, 'error');
+            } finally {
+                isTestingInProgress = false;
+            }
+        }
+
+        function displayResults(results, containerId, contentId) {
+            const container = document.getElementById(containerId);
+            const content = document.getElementById(contentId);
+            
+            if (!results || results.length === 0) {
+                content.innerHTML = '<div class="result-item result-warning">No test results available</div>';
+                container.style.display = 'block';
+                return;
+            }
+            
+            const resultHtml = results.map(result => {
+                const statusClass = result.status === 'passed' ? 'result-passed' : 
+                                  result.status === 'warning' ? 'result-warning' : 'result-failed';
+                const icon = result.status === 'passed' ? '✅' : 
+                           result.status === 'warning' ? '⚠️' : '❌';
+                
+                const categoryClass = getCategoryClass(result.category);
+                
+                return `
+                    <div class="result-item ${statusClass}">
+                        <strong>${icon} ${result.testName}</strong>
+                        <span class="test-category ${categoryClass}">${result.category || 'N/A'}</span><br>
+                        ${result.details}<br>
+                        <small>Time: ${result.executionTime?.toFixed(2) || 0}ms | ${new Date(result.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                `;
+            }).join('');
+            
+            content.innerHTML = resultHtml;
+            container.style.display = 'block';
+        }
+
+        function getCategoryClass(category) {
+            switch(category?.toLowerCase()) {
+                case 'integration': return 'category-integration';
+                case 'ui': return 'category-ui';
+                case 'validation': return 'category-wallet';
+                case 'performance': return 'category-network';
+                default: return 'category-network';
+            }
+        }
+
+        function updateSummary(results) {
+            if (!results || results.length === 0) return;
+            
+            const passed = results.filter(r => r.status === 'passed').length;
+            const warnings = results.filter(r => r.status === 'warning').length;
+            const failed = results.filter(r => r.status === 'failed').length;
+            const total = results.length;
+            const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+            
+            document.getElementById('passed-count').textContent = passed;
+            document.getElementById('warning-count').textContent = warnings;
+            document.getElementById('failed-count').textContent = failed;
+            document.getElementById('pass-rate').textContent = passRate + '%';
+            
+            document.getElementById('test-summary').style.display = 'flex';
+        }
+
+        function updateProgress(percentage) {
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = percentage + '%';
+        }
+
+        function showStatus(message, type) {
+            // Remove existing status messages
+            const existingStatus = document.querySelector('.status.temp');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            // Create new status message
+            const status = document.createElement('div');
+            status.className = `status ${type} temp`;
+            status.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            
+            // Insert after the header
+            const header = document.querySelector('.header');
+            header.insertAdjacentElement('afterend', status);
+            
+            // Auto-remove after 5 seconds for non-error messages
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (status.parentNode) {
+                        status.remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        function generateErrorReport() {
+            if (testResults.length === 0) {
+                showStatus('No test results to generate report from. Run tests first.', 'error');
+                return;
+            }
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                testType: 'Error Handling and Edge Cases',
+                summary: {
+                    total: testResults.length,
+                    passed: testResults.filter(r => r.status === 'passed').length,
+                    warnings: testResults.filter(r => r.status === 'warning').length,
+                    failed: testResults.filter(r => r.status === 'failed').length
+                },
+                categories: {
+                    network: testResults.filter(r => r.testName.includes('Network')).length,
+                    wallet: testResults.filter(r => r.testName.includes('Wallet')).length,
+                    contract: testResults.filter(r => r.testName.includes('Contract')).length,
+                    ui: testResults.filter(r => r.category === 'UI').length
+                },
+                results: testResults
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `error-handling-test-report-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('Error handling test report downloaded!', 'success');
+        }
+
+        function clearAllResults() {
+            testResults = [];
+            document.getElementById('network-results').style.display = 'none';
+            document.getElementById('wallet-results').style.display = 'none';
+            document.getElementById('complete-results').style.display = 'none';
+            document.getElementById('test-summary').style.display = 'none';
+            updateProgress(0);
+            
+            // Remove temp status messages
+            const tempStatus = document.querySelector('.status.temp');
+            if (tempStatus) {
+                tempStatus.remove();
+            }
+            
+            showStatus('All results cleared!', 'info');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            showStatus('Error Handling & Edge Case Testing ready. Load the SeiMoney app in the frame below to begin testing.', 'info');
+            
+            // Check if app frame loads successfully
+            const appFrame = document.getElementById('app-frame');
+            appFrame.addEventListener('load', () => {
+                showStatus('SeiMoney app loaded successfully. You can now run error handling tests.', 'success');
+            });
+            
+            appFrame.addEventListener('error', () => {
+                showStatus('Failed to load SeiMoney app. Make sure it\'s running on localhost:5173', 'error');
+            });
+        });
+    </script>
+</body>
+</html>

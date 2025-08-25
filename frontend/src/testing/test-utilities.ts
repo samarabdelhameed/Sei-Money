@@ -213,8 +213,8 @@ export class TestUtilities {
 
   getMemoryUsage(): number {
     // @ts-ignore - performance.memory is Chrome-specific
-    if (performance.memory) {
-      return performance.memory.usedJSHeapSize / 1024 / 1024; // MB
+    if ((performance as any).memory) {
+      return (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
     }
     return -1;
   }

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test - SeiMoney Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: #00ff88;
+        }
+        .test-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 20px 0;
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            min-height: 200px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .test-result.passed {
+            background: rgba(40, 167, 69, 0.2);
+            border-left-color: #28a745;
+        }
+        .test-result.failed {
+            background: rgba(220, 53, 69, 0.2);
+            border-left-color: #dc3545;
+        }
+        .test-result.warning {
+            background: rgba(255, 193, 7, 0.2);
+            border-left-color: #ffc107;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Simple Test Runner</h1>
+            <p>Direct testing without external dependencies</p>
+        </div>
+
+        <button class="test-button" onclick="runSimpleTest()">
+            🧪 Run Simple Test Now
+        </button>
+
+        <button class="test-button" onclick="testAPI()">
+            🌐 Test API Only
+        </button>
+
+        <button class="test-button" onclick="testUI()">
+            🎨 Test UI Elements
+        </button>
+
+        <div id="results" class="results">
+            <p>Click "Run Simple Test Now" to start testing!</p>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+
+        async function runSimpleTest() {
+            if (isRunning) return;
+            isRunning = true;
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Running comprehensive test...</p>
+                </div>
+            `;
+
+            const results = [];
+
+            try {
+                // Test 1: Browser Features
+                console.log('🔍 Testing browser features...');
+                const browserTest = testBrowserFeatures();
+                results.push(browserTest);
+
+                // Test 2: API Connectivity
+                console.log('🌐 Testing API connectivity...');
+                const apiTest = await testAPIConnectivity();
+                results.push(apiTest);
+
+                // Test 3: DOM Elements
+                console.log('🎨 Testing DOM elements...');
+                const domTest = testDOMElements();
+                results.push(domTest);
+
+                // Test 4: Local Storage
+                console.log('💾 Testing local storage...');
+                const storageTest = testLocalStorage();
+                results.push(storageTest);
+
+                // Test 5: Network Requests
+                console.log('📡 Testing network requests...');
+                const networkTest = await testNetworkRequests();
+                results.push(networkTest);
+
+                displayResults(results);
+
+            } catch (error) {
+                results.push({
+                    name: 'Test Execution',
+                    status: 'failed',
+                    message: `Test failed: ${error.message}`
+                });
+                displayResults(results);
+            }
+
+            isRunning = false;
+        }
+
+        function testBrowserFeatures() {
+            const features = {
+                localStorage: typeof localStorage !== 'undefined',
+                sessionStorage: typeof sessionStorage !== 'undefined',
+                fetch: typeof fetch !== 'undefined',
+                console: typeof console !== 'undefined',
+                JSON: typeof JSON !== 'undefined'
+            };
+
+            const working = Object.values(features).filter(Boolean).length;
+            const total = Object.keys(features).length;
+
+            return {
+                name: 'Browser Features',
+                status: working === total ? 'passed' : 'warning',
+                message: `${working}/${total} browser features available: ${Object.entries(features).map(([k,v]) => `${k}:${v?'✅':'❌'}`).join(', ')}`
+            };
+        }
+
+        async function testAPIConnectivity() {
+            const endpoints = [
+                'http://localhost:3001/health',
+                'http://localhost:3001/api/v1/market/stats'
+            ];
+
+            let connected = 0;
+            const details = [];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint, { 
+                        method: 'GET',
+                        timeout: 5000 
+                    });
+                    
+                    if (response.ok) {
+                        connected++;
+                        details.push(`✅ ${endpoint.split('/').pop()}: OK`);
+                    } else {
+                        details.push(`⚠️ ${endpoint.split('/').pop()}: ${response.status}`);
+                    }
+                } catch (error) {
+                    details.push(`❌ ${endpoint.split('/').pop()}: Offline`);
+                }
+            }
+
+            return {
+                name: 'API Connectivity',
+                status: connected > 0 ? 'passed' : 'warning',
+                message: `${connected}/${endpoints.length} APIs responding. ${details.join(', ')}`
+            };
+        }
+
+        function testDOMElements() {
+            const elements = [
+                { selector: 'body', name: 'Body' },
+                { selector: 'head', name: 'Head' },
+                { selector: 'script', name: 'Scripts' },
+                { selector: 'style', name: 'Styles' }
+            ];
+
+            let found = 0;
+            const details = [];
+
+            elements.forEach(el => {
+                const element = document.querySelector(el.selector);
+                if (element) {
+                    found++;
+                    details.push(`✅ ${el.name}`);
+                } else {
+                    details.push(`❌ ${el.name}`);
+                }
+            });
+
+            return {
+                name: 'DOM Elements',
+                status: found === elements.length ? 'passed' : 'warning',
+                message: `${found}/${elements.length} DOM elements found: ${details.join(', ')}`
+            };
+        }
+
+        function testLocalStorage() {
+            try {
+                const testKey = 'seiMoney_test_' + Date.now();
+                const testValue = 'test_data_' + Math.random();
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                const works = retrieved === testValue;
+                
+                return {
+                    name: 'Local Storage',
+                    status: works ? 'passed' : 'failed',
+                    message: works ? 'Local storage read/write working' : 'Local storage not working'
+                };
+            } catch (error) {
+                return {
+                    name: 'Local Storage',
+                    status: 'failed',
+                    message: `Local storage error: ${error.message}`
+                };
+            }
+        }
+
+        async function testNetworkRequests() {
+            try {
+                // Test a simple request
+                const response = await fetch('data:text/plain,test', {
+                    method: 'GET'
+                });
+                
+                const canMakeRequests = response.ok;
+                
+                return {
+                    name: 'Network Requests',
+                    status: canMakeRequests ? 'passed' : 'warning',
+                    message: canMakeRequests ? 'Network requests working' : 'Network request issues'
+                };
+            } catch (error) {
+                return {
+                    name: 'Network Requests',
+                    status: 'warning',
+                    message: `Network test: ${error.message}`
+                };
+            }
+        }
+
+        async function testAPI() {
+            if (isRunning) return;
+            isRunning = true;
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Testing API endpoints...</p>
+                </div>
+            `;
+
+            const apiTest = await testAPIConnectivity();
+            displayResults([apiTest]);
+            
+            isRunning = false;
+        }
+
+        async function testUI() {
+            if (isRunning) return;
+            isRunning = true;
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Testing UI elements...</p>
+                </div>
+            `;
+
+            const results = [
+                testBrowserFeatures(),
+                testDOMElements(),
+                testLocalStorage()
+            ];
+
+            displayResults(results);
+            
+            isRunning = false;
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            const passed = results.filter(r => r.status === 'passed').length;
+            const total = results.length;
+            const passRate = ((passed / total) * 100).toFixed(1);
+            
+            let html = `
+                <h3>📊 Test Results</h3>
+                <p><strong>Pass Rate:</strong> ${passRate}% (${passed}/${total} tests passed)</p>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+            `;
+            
+            results.forEach(result => {
+                const icon = result.status === 'passed' ? '✅' : 
+                           result.status === 'failed' ? '❌' : '⚠️';
+                
+                html += `
+                    <div class="test-result ${result.status}">
+                        <h4>${icon} ${result.name}</h4>
+                        <p>${result.message}</p>
+                    </div>
+                `;
+            });
+
+            // Add recommendations
+            html += `
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+                <h4>💡 Recommendations:</h4>
+            `;
+
+            const apiPassed = results.some(r => r.name === 'API Connectivity' && r.status === 'passed');
+            if (apiPassed) {
+                html += `<p>✅ <strong>Backend Connected:</strong> API is responding correctly.</p>`;
+            } else {
+                html += `<p>⚠️ <strong>Backend Offline:</strong> Start backend server on port 3001 for full functionality.</p>`;
+            }
+
+            const browserPassed = results.some(r => r.name === 'Browser Features' && r.status === 'passed');
+            if (browserPassed) {
+                html += `<p>✅ <strong>Browser Ready:</strong> All required features available.</p>`;
+            } else {
+                html += `<p>❌ <strong>Browser Issues:</strong> Some features may not work properly.</p>`;
+            }
+
+            html += `
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+                <p><em>Test completed at: ${new Date().toLocaleTimeString()}</em></p>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Auto-run a quick test on page load
+        window.addEventListener('load', () => {
+            console.log('🚀 Simple Test Runner loaded and ready!');
+            
+            // Show initial status
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>🎯 Ready to Test!</h3>
+                <p>This simple test runner will check:</p>
+                <ul>
+                    <li>✅ Browser features and compatibility</li>
+                    <li>🌐 API connectivity (backend server)</li>
+                    <li>🎨 DOM elements and UI functionality</li>
+                    <li>💾 Local storage capabilities</li>
+                    <li>📡 Network request functionality</li>
+                </ul>
+                <p><strong>Click "Run Simple Test Now" to start!</strong></p>
+            `;
+        });
+    </script>
+</body>
+</html>

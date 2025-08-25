@@ -1,5 +1,4 @@
-// Task Validator - Validates Tasks 1-4 are working correctly
-// تحقق من أن المهام من 1 إلى 4 تعمل بشكل صحيح
+// Task Validator - Verifies that Tasks 1-4 are working correctly
 
 import { TestResult, TestStatus, TestCategory } from './types';
 import { testUtils } from './test-utilities';

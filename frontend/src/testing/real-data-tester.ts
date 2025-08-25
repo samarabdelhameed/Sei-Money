@@ -1,5 +1,5 @@
 // Real Data Tester - Tests if screens are displaying real data
-// اختبار البيانات الحقيقية - يتحقق من عرض البيانات الفعلية في الشاشات
+// Real Data Tester - Verifies that screens are displaying actual data
 
 import { TestResult, TestStatus, TestCategory } from './types';
 import { testUtils } from './test-utilities';
