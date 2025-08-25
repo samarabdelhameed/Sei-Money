@@ -98,27 +98,38 @@ export class MetaMaskWalletService {
 
       const evmAddress = accounts[0];
 
-      // Get public key through signing
-      const publicKey = await this.getPublicKey(evmAddress);
-
       // Convert EVM address to Cosmos address
       const cosmosAddress = this.evmToCosmosAddress(evmAddress);
 
-      // Create signing client for Cosmos transactions (optional)
-      const signingClient = await this.createSigningClient(evmAddress, publicKey);
+      // Create a minimal public key for now - will be generated when needed for transactions
+      const publicKey = new Uint8Array(33);
+      publicKey[0] = 0x02; // Compressed public key prefix
+      
+      // Create signing client for Cosmos transactions (optional) - do this in background
+      let signingClient: SigningCosmWasmClient | undefined;
+      
+      // Don't wait for signing client creation to speed up connection
+      this.createSigningClient(evmAddress, publicKey).then(client => {
+        if (this.connection) {
+          this.connection.signingClient = client;
+        }
+      }).catch(error => {
+        console.warn('Failed to create signing client in background:', error);
+      });
 
       // Store connection
       this.connection = {
         evmAddress,
         cosmosAddress,
         publicKey,
-        signingClient,
+        signingClient, // Will be undefined initially, set later in background
       };
 
       // Store connection in localStorage for persistence
       localStorage.setItem('metamask-wallet-connected', 'true');
       localStorage.setItem('metamask-wallet-evm-address', evmAddress);
       localStorage.setItem('metamask-wallet-cosmos-address', cosmosAddress);
+      localStorage.setItem('metamask-wallet-public-key', JSON.stringify(Array.from(publicKey)));
 
       return this.connection;
     } catch (error) {
@@ -206,11 +217,11 @@ export class MetaMaskWalletService {
     }
   }
 
-  // Get public key through message signing
-  private async getPublicKey(address: string): Promise<Uint8Array> {
+  // Get public key through message signing (called when needed for transactions)
+  async getPublicKeyForTransaction(address: string): Promise<Uint8Array> {
     try {
       // Create a deterministic message
-      const message = `SeiMoney wallet connection for ${address}`;
+      const message = `SeiMoney transaction signing for ${address} at ${Date.now()}`;
       
       // Sign the message to get signature
       const signature = await this.ethereum.request({
@@ -220,11 +231,24 @@ export class MetaMaskWalletService {
 
       // Extract public key from signature (simplified approach)
       // In production, you'd use proper cryptographic methods
-      return this.derivePublicKeyFromSignature(message, signature, address);
+      const publicKey = this.derivePublicKeyFromSignature(message, signature, address);
+      
+      // Update connection with real public key
+      if (this.connection) {
+        this.connection.publicKey = publicKey;
+        localStorage.setItem('metamask-wallet-public-key', JSON.stringify(Array.from(publicKey)));
+      }
+      
+      return publicKey;
     } catch (error) {
       console.error('Failed to get public key:', error);
       throw new Error('Failed to get wallet public key. Please try again.');
     }
+  }
+
+  // Get public key through message signing (legacy method for compatibility)
+  private async getPublicKey(address: string): Promise<Uint8Array> {
+    return this.getPublicKeyForTransaction(address);
   }
 
   // Derive public key from signature (simplified)
@@ -322,6 +346,7 @@ export class MetaMaskWalletService {
     localStorage.removeItem('metamask-wallet-connected');
     localStorage.removeItem('metamask-wallet-evm-address');
     localStorage.removeItem('metamask-wallet-cosmos-address');
+    localStorage.removeItem('metamask-wallet-public-key');
   }
 
   // Get EVM balance
@@ -519,8 +544,37 @@ export class MetaMaskWalletService {
         return false;
       }
 
-      // Try to reconnect
-      await this.connect();
+      // Restore connection without triggering popup
+      // Use cached public key if available, otherwise create a dummy one for reconnection
+      const cachedPublicKey = localStorage.getItem('metamask-wallet-public-key');
+      let publicKey: Uint8Array;
+      
+      if (cachedPublicKey) {
+        publicKey = new Uint8Array(JSON.parse(cachedPublicKey));
+      } else {
+        // Create a minimal public key for reconnection - will be refreshed on next transaction
+        publicKey = new Uint8Array(33);
+        publicKey[0] = 0x02; // Compressed public key prefix
+      }
+      
+      const cosmosAddress = this.evmToCosmosAddress(accounts[0]);
+      
+      // Create signing client in background to avoid blocking reconnection
+      let signingClient: SigningCosmWasmClient | undefined;
+      this.createSigningClient(accounts[0], publicKey).then(client => {
+        if (this.connection) {
+          this.connection.signingClient = client;
+        }
+      }).catch(error => {
+        console.warn('Failed to create signing client during reconnection:', error);
+      });
+
+      this.connection = {
+        evmAddress: accounts[0],
+        cosmosAddress,
+        publicKey,
+        signingClient, // Will be undefined initially, set later in background
+      };
       
       // Verify addresses match
       if (this.connection?.evmAddress === savedEvmAddress && 

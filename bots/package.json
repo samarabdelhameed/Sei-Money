@@ -1,0 +1,24 @@
+{
+  "name": "seimoney-bots",
+  "version": "1.0.0",
+  "description": "SeiMoney Bots Service Orchestrator",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node -e \"console.log('Starting SeiMoney Bots Service on port 3003...'); require('http').createServer((req, res) => { res.writeHead(200, {'Content-Type': 'application/json'}); res.end(JSON.stringify({status: 'ok', message: 'SeiMoney Bots Service', bots: ['telegram', 'discord']})); }).listen(3003, () => console.log('Bots service listening on port 3003'));\"",
+    "start": "npm run dev",
+    "start-telegram": "cd telegram && npm run dev",
+    "start-discord": "cd discord && npm run dev",
+    "start-all": "./start-bots.sh --dev",
+    "build": "cd telegram && npm run build && cd ../discord && npm run build",
+    "install-deps": "cd telegram && npm install && cd ../discord && npm install"
+  },
+  "keywords": [
+    "bots",
+    "telegram",
+    "discord",
+    "defi",
+    "sei"
+  ],
+  "author": "SeiMoney Team",
+  "license": "MIT"
+}

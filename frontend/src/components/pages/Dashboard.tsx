@@ -31,24 +31,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const portfolioValue = useMemo(() => {
     if (!state.wallet) return 0;
     
-    const walletBalance = state.wallet.balance || 0;
-    const vaultValue = state.vaults.reduce((total, vault) => {
+    const walletBalance = Number(state.wallet.balance) || 0;
+    const vaultValue = Array.isArray(state.vaults) ? state.vaults.reduce((total, vault) => {
       // Calculate user's vault position value (this would come from real contract data)
-      const userInvestment = vault.tvl * 0.1; // Mock calculation - replace with real user position
+      const userInvestment = Number(vault.tvl) * 0.1; // Mock calculation - replace with real user position
       return total + userInvestment;
-    }, 0);
-    const groupContributions = state.groups.reduce((total, group) => 
-      total + (group.currentAmount * 0.2), 0); // Mock user contribution - replace with real data
-    const potSavings = state.pots.reduce((total, pot) => 
-      total + pot.currentAmount, 0);
+    }, 0) : 0;
+    const groupContributions = Array.isArray(state.groups) ? state.groups.reduce((total, group) => 
+      total + (Number(group.currentAmount) * 0.2), 0) : 0; // Mock user contribution - replace with real data
+    const potSavings = Array.isArray(state.pots) ? state.pots.reduce((total, pot) => 
+      total + Number(pot.currentAmount), 0) : 0;
     
     return walletBalance + vaultValue + groupContributions + potSavings;
   }, [state.wallet, state.vaults, state.groups, state.pots]);
 
   // Calculate daily P&L (mock calculation - replace with real data)
   const dailyPnL = useMemo(() => {
-    const baseValue = portfolioValue * 0.98; // Assume 2% gain today
-    return portfolioValue - baseValue;
+    const baseValue = Number(portfolioValue) * 0.98; // Assume 2% gain today
+    return Number(portfolioValue) - baseValue;
   }, [portfolioValue]);
 
   // Get recent activities from real data
@@ -64,37 +64,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     }> = [];
 
     // Add recent transfers
-    state.transfers.slice(0, 2).forEach(transfer => {
-      activities.push({
-        type: 'transfer',
-        amount: `${transfer.amount} SEI`,
-        recipient: `${transfer.recipient.slice(0, 8)}...${transfer.recipient.slice(-6)}`,
-        time: new Date(transfer.createdAt).toLocaleString(),
-        status: transfer.status === 'completed' ? 'completed' : 'pending'
+    if (Array.isArray(state.transfers)) {
+      state.transfers.slice(0, 2).forEach(transfer => {
+        activities.push({
+          type: 'transfer',
+          amount: `${transfer.amount} SEI`,
+          recipient: `${transfer.recipient.slice(0, 8)}...${transfer.recipient.slice(-6)}`,
+          time: new Date(transfer.createdAt).toLocaleString(),
+          status: transfer.status === 'completed' ? 'completed' : 'pending'
+        });
       });
-    });
+    }
 
     // Add recent group contributions (mock - replace with real data)
-    state.groups.slice(0, 1).forEach(group => {
-      activities.push({
-        type: 'group',
-        amount: `${(group.currentAmount * 0.2).toFixed(1)} SEI`, // Mock user contribution
-        group: group.name,
-        time: '2 hours ago', // Mock time - replace with real data
-        status: 'completed'
+    if (Array.isArray(state.groups)) {
+      state.groups.slice(0, 1).forEach(group => {
+        activities.push({
+          type: 'group',
+          amount: `${(Number(group.currentAmount) * 0.2).toFixed(1)} SEI`, // Mock user contribution
+          group: group.name,
+          time: '2 hours ago', // Mock time - replace with real data
+          status: 'completed'
+        });
       });
-    });
+    }
 
     // Add vault activities (mock - replace with real data)
-    state.vaults.slice(0, 1).forEach(vault => {
-      activities.push({
-        type: 'deposit',
-        amount: `${(vault.tvl * 0.05).toFixed(1)} SEI`, // Mock deposit
-        vault: vault.name,
-        time: '5 hours ago', // Mock time - replace with real data
-        status: 'completed'
+    if (Array.isArray(state.vaults)) {
+      state.vaults.slice(0, 1).forEach(vault => {
+        activities.push({
+          type: 'deposit',
+          amount: `${(Number(vault.tvl) * 0.05).toFixed(1)} SEI`, // Mock deposit
+          vault: vault.name,
+          time: '5 hours ago', // Mock time - replace with real data
+          status: 'completed'
+        });
       });
-    });
+    }
 
     return activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
   }, [state.transfers, state.groups, state.vaults]);
@@ -103,7 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   useEffect(() => {
     const generatePortfolioHistory = () => {
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-      const currentValue = portfolioValue;
+      const currentValue = Number(portfolioValue);
       const data = months.map((month, index) => ({
         name: month,
         value: Math.max(100, currentValue * (0.6 + (index * 0.08))) // Mock growth curve
@@ -111,7 +117,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       setPortfolioData(data);
     };
 
-    if (portfolioValue > 0) {
+    if (Number(portfolioValue) > 0) {
       generatePortfolioHistory();
     }
   }, [portfolioValue]);
@@ -300,13 +306,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div className="flex items-center space-x-1" style={{ color: colors.neonGreen }}>
               <TrendingUp size={16} />
-              <span className="text-sm font-medium">
-                {portfolioValue > 0 ? '+12.5%' : '--'}
-              </span>
+                          <span className="text-sm font-medium">
+              {Number(portfolioValue) > 0 ? '+12.5%' : '--'}
+            </span>
             </div>
           </div>
           <div className="text-xs" style={{ color: colors.textMuted }}>
-            Wallet: <span className="text-white">{(state.wallet?.balance || 0).toFixed(2)} SEI</span>
+            Wallet: <span className="text-white">{(Number(state.wallet?.balance) || 0).toFixed(2)} SEI</span>
           </div>
         </GlassCard>
 
@@ -332,9 +338,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div className={`flex items-center space-x-1 ${dailyPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {dailyPnL >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-              <span className="text-sm font-medium">
-                {portfolioValue > 0 ? `${dailyPnL >= 0 ? '+' : ''}${((dailyPnL / portfolioValue) * 100).toFixed(1)}%` : '--'}
-              </span>
+                          <span className="text-sm font-medium">
+              {Number(portfolioValue) > 0 ? `${dailyPnL >= 0 ? '+' : ''}${((dailyPnL / Number(portfolioValue)) * 100).toFixed(1)}%` : '--'}
+            </span>
             </div>
           </div>
           <div className="text-xs" style={{ color: colors.textMuted }}>
@@ -357,7 +363,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   {state.isLoading ? (
                     <div className="animate-pulse bg-gray-600 h-8 w-8 rounded"></div>
                   ) : (
-                    state.vaults.filter(v => v.isActive).length
+                    Array.isArray(state.vaults) ? state.vaults.filter(v => v.isActive).length : 0
                   )}
                 </p>
               </div>
@@ -369,8 +375,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
           <div className="text-xs" style={{ color: colors.textMuted }}>
             Avg APY: <span style={{ color: colors.neonGreen }}>
-              {state.vaults.length > 0 ? 
-                `${(state.vaults.reduce((sum, v) => sum + v.apy, 0) / state.vaults.length).toFixed(1)}%` : 
+              {Array.isArray(state.vaults) && state.vaults.length > 0 ? 
+                `${(state.vaults.reduce((sum, v) => sum + Number(v.apy), 0) / state.vaults.length).toFixed(1)}%` : 
                 '--'
               }
             </span>
@@ -392,7 +398,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   {state.isLoading ? (
                     <div className="animate-pulse bg-gray-600 h-8 w-8 rounded"></div>
                   ) : (
-                    state.groups.filter(g => g.status === 'active').length
+                    Array.isArray(state.groups) ? state.groups.filter(g => g.status === 'active').length : 0
                   )}
                 </p>
               </div>
@@ -404,7 +410,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
           <div className="text-xs" style={{ color: colors.textMuted }}>
             Total contributed: <span className="text-white">
-              {state.groups.reduce((sum, g) => sum + (g.currentAmount * 0.2), 0).toFixed(2)} SEI
+              {Array.isArray(state.groups) ? state.groups.reduce((sum, g) => sum + (g.currentAmount * 0.2), 0).toFixed(2) : '0.00'} SEI
             </span>
           </div>
         </GlassCard>
@@ -519,7 +525,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div className="animate-pulse bg-gray-600 h-4 w-full rounded"></div>
                 <div className="animate-pulse bg-gray-600 h-4 w-3/4 rounded"></div>
               </div>
-            ) : state.pots.length > 0 ? (
+            ) : Array.isArray(state.pots) && state.pots.length > 0 ? (
               <div className="space-y-6">
                 {/* Primary savings pot with circular progress */}
                 {state.pots[0] && (
@@ -536,7 +542,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 )}
                 
                 {/* Other savings pots */}
-                {state.pots.slice(1, 3).map((pot, index) => (
+                {Array.isArray(state.pots) && state.pots.slice(1, 3).map((pot, index) => (
                   <div key={pot.id} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm" style={{ color: colors.textMuted }}>{pot.name}</span>
@@ -558,7 +564,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </div>
                 ))}
                 
-                {state.pots.length > 3 && (
+                {Array.isArray(state.pots) && state.pots.length > 3 && (
                   <div className="text-center pt-2">
                     <NeonButton 
                       variant="outline" 
@@ -566,7 +572,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       color="green"
                       onClick={() => onNavigate('pots')}
                     >
-                      View All {state.pots.length} Pots
+                      View All {Array.isArray(state.pots) ? state.pots.length : 0} Pots
                     </NeonButton>
                   </div>
                 )}

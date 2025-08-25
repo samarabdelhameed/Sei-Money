@@ -12,6 +12,7 @@ import { potsRoutes } from './routes/pots';
 import { escrowRoutes } from './routes/escrow';
 import { marketRoutes } from './routes/market';
 import { walletRoutes } from './routes/wallet';
+import { userRoutes } from './routes/user';
 
 export class ApiGateway {
   private fastify: any;
@@ -34,9 +35,21 @@ export class ApiGateway {
 
       // CORS - optimized for development
       await this.fastify.register(cors, {
-        origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'],
+        origin: [
+          'http://localhost:3000', 
+          'http://localhost:3001', 
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'http://localhost:5175', // Added for current frontend port
+          'http://127.0.0.1:3000',
+          'http://127.0.0.1:5173',
+          'http://127.0.0.1:5174',
+          'http://127.0.0.1:5175' // Added for current frontend port
+        ],
         credentials: true,
         maxAge: 86400, // Cache preflight for 24 hours
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
       });
 
       // Rate limiting
@@ -69,6 +82,7 @@ export class ApiGateway {
       await this.fastify.register(escrowRoutes, { prefix: '/api/v1/escrow' });
       await this.fastify.register(marketRoutes, { prefix: '/api/v1/market' });
       await this.fastify.register(walletRoutes, { prefix: '/api/v1/wallet' });
+      await this.fastify.register(userRoutes, { prefix: '/api/v1/user' });
 
       // Quick test route
       this.fastify.get('/', async (_request: any, reply: any) => {
@@ -86,6 +100,7 @@ export class ApiGateway {
             escrow: '/api/v1/escrow',
             market: '/api/v1/market',
             wallet: '/api/v1/wallet',
+            user: '/api/v1/user',
           }
         });
       });
@@ -112,7 +127,7 @@ export class ApiGateway {
       });
 
       logger.info(`API Gateway started on ${config.server.host}:${config.server.port}`);
-      logger.info('Registered routes: health, transfers, vaults, groups, pots, escrow, market, wallet');
+      logger.info('Registered routes: health, transfers, vaults, groups, pots, escrow, market, wallet, user');
     } catch (error) {
       logger.error('Failed to start API Gateway:', error);
       throw error;

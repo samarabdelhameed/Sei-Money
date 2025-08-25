@@ -839,7 +839,7 @@ export const Groups: React.FC = () => {
                     />
                     {state.wallet && (
                       <div className="absolute right-3 top-3 text-sm text-gray-400">
-                        Max: {state.wallet.balance.toFixed(6)}
+                        Max: {Number(state.wallet.balance).toFixed(6)}
                       </div>
                     )}
                   </div>

@@ -1,59 +1,44 @@
 {
-  "name": "seimoney",
+  "name": "seimoney-monorepo",
   "version": "1.0.0",
-  "description": "AI-Powered DeFi Payments & Vaults on Sei",
+  "description": "SeiMoney - Complete DeFi Platform for Sei Network",
   "private": true,
-  "workspaces": [
-    "sdk",
-    "app",
-    "backend/services/*",
-    "agents/*",
-    "bots/*"
-  ],
   "scripts": {
-    "build": "./scripts/build_wasm.sh && npm run build:sdk && npm run build:app",
-    "build:contracts": "./scripts/build_wasm.sh",
-    "build:sdk": "cd sdk && npm run build",
-    "build:app": "cd app && npm run build",
-    "deploy": "./scripts/deploy_sei.sh",
-    "gen:sdk": "./scripts/gen_ts.sh",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:app\" \"npm run dev:agents\"",
-    "dev:app": "cd app && npm run dev",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:agents": "cd agents && npm run dev",
-    "test": "npm run test:contracts && npm run test:sdk && npm run test:app",
-    "test:contracts": "cd contracts && cargo test",
-    "test:sdk": "cd sdk && npm test",
-    "test:app": "cd app && npm test",
-    "lint": "npm run lint:contracts && npm run lint:ts",
-    "lint:contracts": "cd contracts && cargo clippy",
-    "lint:ts": "eslint . --ext .ts,.tsx",
-    "clean": "rm -rf target/ && rm -rf node_modules/ && rm -rf */node_modules/",
-    "contracts:status": "cd contracts && ./scripts/check-deployment-status.sh",
-    "contracts:deploy": "cd contracts && ./scripts/deploy_sei.sh",
-    "contracts:deploy-rest": "cd contracts && ./scripts/deploy_rest.sh",
-    "contracts:activate": "cd contracts && ./scripts/activate_account.sh",
-    "contracts:fund": "cd contracts && ./scripts/fund_wallet.sh",
-    "contracts:balance": "cd contracts && ./scripts/check_balance.sh",
-    "contracts:test": "cd contracts && ./scripts/test_contract.sh",
-    "contracts:simple-deploy": "cd contracts && ./scripts/simple_deploy.sh",
-    "contracts:final-deploy": "cd contracts && ./scripts/final_deploy.sh"
+    "start": "./start-all.sh",
+    "stop": "./stop-all.sh",
+    "dev": "./start-all.sh",
+    "setup": "npm run install:all && npm run build:all",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "clean": "rm -rf backend/node_modules frontend/node_modules backend/dist frontend/dist logs",
+    "logs": "tail -f logs/*.log",
+    "logs:backend": "tail -f logs/backend.log",
+    "logs:frontend": "tail -f logs/frontend.log",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test"
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "eslint": "^8.57.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "typescript": "^5.3.3"
-  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "keywords": [
-    "sei",
     "defi",
+    "sei",
+    "blockchain",
+    "smart-contracts",
     "payments",
-    "ai",
-    "cosmwasm",
-    "blockchain"
+    "vaults",
+    "groups"
   ],
   "author": "SeiMoney Team",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
 }

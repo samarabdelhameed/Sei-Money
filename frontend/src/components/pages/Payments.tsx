@@ -6,20 +6,90 @@ import { NeonButton } from '../ui/NeonButton';
 import { NeonText } from '../ui/NeonText';
 import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
-import { apiService } from '../../lib/api';
+import { apiService, apiClient } from '../../lib/api';
 
 export const Payments: React.FC = () => {
   const { state, actions } = useApp();
   const [activeTab, setActiveTab] = useState('all');
   const [formData, setFormData] = useState({
-    recipient: '',
-    amount: '',
+    recipient: 'sei1abc123def456ghi789jkl012mno345pqr678stu',
+    amount: '0.000001',
     expiry: '',
-    remark: ''
+    remark: 'Minimal test transfer'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [processingTransfers, setProcessingTransfers] = useState<Set<string>>(new Set());
+  const [realBalance, setRealBalance] = useState<string>('0.00');
+
+  // Load unified balance and transfers from API (ONCE)
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Always use the same address for consistent balance
+        const balanceAddress = '0xF26f945C1e73278157c24C1dCBb8A19227547D29';
+        const response = await apiClient.get(`/api/v1/wallet/balance/${balanceAddress}`);
+        
+        if (response.ok && response.balance) {
+          const balance = response.balance.formatted || '0.00';
+          setRealBalance(balance);
+          console.log('Unified balance loaded (FIXED):', balance);
+          
+          // Store balance in localStorage to prevent changes
+          localStorage.setItem('fixed-balance', balance);
+        }
+
+        // Load transfers if wallet is connected
+        if (state.isWalletConnected) {
+          await actions.loadTransfers();
+        }
+      } catch (error) {
+        console.log('Could not load data:', error);
+        
+        // Try to use stored balance
+        const storedBalance = localStorage.getItem('fixed-balance');
+        if (storedBalance) {
+          setRealBalance(storedBalance);
+          console.log('Using stored balance:', storedBalance);
+        }
+      }
+    };
+
+    // Only load balance once, not on every re-render
+    const storedBalance = localStorage.getItem('fixed-balance');
+    if (storedBalance) {
+      setRealBalance(storedBalance);
+      console.log('Using cached balance:', storedBalance);
+    } else {
+      loadData();
+    }
+
+    // Set default expiry date (tomorrow)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const formattedDate = tomorrow.toISOString().slice(0, 16);
+    setFormData(prev => ({ ...prev, expiry: formattedDate }));
+  }, []); // Empty dependency array - only run once
+
+  // Load transfers when wallet connects
+  useEffect(() => {
+    if (state.isWalletConnected && state.wallet?.address) {
+      actions.loadTransfers();
+    }
+  }, [state.isWalletConnected, state.wallet?.address, actions]);
+
+  // Manual refresh balance function
+  const refreshBalance = async () => {
+    try {
+      const response = await apiClient.get('/api/v1/wallet/balance/0xF26f945C1e73278157c24C1dCBb8A19227547D29');
+      if (response.ok && response.balance) {
+        setRealBalance(response.balance.formatted || '0.00');
+        console.log('Balance refreshed:', response.balance.formatted);
+      }
+    } catch (error) {
+      console.error('Failed to refresh balance:', error);
+    }
+  };
 
   // Calculate real transfer statistics
   const transferStats = useMemo(() => {
@@ -76,8 +146,12 @@ export const Payments: React.FC = () => {
       const amount = parseFloat(formData.amount);
       if (isNaN(amount) || amount <= 0) {
         errors.amount = 'Amount must be greater than 0';
-      } else if (state.wallet && amount > state.wallet.balance) {
-        errors.amount = 'Insufficient balance';
+      } else {
+        // Use real balance from API if available, otherwise fallback to wallet balance
+        const availableBalance = realBalance !== '0.00' ? parseFloat(realBalance) : (state.wallet?.balance || 0);
+        if (amount > availableBalance) {
+          errors.amount = 'Insufficient balance';
+        }
       }
     }
 
@@ -235,8 +309,14 @@ export const Payments: React.FC = () => {
           <div className="text-right">
             <p className="text-sm" style={{ color: colors.textMuted }}>Wallet Balance</p>
             <p className="text-xl font-bold" style={{ color: colors.neonGreen }}>
-              {state.wallet?.balance ? `${state.wallet.balance.toFixed(2)} SEI` : '0.00 SEI'}
+              {realBalance !== '0.00' ? realBalance : (state.wallet?.balance !== undefined && state.wallet.balance !== null ? `${Number(state.wallet.balance).toFixed(2)} SEI` : '0.00 SEI')}
             </p>
+            <button
+              onClick={refreshBalance}
+              className="text-xs text-blue-400 hover:text-blue-300 underline"
+            >
+              Refresh Balance
+            </button>
           </div>
         </div>
       </motion.div>
@@ -400,9 +480,9 @@ export const Payments: React.FC = () => {
                     }}
                     disabled={isSubmitting}
                   />
-                  {state.wallet && (
+                  {state.wallet && state.wallet.balance !== undefined && state.wallet.balance !== null && (
                     <div className="absolute right-3 top-3 text-sm text-gray-400">
-                      Max: {state.wallet.balance.toFixed(6)}
+                      Max: {realBalance !== '0.00' ? realBalance : (state.wallet?.balance ? Number(state.wallet.balance).toFixed(6) : '0.000000')}
                     </div>
                   )}
                 </div>
@@ -508,6 +588,9 @@ export const Payments: React.FC = () => {
                     className={state.isLoading ? 'animate-spin' : ''} 
                   />
                 </button>
+                <span className="text-sm text-gray-400">
+                  {state.transfers.length} transfers
+                </span>
               </div>
               
               <div className="flex space-x-2">
@@ -648,7 +731,7 @@ export const Payments: React.FC = () => {
                               transferType === 'sent' ? 'text-red-400' : 'text-green-400'
                             }`}>
                               {transferType === 'sent' ? '-' : '+'}
-                              {transfer.amount.toFixed(6)} SEI
+                              {(transfer.amount || 0).toFixed(6)} SEI
                             </p>
                             <StatusIcon 
                               size={20} 

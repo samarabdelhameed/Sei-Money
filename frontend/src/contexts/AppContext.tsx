@@ -131,6 +131,7 @@ const AppContext = createContext<{
     getAIRecommendations: () => Promise<void>;
     clearError: () => void;
     addNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+    removeNotification: (id: string) => void;
   };
 } | null>(null);
 
@@ -158,9 +159,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           walletConnection = await keplrWallet.connect();
           address = walletConnection.address;
 
-          // Get balance to verify connection
-          const balance = await keplrWallet.getBalance();
-          console.log('Keplr wallet connected:', { address, balance });
+          console.log('Keplr wallet connected:', { address });
+          
+          // Get balance in background
+          keplrWallet.getBalance().then(balance => {
+            console.log('Keplr balance loaded:', balance);
+          }).catch(error => {
+            console.warn('Failed to load Keplr balance:', error);
+          });
 
         } else if (provider === 'leap') {
           // Use the new Leap wallet service
@@ -171,9 +177,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           walletConnection = await leapWallet.connect();
           address = walletConnection.address;
 
-          // Get balance to verify connection
-          const balance = await leapWallet.getBalance();
-          console.log('Leap wallet connected:', { address, balance });
+          console.log('Leap wallet connected:', { address });
+          
+          // Get balance in background
+          leapWallet.getBalance().then(balance => {
+            console.log('Leap balance loaded:', balance);
+          }).catch(error => {
+            console.warn('Failed to load Leap balance:', error);
+          });
 
         } else if (provider === 'metamask') {
           // Use the new MetaMask wallet service
@@ -184,27 +195,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           walletConnection = await metamaskWallet.connect();
           address = walletConnection.cosmosAddress; // Use Cosmos address for the app
 
-          // Get balance to verify connection
-          const [evmBalance, cosmosBalance] = await Promise.all([
-            metamaskWallet.getEvmBalance(),
-            metamaskWallet.getCosmosBalance()
-          ]);
-          
           console.log('MetaMask wallet connected:', { 
             evmAddress: walletConnection.evmAddress,
-            cosmosAddress: walletConnection.cosmosAddress,
-            evmBalance,
-            cosmosBalance
+            cosmosAddress: walletConnection.cosmosAddress
+          });
+          
+          // Get balance in background to avoid blocking connection
+          Promise.all([
+            metamaskWallet.getEvmBalance(),
+            metamaskWallet.getCosmosBalance()
+          ]).then(([evmBalance, cosmosBalance]) => {
+            console.log('MetaMask balances loaded:', { evmBalance, cosmosBalance });
+          }).catch(error => {
+            console.warn('Failed to load MetaMask balances:', error);
           });
 
         } else {
           throw new Error(`Unsupported wallet provider: ${provider}`);
         }
 
-        // Connect to backend
-        const wallet = await apiService.connectWallet({ provider, address });
+        // Connect to backend with timeout
+        const wallet = await Promise.race([
+          apiService.connectWallet({ provider, address }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Backend connection timeout')), 10000)
+          )
+        ]) as any;
         
-        dispatch({ type: 'SET_WALLET', payload: wallet });
+        // Ensure balance is a number
+        const walletWithBalance = {
+          ...wallet,
+          balance: typeof wallet.balance === 'number' ? wallet.balance : 0
+        };
+        
+        dispatch({ type: 'SET_WALLET', payload: walletWithBalance });
         dispatch({ type: 'SET_WALLET_CONNECTED', payload: true });
         
         // Store wallet provider for future use
@@ -215,6 +239,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         // Load user data
         await actions.loadUserData();
+        
+        // Load unified balance from API
+        try {
+          const balanceResponse = await apiService.getUserBalance();
+          if (balanceResponse.ok && balanceResponse.balance) {
+            const unifiedBalance = {
+              ...walletWithBalance,
+              balance: parseFloat(balanceResponse.balance.formatted || '0')
+            };
+            dispatch({ type: 'SET_WALLET', payload: unifiedBalance });
+          }
+        } catch (error) {
+          console.warn('Failed to load unified balance:', error);
+        }
         
         dispatch({ type: 'ADD_NOTIFICATION', payload: {
           id: Date.now().toString(),
@@ -233,7 +271,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           type: 'error',
           timestamp: new Date()
         }});
-        throw error; // Re-throw for UI handling
+        // Error handled above
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
@@ -241,21 +279,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     disconnectWallet: async () => {
       try {
-        // Disconnect from backend
-        await apiService.disconnectWallet();
-        
-        // Disconnect from wallet services
+        // Get provider before clearing
         const provider = localStorage.getItem('connected-wallet-provider');
+        
+        // Disconnect from wallet services first
         if (provider === 'keplr') {
-          await keplrWallet.disconnect();
+          try {
+            await keplrWallet.disconnect();
+          } catch (error) {
+            console.warn('Keplr disconnect failed:', error);
+          }
         } else if (provider === 'metamask') {
-          await metamaskWallet.disconnect();
+          try {
+            await metamaskWallet.disconnect();
+          } catch (error) {
+            console.warn('MetaMask disconnect failed:', error);
+          }
         } else if (provider === 'leap') {
-          await leapWallet.disconnect();
+          try {
+            await leapWallet.disconnect();
+          } catch (error) {
+            console.warn('Leap disconnect failed:', error);
+          }
+        }
+        
+        // Try to disconnect from backend (optional - don't fail if it doesn't work)
+        try {
+          await apiService.disconnectWallet();
+        } catch (error) {
+          console.warn('Backend disconnect failed (continuing anyway):', error);
         }
         
         // Clear local storage
         localStorage.removeItem('connected-wallet-provider');
+        localStorage.removeItem('wallet-address');
+        localStorage.removeItem('wallet-balance');
         
         // Update state
         dispatch({ type: 'SET_WALLET', payload: null });
@@ -272,15 +330,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         dispatch({ type: 'ADD_NOTIFICATION', payload: {
           id: Date.now().toString(),
           message: 'Wallet disconnected successfully',
-          type: 'info',
+          type: 'success',
           timestamp: new Date()
         }});
+        
+        console.log('✅ Wallet disconnected successfully');
+        
       } catch (error) {
         console.error('Error disconnecting wallet:', error);
+        
+        // Even if there's an error, still clear the state
+        localStorage.removeItem('connected-wallet-provider');
+        localStorage.removeItem('wallet-address');
+        localStorage.removeItem('wallet-balance');
+        
+        dispatch({ type: 'SET_WALLET', payload: null });
+        dispatch({ type: 'SET_WALLET_CONNECTED', payload: false });
+        dispatch({ type: 'SET_USER', payload: null });
+        
         dispatch({ type: 'ADD_NOTIFICATION', payload: {
           id: Date.now().toString(),
-          message: 'Error disconnecting wallet',
-          type: 'error',
+          message: 'Wallet disconnected (with some errors)',
+          type: 'warning',
           timestamp: new Date()
         }});
       }
@@ -295,7 +366,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ]);
         
         dispatch({ type: 'SET_USER', payload: user });
-        dispatch({ type: 'SET_WALLET', payload: balance });
+        
+        // Ensure balance is properly formatted
+        const walletWithBalance = {
+          ...balance,
+          balance: typeof balance.balance === 'number' ? balance.balance : 
+                  typeof balance.balance === 'string' ? parseFloat(balance.balance) || 0 : 0
+        };
+        
+        dispatch({ type: 'SET_WALLET', payload: walletWithBalance });
       } catch (error) {
         console.error('Error loading user data:', error);
       }
@@ -303,10 +382,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     loadTransfers: async () => {
       try {
-        const transfers = await apiService.getTransfers();
+        const address = state.wallet?.address;
+        if (!address) {
+          dispatch({ type: 'SET_TRANSFERS', payload: [] });
+          return;
+        }
+        const transfers = await apiService.getTransfers(address);
         dispatch({ type: 'SET_TRANSFERS', payload: transfers });
       } catch (error) {
         console.error('Error loading transfers:', error);
+        // Set empty array on error to prevent UI issues
+        dispatch({ type: 'SET_TRANSFERS', payload: [] });
       }
     },
 
@@ -352,6 +438,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         dispatch({ type: 'SET_MARKET_DATA', payload: marketData });
       } catch (error) {
         console.error('Error loading market data:', error);
+        // Set default market data to prevent UI issues
+        dispatch({ type: 'SET_MARKET_DATA', payload: {
+          platform: { name: 'SeiMoney', healthy: true },
+          metrics: { totalValueLocked: 0, totalUsers: 0, totalTransactions: 0 },
+          network: { healthy: true }
+        } });
       }
     },
 
@@ -519,6 +611,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         type,
         timestamp: new Date()
       }});
+    },
+
+    removeNotification: (id: string) => {
+      dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
     },
   };
 

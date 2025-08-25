@@ -1,4 +1,4 @@
-import { Queue, QueueScheduler, Worker, JobsOptions } from 'bullmq';
+import { Queue, Worker, JobsOptions } from 'bullmq';
 import { prisma } from '../../lib/prisma';
 import { getSdk } from '../../lib/sdk';
 import { logger } from '../../lib/logger';
@@ -79,7 +79,7 @@ export const vaultHarvestsWorker = new Worker(
 async function scanExpiredTransfers() {
   const now = BigInt(Math.floor(Date.now() / 1000));
   
-  const expired = await prisma.transferMeta.findMany({
+  const expired = await prisma.transfer.findMany({
     where: {
       expiryTs: { not: null, lte: now },
       status: 'created'
@@ -112,10 +112,10 @@ async function scanExpiredTransfers() {
 async function refundExpiredTransfer(transferId: string) {
   try {
     const sdk = await getSdk();
-    const result = await sdk.payments.refundTransfer(Number(transferId));
+    const result = await sdk.payments.refundTransfer(Number(transferId), "system");
     
     // Update local status
-    await prisma.transferMeta.updateMany({
+    await prisma.transfer.updateMany({
       where: { transferId: BigInt(transferId) },
       data: { status: 'refunded' }
     });

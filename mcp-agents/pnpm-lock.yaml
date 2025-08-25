@@ -55,6 +55,9 @@ importers:
 
   rebalancer-agent:
     dependencies:
+      '@cosmjs/cosmwasm-stargate':
+        specifier: ^0.32.0
+        version: 0.32.4
       '@fastify/cors':
         specifier: ^8.4.0
         version: 8.5.0

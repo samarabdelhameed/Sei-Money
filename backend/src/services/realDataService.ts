@@ -1,4 +1,4 @@
-import { SeiMoneySDKEnhanced, getEnhancedSdk, BlockchainErrorHandler } from '../lib/sdk-enhanced-fixed';
+import { SeiMoneySDKEnhanced, getEnhancedSdk, BlockchainError } from '../lib/sdk-enhanced-fixed';
 import { MarketDataService, getMarketDataService } from './marketDataService';
 import { logger } from '../lib/logger';
 import { Coin } from '@cosmjs/amino';

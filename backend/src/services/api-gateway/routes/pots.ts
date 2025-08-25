@@ -58,7 +58,8 @@ export async function potsRoutes(app: FastifyInstance): Promise<void> {
           pots = await sdk.listPotsByOwner(owner);
         } catch (error) {
           // If the SDK method fails, try direct contract query with correct method name
-          const client = await getCosmWasmClient();
+          const sdk = await getEnhancedSdk();
+          const client = sdk.client;
           const result = await client.queryContractSmart(CONTRACTS.POTS, {
             list_pots_by_owner: { owner }
           });

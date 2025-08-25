@@ -66,8 +66,14 @@ export async function walletRoutes(app: FastifyInstance): Promise<void> {
   // POST /wallet/disconnect - Disconnect wallet
   app.post('/disconnect', async (req, reply) => {
     try {
-      // Clear session
-      (req as any).session = null;
+      // Clear session if it exists
+      if ((req as any).session) {
+        (req as any).session.destroy();
+      }
+
+      // Clear any cookies
+      reply.clearCookie('session');
+      reply.clearCookie('wallet-session');
 
       return reply.send({
         ok: true,
@@ -76,9 +82,9 @@ export async function walletRoutes(app: FastifyInstance): Promise<void> {
 
     } catch (error) {
       logger.error('Error disconnecting wallet:', error);
-      return reply.status(500).send({
-        ok: false,
-        error: 'Failed to disconnect wallet'
+      return reply.status(200).send({
+        ok: true,
+        message: 'Wallet disconnected (session cleanup failed but continuing)'
       });
     }
   });

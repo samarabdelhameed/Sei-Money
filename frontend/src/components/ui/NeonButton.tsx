@@ -58,7 +58,7 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
     }
   };
 
-  const selectedColor = colorMap[color];
+  const selectedColor = colorMap[color] || colorMap.green; // Fallback to green if color is invalid
   const isDisabled = disabled || loading;
 
   const getVariantStyles = () => {
@@ -68,6 +68,15 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
         borderColor: colors.textFaded,
         color: colors.textFaded,
         cursor: 'not-allowed'
+      };
+    }
+    
+    // Safety check for selectedColor
+    if (!selectedColor) {
+      return {
+        backgroundColor: colors.surface,
+        borderColor: colors.textFaded,
+        color: colors.textFaded,
       };
     }
     
@@ -109,8 +118,8 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
       style={getVariantStyles()}
       whileHover={!isDisabled ? { 
         scale: 1.02,
-        boxShadow: variant === 'primary' ? selectedColor.shadow : 
-                   `0 0 20px ${selectedColor.primary}30`,
+        boxShadow: variant === 'primary' ? (selectedColor?.shadow || shadows.neonGreen) : 
+                   `0 0 20px ${selectedColor?.primary || colors.neonGreen}30`,
       } : undefined}
       whileTap={!isDisabled ? { scale: 0.98 } : undefined}
       disabled={isDisabled}
@@ -143,7 +152,7 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
         <motion.div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 rounded-xl"
           style={{
-            background: `radial-gradient(circle at center, ${selectedColor.primary}10, transparent 70%)`
+            background: `radial-gradient(circle at center, ${selectedColor?.primary || colors.neonGreen}10, transparent 70%)`
           }}
           transition={{ duration: 0.3 }}
         />

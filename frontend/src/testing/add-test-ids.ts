@@ -68,9 +68,11 @@ export function addTestIds() {
           if (!textPattern.test(text)) return;
         }
         
-        // Add test ID
-        element.setAttribute('data-testid', testId);
-        addedCount++;
+        // Add test ID only if it doesn't exist
+        if (!element.getAttribute('data-testid')) {
+          element.setAttribute('data-testid', testId);
+          addedCount++;
+        }
       });
     } catch (error) {
       console.warn(`Failed to add test ID for selector ${selector}:`, error);
@@ -159,20 +161,39 @@ export function setupAutoTestIds() {
   addTestIds();
   
   // Set up mutation observer to add test IDs to new elements
+  let debounceTimer: NodeJS.Timeout | null = null;
+  
   const observer = new MutationObserver((mutations) => {
     let shouldUpdate = false;
     
     mutations.forEach((mutation) => {
       if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-        shouldUpdate = true;
+        // Only update if new elements don't already have test IDs
+        const hasNewElements = Array.from(mutation.addedNodes).some(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            return !element.getAttribute('data-testid') && 
+                   !element.querySelector('[data-testid]');
+          }
+          return false;
+        });
+        
+        if (hasNewElements) {
+          shouldUpdate = true;
+        }
       }
     });
     
     if (shouldUpdate) {
-      // Debounce the update
-      setTimeout(() => {
+      // Clear existing timer and set new one
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      
+      debounceTimer = setTimeout(() => {
         addTestIds();
-      }, 500);
+        debounceTimer = null;
+      }, 1000); // Increased debounce time
     }
   });
   

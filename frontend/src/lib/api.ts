@@ -39,8 +39,11 @@ class ApiClient {
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...options.headers,
       },
+      mode: 'cors',
+      credentials: 'include',
       ...options,
     };
 
@@ -100,7 +103,7 @@ export const apiClient = new ApiClient(API_BASE_URL);
 // API Endpoints
 export const API_ENDPOINTS = {
   // Health check
-  HEALTH: '/health',
+  HEALTH: '/health/health',
   
   // Transfers
   TRANSFERS: '/api/v1/transfers',
@@ -149,8 +152,9 @@ export const apiService = {
   },
 
   // Transfers
-  async getTransfers() {
-    return apiClient.get<Transfer[]>(API_ENDPOINTS.TRANSFERS);
+  async getTransfers(address?: string) {
+    const endpoint = address ? `${API_ENDPOINTS.TRANSFERS}?address=${address}` : API_ENDPOINTS.TRANSFERS;
+    return apiClient.get<Transfer[]>(endpoint);
   },
 
   async createTransfer(transferData: CreateTransferRequest) {
@@ -255,7 +259,7 @@ export const apiService = {
 
   // Market Data
   async getMarketData() {
-    return apiClient.get<MarketData>(API_ENDPOINTS.MARKET_DATA);
+    return apiClient.get<MarketData>(API_ENDPOINTS.MARKET_OVERVIEW);
   },
 
   async getMarketStats() {
