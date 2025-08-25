@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-تم إجراء فحص شامل للفرونت إند وتم اكتشاف عدة مشاكل وإصلاحها. الفرونت إند يعمل بشكل أساسي ولكن يحتاج إلى بعض التحسينات.
+A comprehensive examination of the frontend has been conducted and several issues have been discovered and fixed. The frontend is working fundamentally but needs some improvements.
 
 ## Issues Discovered and Fixed
 

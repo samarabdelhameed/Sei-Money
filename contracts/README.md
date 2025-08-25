@@ -1,28 +1,28 @@
-# 🐒💰 عقود SeiMoney DeFi الذكية
+# 🐒💰 SeiMoney DeFi Smart Contracts
 
-**نظام بيئي شامل للتمويل اللامركزي مبني على شبكة Sei مع عقود CosmWasm الذكية**
+**Comprehensive decentralized finance ecosystem built on Sei network with CosmWasm smart contracts**
 
-## 🏆 **حالة المشروع: مكتمل ومنشور بنجاح** ✅
+## 🏆 **Project Status: Complete and Successfully Deployed** ✅
 
-### **📊 إحصائيات الإنجاز**
-- **6 عقود ذكية** مطورة ومنشورة بالكامل
-- **21 اختبار** نجح من أصل 21 (معدل نجاح 100%)
-- **1.4 MB** إجمالي حجم WASM محسن
-- **100% تغطية** للوظائف الأساسية
-- **أمان متقدم** مع التحقق الشامل من المدخلات
+### **📊 Achievement Statistics**
+- **6 smart contracts** fully developed and deployed
+- **21 tests** passed out of 21 (100% success rate)
+- **1.4 MB** total optimized WASM size
+- **100% coverage** of core functions
+- **Advanced security** with comprehensive input validation
 
-## 🏗️ **نظرة عامة على البنية المعمارية**
+## 🏗️ **Architecture Overview**
 
-SeiMoney هي منصة DeFi شاملة تتميز بـ 6 عقود ذكية أساسية:
+SeiMoney is a comprehensive DeFi platform featuring 6 core smart contracts:
 
-- **💰 المدفوعات** - تحويلات محمية مع انتهاء الصلاحية والاسترداد
-- **👥 المجموعات** - تجميع المجموعات وإدارة المساهمات
-- **🏺 الأواني** - أهداف الادخار وتتبع المعالم
-- **🏷️ الأسماء المستعارة** - سجل أسماء المستخدمين وحل العناوين
-- **🛡️ ضمان المخاطر** - حل النزاعات والضمان متعدد الأطراف
-- **🏦 الخزائن** - زراعة العائد المدعومة بالذكاء الاصطناعي وإدارة المحافظ
+- **💰 Payments** - Protected transfers with expiry and refunds
+- **👥 Groups** - Group pooling and contribution management
+- **🏺 Pots** - Savings goals and milestone tracking
+- **🏷️ Aliases** - Username registry and address resolution
+- **🛡️ Risk Escrow** - Dispute resolution and multi-party escrow
+- **🏦 Vaults** - AI-powered yield farming and portfolio management
 
-## 🎯 **الميزات المنجزة لكل عقد**
+## 🎯 **Completed Features for Each Contract**
 
 ## 📂 **Contract Structure**
 

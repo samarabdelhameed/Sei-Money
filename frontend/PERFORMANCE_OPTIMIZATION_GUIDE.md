@@ -1,40 +1,40 @@
-# ⚡ دليل تحسين الأداء - SeiMoney
+# ⚡ Performance Optimization Guide - SeiMoney
 
-## 🎯 نظرة عامة
+## 🎯 Overview
 
-هذا الدليل يوفر توصيات شاملة لتحسين أداء تطبيق SeiMoney، بما في ذلك تحسين سرعة التحميل، استخدام الذاكرة، والاستجابة العامة للتطبيق.
+This guide provides comprehensive recommendations for optimizing the performance of the SeiMoney application, including improving loading speed, memory usage, and overall application responsiveness.
 
-## 📊 مقاييس الأداء المستهدفة
+## 📊 Target Performance Metrics
 
-### 🎯 أهداف الأداء
-- **First Contentful Paint (FCP)**: < 1.5 ثانية
-- **Time to Interactive (TTI)**: < 4.0 ثانية
+### 🎯 Performance Goals
+- **First Contentful Paint (FCP)**: < 1.5 seconds
+- **Time to Interactive (TTI)**: < 4.0 seconds
 - **Cumulative Layout Shift (CLS)**: < 0.1
 - **First Input Delay (FID)**: < 100ms
-- **Largest Contentful Paint (LCP)**: < 2.5 ثانية
+- **Largest Contentful Paint (LCP)**: < 2.5 seconds
 
-### 📈 مقاييس إضافية
-- **Bundle Size**: < 3MB (مضغوط)
+### 📈 Additional Metrics
+- **Bundle Size**: < 3MB (compressed)
 - **Memory Usage**: < 100MB
 - **API Response Time**: < 500ms
 - **Cache Hit Rate**: > 80%
 
 ---
 
-## 🚀 تحسين التحميل الأولي
+## 🚀 Initial Loading Optimization
 
-### 1. تحسين حجم الحزمة
+### 1. Bundle Size Optimization
 
-#### تقسيم الكود (Code Splitting)
+#### Code Splitting
 ```javascript
-// تقسيم المسارات
+// Route splitting
 import { lazy, Suspense } from 'react';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Payments = lazy(() => import('./pages/Payments'));
 const Vaults = lazy(() => import('./pages/Vaults'));
 
-// استخدام Suspense
+// Using Suspense
 function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -48,34 +48,34 @@ function App() {
 }
 ```
 
-#### تحسين الاستيرادات
+#### Import Optimization
 ```javascript
-// بدلاً من استيراد المكتبة كاملة
+// Instead of importing entire library
 import * as _ from 'lodash';
 
-// استورد فقط ما تحتاجه
+// Import only what you need
 import { debounce, throttle } from 'lodash';
 
-// أو استخدم استيرادات محددة
+// Or use specific imports
 import debounce from 'lodash/debounce';
 ```
 
-#### إزالة الكود غير المستخدم
+#### Remove Unused Code
 ```bash
-# استخدام webpack-bundle-analyzer
+# Use webpack-bundle-analyzer
 npm install --save-dev webpack-bundle-analyzer
 npx webpack-bundle-analyzer build/static/js/*.js
 
-# إزالة التبعيات غير المستخدمة
+# Remove unused dependencies
 npm install --save-dev depcheck
 npx depcheck
 ```
 
-### 2. تحسين الأصول (Assets)
+### 2. Assets Optimization
 
-#### ضغط الصور
+#### Image Compression
 ```javascript
-// استخدام تنسيقات حديثة
+// Use modern formats
 const ImageComponent = ({ src, alt }) => (
   <picture>
     <source srcSet={`${src}.webp`} type="image/webp" />
@@ -85,33 +85,33 @@ const ImageComponent = ({ src, alt }) => (
 );
 ```
 
-#### تحسين الخطوط
+#### Font Optimization
 ```css
-/* تحميل الخطوط بكفاءة */
+/* Efficient font loading */
 @font-face {
   font-family: 'CustomFont';
   src: url('./fonts/custom-font.woff2') format('woff2');
-  font-display: swap; /* تحسين عرض الخط */
+  font-display: swap; /* Improve font display */
 }
 
-/* استخدام system fonts كبديل */
+/* Use system fonts as fallback */
 body {
   font-family: 'CustomFont', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 ```
 
-#### تحسين CSS
+#### Optimize CSS
 ```css
-/* تجنب CSS غير المستخدم */
-/* استخدام PurgeCSS أو similar tools */
+/* Avoid unused CSS */
+/* Use PurgeCSS or similar tools */
 
-/* تحسين الانتقالات */
+/* Optimize Transitions */
 .smooth-transition {
   transition: transform 0.3s ease-out;
-  will-change: transform; /* تحسين الأداء */
+  will-change: transform; /* Improve performance */
 }
 
-/* استخدام CSS Grid و Flexbox بكفاءة */
+/* Use CSS Grid and Flexbox efficiently */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -121,13 +121,13 @@ body {
 
 ---
 
-## 🔄 تحسين وقت التشغيل
+## 🔄 Runtime Optimization
 
-### 1. إدارة الحالة بكفاءة
+### 1. Efficient State Management
 
-#### تحسين React State
+#### Optimize React State
 ```javascript
-// استخدام useMemo للحسابات المكلفة
+// Use useMemo for expensive calculations
 const ExpensiveComponent = ({ data }) => {
   const processedData = useMemo(() => {
     return data.map(item => ({
@@ -139,7 +139,7 @@ const ExpensiveComponent = ({ data }) => {
   return <div>{/* render processedData */}</div>;
 };
 
-// استخدام useCallback للدوال
+// Use useCallback for functions
 const OptimizedComponent = ({ onUpdate }) => {
   const handleClick = useCallback((id) => {
     onUpdate(id);
@@ -149,27 +149,27 @@ const OptimizedComponent = ({ onUpdate }) => {
 };
 ```
 
-#### تحسين Re-renders
+#### Optimize Re-renders
 ```javascript
-// استخدام React.memo
+// Use React.memo
 const MemoizedComponent = React.memo(({ data }) => {
   return <div>{data.name}</div>;
 });
 
-// تحسين شروط التحديث
+// Optimize update conditions
 const SmartComponent = React.memo(({ user, settings }) => {
   return <UserProfile user={user} settings={settings} />;
 }, (prevProps, nextProps) => {
-  // تحديث فقط إذا تغير المستخدم
+  // Update only if user changes
   return prevProps.user.id === nextProps.user.id;
 });
 ```
 
-### 2. تحسين طلبات الشبكة
+### 2. Optimize Network Requests
 
-#### تنفيذ التخزين المؤقت
+#### Implement Caching
 ```javascript
-// تخزين مؤقت للبيانات
+// Cache data
 const cache = new Map();
 
 const fetchWithCache = async (url, ttl = 5 * 60 * 1000) => {
@@ -186,9 +186,9 @@ const fetchWithCache = async (url, ttl = 5 * 60 * 1000) => {
 };
 ```
 
-#### تجميع الطلبات
+#### Batch Requests
 ```javascript
-// تجميع طلبات متعددة
+// Batch multiple requests
 const batchRequests = (() => {
   let batch = [];
   let timeoutId = null;
@@ -202,17 +202,17 @@ const batchRequests = (() => {
       const requests = [...batch];
       batch = [];
       
-      // إرسال جميع الطلبات معاً
+      // Send all requests together
       const results = await Promise.all(requests.map(req => fetch(req.url)));
-      // معالجة النتائج...
-    }, 50); // تأخير 50ms لتجميع الطلبات
+      // Process results...
+    }, 50); // 50ms delay for batching
   };
 })();
 ```
 
-#### تحسين WebSocket
+#### Optimize WebSocket
 ```javascript
-// إدارة اتصالات WebSocket بكفاءة
+// Efficient WebSocket connection management
 class OptimizedWebSocket {
   constructor(url) {
     this.url = url;
@@ -227,7 +227,7 @@ class OptimizedWebSocket {
     
     this.ws.onopen = () => {
       this.reconnectAttempts = 0;
-      // إرسال الرسائل المؤجلة
+      // Send queued messages
       this.messageQueue.forEach(msg => this.ws.send(msg));
       this.messageQueue = [];
     };
@@ -254,26 +254,26 @@ class OptimizedWebSocket {
 
 ---
 
-## 💾 تحسين الذاكرة
+## 💾 Memory Optimization
 
-### 1. منع تسريبات الذاكرة
+### 1. Prevent Memory Leaks
 
-#### تنظيف Event Listeners
+#### Clean Up Event Listeners
 ```javascript
 const ComponentWithListeners = () => {
   useEffect(() => {
     const handleScroll = () => {
-      // معالجة التمرير
+      // Handle scrolling
     };
     
     const handleResize = () => {
-      // معالجة تغيير الحجم
+      // Handle resize
     };
     
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
     
-    // تنظيف عند إلغاء التحميل
+    // Cleanup on unmount
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
@@ -284,19 +284,19 @@ const ComponentWithListeners = () => {
 };
 ```
 
-#### إدارة Timers
+#### Manage Timers
 ```javascript
 const ComponentWithTimer = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // تحديث دوري
+      // Update periodically
     }, 1000);
     
     const timeoutId = setTimeout(() => {
-      // عمل مؤجل
+      // Perform delayed action
     }, 5000);
     
-    // تنظيف عند إلغاء التحميل
+    // Cleanup on unmount
     return () => {
       clearInterval(intervalId);
       clearTimeout(timeoutId);
@@ -307,9 +307,9 @@ const ComponentWithTimer = () => {
 };
 ```
 
-### 2. تحسين استخدام الذاكرة
+### 2. Optimize Memory Usage
 
-#### Virtual Scrolling للقوائم الطويلة
+#### Virtual Scrolling for Long Lists
 ```javascript
 import { FixedSizeList as List } from 'react-window';
 
@@ -333,7 +333,7 @@ const VirtualizedList = ({ items }) => {
 };
 ```
 
-#### Lazy Loading للمكونات
+#### Lazy Loading for Components
 ```javascript
 const LazyImage = ({ src, alt }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -375,24 +375,24 @@ const LazyImage = ({ src, alt }) => {
 
 ---
 
-## 🎨 تحسين الواجهة
+## 🎨 UI Optimization
 
-### 1. تحسين الرسوم المتحركة
+### 1. Optimize Animations
 
-#### استخدام CSS Transforms
+#### Use CSS Transforms
 ```css
-/* بدلاً من تغيير left/top */
+/* Instead of changing left/top */
 .slow-animation {
   transition: left 0.3s ease;
 }
 
-/* استخدم transform */
+/* Use transform */
 .fast-animation {
   transition: transform 0.3s ease;
   will-change: transform;
 }
 
-/* تحسين الرسوم المتحركة المعقدة */
+/* Optimize complex animations */
 @keyframes optimizedSlide {
   from {
     transform: translateX(-100%);
@@ -403,14 +403,14 @@ const LazyImage = ({ src, alt }) => {
 }
 ```
 
-#### تحسين Scroll Performance
+#### Optimize Scroll Performance
 ```javascript
-// استخدام throttle للأحداث المتكررة
+// Use throttle for repeated events
 import { throttle } from 'lodash';
 
 const OptimizedScrollComponent = () => {
   const handleScroll = throttle(() => {
-    // معالجة التمرير
+    // Handle scrolling
   }, 16); // ~60fps
   
   useEffect(() => {
@@ -422,44 +422,44 @@ const OptimizedScrollComponent = () => {
 };
 ```
 
-### 2. تحسين التخطيط
+### 2. Optimize Layout
 
-#### تجنب Layout Thrashing
+#### Avoid Layout Thrashing
 ```css
-/* تجنب خصائص تسبب reflow */
+/* Avoid properties that cause reflow */
 .avoid-reflow {
-  /* بدلاً من width/height */
+  /* Instead of width/height */
   transform: scale(1.1);
   
-  /* بدلاً من margin/padding */
+  /* Instead of margin/padding */
   transform: translateX(10px);
 }
 
-/* استخدام contain للعزل */
+/* Use contain for isolation */
 .contained-component {
   contain: layout style paint;
 }
 ```
 
-#### تحسين Critical Rendering Path
+#### Optimize Critical Rendering Path
 ```html
-<!-- تحميل CSS الحرج inline -->
+<!-- Load critical CSS inline -->
 <style>
-  /* CSS حرج للـ above-the-fold content */
+  /* Critical CSS for above-the-fold content */
   .hero { display: flex; justify-content: center; }
 </style>
 
-<!-- تأجيل CSS غير الحرج -->
+<!-- Defer non-critical CSS -->
 <link rel="preload" href="non-critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 ```
 
 ---
 
-## 🔧 تحسين البناء والنشر
+## 🔧 Build and Deployment Optimization
 
-### 1. تحسين Webpack
+### 1. Optimize Webpack
 
-#### إعدادات الإنتاج
+#### Production Settings
 ```javascript
 // webpack.config.js
 const path = require('path');
@@ -494,9 +494,9 @@ module.exports = {
 };
 ```
 
-#### تحسين الضغط
+#### Advanced Compression
 ```javascript
-// إعدادات ضغط متقدمة
+// Advanced compression settings
 const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
@@ -511,24 +511,24 @@ module.exports = {
 };
 ```
 
-### 2. تحسين CDN والتخزين المؤقت
+### 2. Optimize CDN and Caching
 
-#### إعدادات Cache Headers
+#### Cache Headers
 ```javascript
 // Express.js example
 app.use('/static', express.static('build/static', {
-  maxAge: '1y', // سنة واحدة للأصول الثابتة
+  maxAge: '1y', // 1 year for static assets
   etag: true,
   lastModified: true,
 }));
 
 app.use('/', express.static('build', {
-  maxAge: '1h', // ساعة واحدة للـ HTML
+  maxAge: '1h', // 1 hour for HTML
   etag: true,
 }));
 ```
 
-#### Service Worker للتخزين المؤقت
+#### Service Worker for Caching
 ```javascript
 // sw.js
 const CACHE_NAME = 'seimoney-v1';
@@ -549,7 +549,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // إرجاع من cache أو fetch من الشبكة
+        // Return from cache or fetch from network
         return response || fetch(event.request);
       })
   );
@@ -558,13 +558,13 @@ self.addEventListener('fetch', (event) => {
 
 ---
 
-## 📊 مراقبة الأداء
+## 📊 Performance Monitoring
 
-### 1. أدوات القياس
+### 1. Measurement Tools
 
 #### Performance API
 ```javascript
-// قياس أداء العمليات
+// Measure performance of operations
 const measurePerformance = (name, fn) => {
   return async (...args) => {
     const start = performance.now();
@@ -573,7 +573,7 @@ const measurePerformance = (name, fn) => {
     
     console.log(`${name} took ${end - start} milliseconds`);
     
-    // إرسال إلى خدمة المراقبة
+    // Send to monitoring service
     if (typeof gtag !== 'undefined') {
       gtag('event', 'timing_complete', {
         name: name,
@@ -585,20 +585,20 @@ const measurePerformance = (name, fn) => {
   };
 };
 
-// استخدام
+// Use
 const optimizedFetch = measurePerformance('API Call', fetch);
 ```
 
 #### Real User Monitoring
 ```javascript
-// مراقبة تجربة المستخدم الحقيقية
+// Monitor real user experience
 const observePerformance = () => {
   // Core Web Vitals
   new PerformanceObserver((entryList) => {
     for (const entry of entryList.getEntries()) {
       console.log(`${entry.name}: ${entry.value}`);
       
-      // إرسال البيانات لخدمة المراقبة
+      // Send data to monitoring service
       sendToAnalytics({
         metric: entry.name,
         value: entry.value,
@@ -609,11 +609,11 @@ const observePerformance = () => {
 };
 ```
 
-### 2. تحليل الأداء
+### 2. Performance Analysis
 
 #### Memory Usage Monitoring
 ```javascript
-// مراقبة استخدام الذاكرة
+// Monitor memory usage
 const monitorMemory = () => {
   if (performance.memory) {
     const memInfo = {
@@ -624,86 +624,86 @@ const monitorMemory = () => {
     
     console.log('Memory usage:', memInfo);
     
-    // تحذير إذا تجاوز الاستخدام 80%
+    // Warn if usage exceeds 80%
     if (memInfo.used / memInfo.limit > 0.8) {
       console.warn('High memory usage detected');
     }
   }
 };
 
-// مراقبة كل 30 ثانية
+// Monitor every 30 seconds
 setInterval(monitorMemory, 30000);
 ```
 
 ---
 
-## 🎯 خطة التحسين المرحلية
+## 🎯 Progressive Improvement Plan
 
-### المرحلة 1: التحسينات السريعة (أسبوع واحد)
-- [ ] ضغط الصور وتحسين التنسيقات
-- [ ] إزالة الكود غير المستخدم
-- [ ] تحسين استيرادات المكتبات
-- [ ] إضافة lazy loading للصور
-- [ ] تحسين CSS وإزالة غير المستخدم
+### Phase 1: Quick Fixes (One Week)
+- [ ] Compress images and optimize formats
+- [ ] Remove unused code
+- [ ] Optimize library imports
+- [ ] Add lazy loading for images
+- [ ] Optimize CSS and remove unused
 
-### المرحلة 2: تحسينات متوسطة (أسبوعان)
-- [ ] تنفيذ code splitting
-- [ ] إضافة service worker
-- [ ] تحسين إدارة الحالة
-- [ ] تنفيذ virtual scrolling
-- [ ] تحسين طلبات الشبكة
+### Phase 2: Medium Fixes (Two Weeks)
+- [ ] Implement code splitting
+- [ ] Add service worker
+- [ ] Optimize state management
+- [ ] Implement virtual scrolling
+- [ ] Optimize network requests
 
-### المرحلة 3: تحسينات متقدمة (شهر)
-- [ ] تحسين الرسوم المتحركة
-- [ ] تنفيذ مراقبة الأداء
-- [ ] تحسين البناء والنشر
-- [ ] تحسين التخزين المؤقت
-- [ ] تحسين الأمان والأداء
+### Phase 3: Advanced Fixes (One Month)
+- [ ] Optimize animations
+- [ ] Implement performance monitoring
+- [ ] Optimize build and deployment
+- [ ] Optimize caching
+- [ ] Optimize security and performance
 
-### المرحلة 4: التحسين المستمر (مستمر)
-- [ ] مراقبة مستمرة للأداء
-- [ ] تحليل تجربة المستخدم
-- [ ] تحديث التبعيات بانتظام
-- [ ] اختبار الأداء الدوري
-- [ ] تحسين بناءً على البيانات
-
----
-
-## 📈 قياس النجاح
-
-### مؤشرات الأداء الرئيسية
-- **تحسن سرعة التحميل**: هدف 30% تحسن
-- **تقليل حجم الحزمة**: هدف 25% تقليل
-- **تحسن استجابة التطبيق**: هدف 40% تحسن
-- **تقليل استخدام الذاكرة**: هدف 20% تقليل
-- **تحسن معدل الارتداد**: هدف 15% تحسن
-
-### أدوات القياس
-- **Lighthouse**: للتحليل الشامل
-- **WebPageTest**: لاختبار الأداء المتقدم
-- **Chrome DevTools**: للتحليل التفصيلي
-- **Real User Monitoring**: لبيانات المستخدمين الحقيقيين
-- **Bundle Analyzer**: لتحليل حجم الحزمة
+### Phase 4: Continuous Improvement (Ongoing)
+- [ ] Continuous performance monitoring
+- [ ] Analyze user experience
+- [ ] Regularly update dependencies
+- [ ] Periodic performance testing
+- [ ] Optimize based on data
 
 ---
 
-## 🔄 الصيانة المستمرة
+## 📈 Success Metrics
 
-### مراجعة شهرية
-- [ ] تحليل تقارير الأداء
-- [ ] مراجعة استخدام الموارد
-- [ ] تحديث التبعيات
-- [ ] اختبار الأداء على أجهزة مختلفة
-- [ ] مراجعة ملاحظات المستخدمين
+### Key Performance Indicators
+- **Loading Speed Improvement**: Target 30% improvement
+- **Bundle Size Reduction**: Target 25% reduction
+- **Application Responsiveness Improvement**: Target 40% improvement
+- **Memory Usage Reduction**: Target 20% reduction
+- **Cache Hit Rate Improvement**: Target 15% improvement
 
-### مراجعة ربع سنوية
-- [ ] تقييم شامل للأداء
-- [ ] مراجعة استراتيجية التحسين
-- [ ] تحديث أهداف الأداء
-- [ ] تدريب الفريق على أفضل الممارسات
-- [ ] تحديث أدوات المراقبة
+### Measurement Tools
+- **Lighthouse**: For comprehensive analysis
+- **WebPageTest**: For advanced performance testing
+- **Chrome DevTools**: For detailed analysis
+- **Real User Monitoring**: For real user data
+- **Bundle Analyzer**: For bundle size analysis
 
 ---
 
-*تم إنشاء هذا الدليل بواسطة فريق الأداء في SeiMoney*
-*آخر تحديث: ديسمبر 2024*
+## 🔄 Ongoing Maintenance
+
+### Monthly Review
+- [ ] Analyze performance reports
+- [ ] Review resource usage
+- [ ] Update dependencies
+- [ ] Test on different devices
+- [ ] Review user feedback
+
+### Quarterly Review
+- [ ] Comprehensive performance assessment
+- [ ] Review optimization strategy
+- [ ] Update performance goals
+- [ ] Train team on best practices
+- [ ] Update monitoring tools
+
+---
+
+*This guide was created by the SeiMoney Performance Team*
+*Last updated: December 2024*

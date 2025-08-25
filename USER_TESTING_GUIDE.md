@@ -1,276 +1,275 @@
-# 🧪 دليل التست الشامل - SeiMoney
+# 🧪 Comprehensive Testing Guide - SeiMoney
 
-## 📋 نظرة عامة
-هذا الدليل هيوضحلك إزاي تعمل تست شامل للمشروع كأنك يوزر حقيقي، من البداية للنهاية.
+## 📋 Overview
+This guide explains how to perform comprehensive testing of the project as a real user, from start to finish.
 
-## 🚀 الخطوة الأولى: تشغيل المشروع
+## 🚀 Step 1: Start the Project
 
-### 1. تشغيل جميع الخدمات
+### 1. Start All Services
 ```bash
 ./start-all.sh
 ```
 
-### 2. التأكد من تشغيل الخدمات
+### 2. Verify Services are Running
 - ✅ Frontend: http://localhost:5175
 - ✅ Backend: http://localhost:3001
 - ✅ Health Check: http://localhost:3001/health/health
 
 ---
 
-## 🎯 سيناريو التست الكامل
+## 🎯 Complete Testing Scenario
 
-### المرحلة 1: الوصول الأولي 🏠
-**الهدف:** التأكد من أن الموقع يعمل بشكل صحيح
+### Phase 1: Initial Access 🏠
+**Objective:** Ensure the website works correctly
 
-#### الخطوات:
-1. **افتح المتصفح** واذهب إلى: `http://localhost:5175`
-2. **تحقق من الصفحة الرئيسية:**
-   - ✅ الشعار "SeiMoney" ظاهر
-   - ✅ الـ Navigation Bar شغال
-   - ✅ زر "Connect Wallet" ظاهر
-   - ✅ الـ Hero Section بالنصوص والأزرار
-   - ✅ الـ Features Cards ظاهرة
-   - ✅ الـ Stats Section شغال
+#### Steps:
+1. **Open browser** and go to: `http://localhost:5175`
+2. **Check homepage:**
+   - ✅ "SeiMoney" logo is visible
+   - ✅ Navigation Bar is working
+   - ✅ "Connect Wallet" button is visible
+   - ✅ Hero Section with text and buttons
+   - ✅ Features Cards are visible
+   - ✅ Stats Section is working
 
-#### ما تدور عليه:
-- 🎨 التصميم يظهر بشكل صحيح
-- 🌈 الألوان النيون والتأثيرات البصرية
-- 📱 الموقع responsive على أحجام مختلفة
-- ⚡ السرعة والأداء
+#### What to look for:
+- 🎨 Design displays correctly
+- 🌈 Neon colors and visual effects
+- 📱 Website is responsive on different sizes
+- ⚡ Speed and performance
 
 ---
 
-### المرحلة 2: ربط المحفظة 💰
-**الهدف:** اختبار عملية ربط المحفظة
+### Phase 2: Wallet Connection 💰
+**Objective:** Test wallet connection process
 
-#### الخطوات:
-1. **اضغط على "Connect Wallet"**
-2. **اختر نوع المحفظة:**
-   - MetaMask (الأفضل للتست)
+#### Steps:
+1. **Click "Connect Wallet"**
+2. **Choose wallet type:**
+   - MetaMask (best for testing)
    - Keplr
    - Leap
-3. **تأكد من:**
-   - ✅ النافذة المنبثقة تظهر
-   - ✅ قائمة المحاف ظاهرة
-   - ✅ يمكن اختيار محفظة
-   - ✅ رسالة النجاح تظهر
-   - ✅ عنوان المحفظة يظهر في الـ Navbar
-   - ✅ الرصيد يظهر (حتى لو 0)
+3. **Verify:**
+   - ✅ Popup window appears
+   - ✅ Wallet list is visible
+   - ✅ Wallet can be selected
+   - ✅ Success message appears
+   - ✅ Wallet address shows in Navbar
+   - ✅ Balance shows (even if 0)
 
-#### في حالة عدم وجود محفظة:
-- الموقع هيعرض رسالة توضح إزاي تنصب المحفظة
-- يمكنك المتابعة بدون محفظة لتست باقي الميزات
+#### If no wallet exists:
+- Website will display message explaining how to install wallet
+- You can continue without wallet to test other features
 
 ---
 
-### المرحلة 3: استكشاف الصفحات 🧭
-**الهدف:** التأكد من أن جميع الصفحات تعمل
+### Phase 3: Explore Pages 🧭
+**Objective:** Ensure all pages work
 
-#### ترتيب التست:
+#### Testing Order:
 
 **3.1 Dashboard 📊**
-- اضغط على "Dashboard" في الـ Navigation
-- تحقق من:
-  - ✅ الـ Stats Cards (Balance, Transfers, etc.)
-  - ✅ الـ Charts والرسوم البيانية
+- Click "Dashboard" in Navigation
+- Check:
+  - ✅ Stats Cards (Balance, Transfers, etc.)
+  - ✅ Charts and graphs
   - ✅ Recent Activity
   - ✅ Quick Actions
 
 **3.2 Payments 💸**
-- اضغط على "Payments"
-- تحقق من:
-  - ✅ نموذج إرسال الأموال
-  - ✅ قائمة التحويلات
-  - ✅ فلترة التحويلات
-  - ✅ تفاصيل كل تحويل
+- Click "Payments"
+- Check:
+  - ✅ Money sending form
+  - ✅ Transfers list
+  - ✅ Transfer filtering
+  - ✅ Transfer details
 
 **3.3 Groups 👥**
-- اضغط على "Groups"
-- تحقق من:
-  - ✅ قائمة المجموعات
-  - ✅ إنشاء مجموعة جديدة
-  - ✅ الانضمام لمجموعة
-  - ✅ إدارة المجموعات
+- Click "Groups"
+- Check:
+  - ✅ Groups list
+  - ✅ Create new group
+  - ✅ Join group
+  - ✅ Manage groups
 
 **3.4 Pots 🏺**
-- اضغط على "Pots"
-- تحقق من:
-  - ✅ قائمة الأواني (Savings Pots)
-  - ✅ إنشاء إناء جديد
-  - ✅ إضافة أموال للإناء
-  - ✅ سحب أموال من الإناء
+- Click "Pots"
+- Check:
+  - ✅ Pots list (Savings Pots)
+  - ✅ Create new pot
+  - ✅ Add money to pot
 
 **3.5 Vaults 🔒**
-- اضغط على "Vaults"
-- تحقق من:
-  - ✅ قائمة الخزائن
-  - ✅ إنشاء خزنة جديدة
-  - ✅ قفل الأموال لفترة محددة
-  - ✅ عرض تواريخ الاستحقاق
+- Click "Vaults"
+- Check:
+  - ✅ Vaults list
+  - ✅ Create new vault
+  - ✅ Lock funds for a period
+  - ✅ Display maturity dates
 
 **3.6 Escrow ⚖️**
-- اضغط على "Escrow"
-- تحقق من:
-  - ✅ قائمة حالات الضمان
-  - ✅ إنشاء ضمان جديد
-  - ✅ إدارة الضمانات
-  - ✅ تحرير الأموال
+- Click "Escrow"
+- Check:
+  - ✅ Escrow status list
+  - ✅ Create new escrow
+  - ✅ Manage escrows
+  - ✅ Edit funds
 
 **3.7 Usernames 👤**
-- اضغط على "Usernames"
-- تحقق من:
-  - ✅ البحث عن أسماء المستخدمين
-  - ✅ حجز اسم مستخدم
-  - ✅ إدارة الأسماء المحجوزة
+- Click "Usernames"
+- Check:
+  - ✅ Search for usernames
+  - ✅ Reserve username
+  - ✅ Manage reserved usernames
 
 **3.8 AI Agent 🤖**
-- اضغط على "AI Agent"
-- تحقق من:
-  - ✅ واجهة الدردشة
-  - ✅ إرسال رسائل للـ AI
-  - ✅ الحصول على ردود
-  - ✅ المساعدة في المعاملات
+- Click "AI Agent"
+- Check:
+  - ✅ Chat interface
+  - ✅ Send messages to AI
+  - ✅ Get responses
+  - ✅ Assistance in transactions
 
 ---
 
-### المرحلة 4: اختبار الوظائف المتقدمة ⚡
+### Phase 4: Test Advanced Functions ⚡
 
-#### 4.1 إنشاء تحويل جديد
-1. اذهب لصفحة Payments
-2. املأ نموذج التحويل:
-   - عنوان المستلم
-   - المبلغ
-   - تاريخ الانتهاء (اختياري)
-3. اضغط "Send"
-4. تأكد من ظهور التحويل في القائمة
+#### 4.1 Create New Transfer
+1. Go to Payments page
+2. Fill out transfer form:
+   - Recipient title
+   - Amount
+   - Completion date (optional)
+3. Click "Send"
+4. Verify transfer appears in list
 
-#### 4.2 إنشاء مجموعة
-1. اذهب لصفحة Groups
-2. اضغط "Create Group"
-3. املأ البيانات:
-   - اسم المجموعة
-   - الوصف
-   - نوع المجموعة
-4. احفظ وتأكد من الإنشاء
+#### 4.2 Create Group
+1. Go to Groups page
+2. Click "Create Group"
+3. Fill in data:
+   - Group name
+   - Description
+   - Group type
+4. Save and confirm creation
 
-#### 4.3 إنشاء إناء ادخار
-1. اذهب لصفحة Pots
-2. اضغط "Create Pot"
-3. املأ البيانات:
-   - اسم الإناء
-   - الهدف المالي
-   - تاريخ الهدف
-4. احفظ وأضف مبلغ أولي
+#### 4.3 Create Savings Pot
+1. Go to Pots page
+2. Click "Create Pot"
+3. Fill in data:
+   - Pot name
+   - Financial goal
+   - Target date
+4. Save and add initial amount
 
 ---
 
-### المرحلة 5: اختبار الاستجابة والأداء 📱
+### Phase 5: Test Response and Performance 📱
 
-#### 5.1 اختبار الهاتف المحمول
-1. افتح Developer Tools (F12)
-2. اختر "Device Toolbar" أو اضغط Ctrl+Shift+M
-3. جرب أحجام مختلفة:
+#### 5.1 Mobile Testing
+1. Open Developer Tools (F12)
+2. Select "Device Toolbar" or press Ctrl+Shift+M
+3. Test different sizes:
    - iPhone 12/13
    - iPad
    - Samsung Galaxy
-4. تأكد من:
-   - ✅ الـ Navigation يتحول لقائمة منسدلة
-   - ✅ الأزرار والنصوص واضحة
-   - ✅ لا يوجد تداخل في العناصر
+4. Verify:
+   - ✅ Navigation transforms into a dropdown
+   - ✅ Buttons and text are clear
+   - ✅ No element overlap
 
-#### 5.2 اختبار السرعة
-1. افتح Network Tab في Developer Tools
-2. أعد تحميل الصفحة
-3. تحقق من:
-   - ✅ وقت التحميل أقل من 3 ثواني
-   - ✅ لا توجد أخطاء في الشبكة
-   - ✅ جميع الموارد تحمل بنجاح
-
----
-
-### المرحلة 6: اختبار قطع الاتصال 🔌
-
-#### 6.1 اختبار Disconnect
-1. اضغط على أيقونة المحفظة في الـ Navbar
-2. اضغط "Disconnect Wallet"
-3. تأكد من:
-   - ✅ رسالة نجاح قطع الاتصال
-   - ✅ عودة زر "Connect Wallet"
-   - ✅ اختفاء بيانات المحفظة
-   - ✅ إعادة توجيه للصفحة الرئيسية
-
-#### 6.2 اختبار إعادة الاتصال
-1. اضغط "Connect Wallet" مرة أخرى
-2. اختر نفس المحفظة
-3. تأكد من استعادة البيانات
+#### 5.2 Speed Testing
+1. Open Network Tab in Developer Tools
+2. Reload the page
+3. Check:
+   - ✅ Loading time is less than 3 seconds
+   - ✅ No network errors
+   - ✅ All resources load successfully
 
 ---
 
-## 🐛 الأخطاء الشائعة وحلولها
+### Phase 6: Test Disconnection 🔌
 
-### مشاكل الاتصال
-- **المشكلة:** لا يمكن الاتصال بالـ Backend
-- **الحل:** تأكد من تشغيل `./start-all.sh`
+#### 6.1 Disconnect Test
+1. Click wallet icon in Navbar
+2. Click "Disconnect Wallet"
+3. Verify:
+   - ✅ Success message for disconnection
+   - ✅ "Connect Wallet" button returns
+   - ✅ Wallet data disappears
+   - ✅ Redirect to homepage
 
-### مشاكل المحفظة
-- **المشكلة:** لا تظهر محفظة MetaMask
-- **الحل:** تأكد من تنصيب Extension
-
-### مشاكل التصميم
-- **المشكلة:** الألوان لا تظهر صحيح
-- **الحل:** امسح الـ Cache وأعد التحميل
-
----
-
-## ✅ Checklist النهائي
-
-### الأساسيات
-- [ ] الموقع يفتح بدون أخطاء
-- [ ] جميع الصفحات تعمل
-- [ ] الـ Navigation يعمل
-- [ ] ربط المحفظة يعمل
-- [ ] قطع الاتصال يعمل
-
-### الوظائف
-- [ ] إنشاء تحويلات
-- [ ] إنشاء مجموعات
-- [ ] إنشاء أواني ادخار
-- [ ] إنشاء خزائن
-- [ ] إدارة الضمانات
-- [ ] البحث عن أسماء المستخدمين
-- [ ] التفاعل مع الـ AI Agent
-
-### الأداء
-- [ ] سرعة التحميل جيدة
-- [ ] يعمل على الهاتف
-- [ ] لا توجد أخطاء في Console
-- [ ] الرسوم المتحركة سلسة
-
-### الأمان
-- [ ] بيانات المحفظة محمية
-- [ ] قطع الاتصال ينظف البيانات
-- [ ] لا تسريب للمعلومات الحساسة
+#### 6.2 Reconnect Test
+1. Click "Connect Wallet" again
+2. Select the same wallet
+3. Verify data restoration
 
 ---
 
-## 📝 تقرير التست
+## 🐛 Common Issues and Solutions
 
-بعد انتهاء التست، اكتب تقرير يحتوي على:
+### Connection Issues
+- **Issue:** Cannot connect to Backend
+- **Solution:** Ensure `./start-all.sh` is running
 
-1. **الميزات التي تعمل بشكل مثالي** ✅
-2. **الميزات التي بها مشاكل** ⚠️
-3. **الأخطاء المكتشفة** ❌
-4. **اقتراحات للتحسين** 💡
-5. **التقييم العام** ⭐
+### Wallet Issues
+- **Issue:** MetaMask does not appear
+- **Solution:** Ensure Extension is installed
+
+### Design Issues
+- **Issue:** Colors do not display correctly
+- **Solution:** Clear cache and reload
 
 ---
 
-## 🎉 النتيجة المتوقعة
+## ✅ Final Checklist
 
-إذا نجح كل شيء، يجب أن تحصل على:
-- موقع يعمل بسلاسة
-- جميع الميزات تعمل
-- تجربة مستخدم ممتازة
-- أداء سريع ومستقر
+### Basics
+- [ ] Website opens without errors
+- [ ] All pages work
+- [ ] Navigation works
+- [ ] Wallet connection works
+- [ ] Disconnection works
 
-**مبروك! 🎊 المشروع جاهز للاستخدام!**
+### Functions
+- [ ] Create transfers
+- [ ] Create groups
+- [ ] Create savings pots
+- [ ] Create vaults
+- [ ] Manage escrows
+- [ ] Search for usernames
+- [ ] Interact with AI Agent
+
+### Performance
+- [ ] Loading speed is good
+- [ ] Works on mobile
+- [ ] No errors in Console
+- [ ] Animations are smooth
+
+### Security
+- [ ] Wallet data is protected
+- [ ] Disconnection clears data
+- [ ] No data leakage
+
+---
+
+## 📝 Testing Report
+
+After testing, write a report containing:
+
+1. **Features working perfectly** ✅
+2. **Features with issues** ⚠️
+3. **Errors found** ❌
+4. **Suggestions for improvement** 💡
+5. **Overall rating** ⭐
+
+---
+
+## 🎉 Expected Outcome
+
+If everything succeeds, you should get:
+- A website that works smoothly
+- All features working
+- Excellent user experience
+- Fast and stable performance
+
+**Congratulations! 🎊 Project is ready for use!**

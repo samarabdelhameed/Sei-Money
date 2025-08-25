@@ -1,63 +1,63 @@
-# ⚡ Quick Test Checklist - 15 دقيقة
+# ⚡ Quick Test Checklist - 15 Minutes
 
-## 🚀 البداية السريعة
+## 🚀 Quick Start
 ```bash
 ./start-all.sh
 ```
-انتظر حتى ترى: "🚀 All Services Started Successfully!"
+Wait until you see: "🚀 All Services Started Successfully!"
 
 ---
 
-## ✅ التست السريع (15 دقيقة)
+## ✅ Quick Test (15 minutes)
 
-### 1. الصفحة الرئيسية (2 دقيقة)
-- [ ] افتح http://localhost:5175
-- [ ] الشعار "SeiMoney" ظاهر
-- [ ] زر "Connect Wallet" موجود
-- [ ] الـ Hero Section يظهر صحيح
-- [ ] الـ Features Cards تظهر
+### 1. Homepage (2 minutes)
+- [ ] Open http://localhost:5175
+- [ ] "SeiMoney" logo is visible
+- [ ] "Connect Wallet" button exists
+- [ ] Hero Section displays correctly
+- [ ] Features Cards are visible
 
-### 2. ربط المحفظة (3 دقائق)
-- [ ] اضغط "Connect Wallet"
-- [ ] اختر MetaMask (أو أي محفظة متاحة)
-- [ ] عنوان المحفظة يظهر في الـ Navbar
-- [ ] الرصيد يظهر (حتى لو 0.00 SEI)
+### 2. Wallet Connection (3 minutes)
+- [ ] Click "Connect Wallet"
+- [ ] Choose MetaMask (or any available wallet)
+- [ ] Wallet address appears in Navbar
+- [ ] Balance shows (even if 0.00 SEI)
 
-### 3. تصفح الصفحات (5 دقائق)
-- [ ] Dashboard - الـ Stats والـ Charts تظهر
-- [ ] Payments - نموذج الإرسال يظهر
-- [ ] Groups - قائمة المجموعات تظهر
-- [ ] Pots - قائمة الأواني تظهر
-- [ ] Vaults - قائمة الخزائن تظهر
+### 3. Browse Pages (5 minutes)
+- [ ] Dashboard - Stats and Charts are visible
+- [ ] Payments - Sending form is visible
+- [ ] Groups - Groups list is visible
+- [ ] Pots - Pots list is visible
+- [ ] Vaults - Vaults list is visible
 
-### 4. اختبار وظيفة واحدة (3 دقائق)
-- [ ] اذهب لـ Payments
-- [ ] املأ نموذج تحويل (بيانات وهمية)
-- [ ] اضغط "Send"
-- [ ] تأكد من ظهور رسالة نجاح أو التحويل في القائمة
+### 4. Test One Function (3 minutes)
+- [ ] Go to Payments
+- [ ] Fill out transfer form (dummy data)
+- [ ] Click "Send"
+- [ ] Verify success message or transfer appears in list
 
-### 5. قطع الاتصال (2 دقيقة)
-- [ ] اضغط على أيقونة المحفظة
-- [ ] اضغط "Disconnect Wallet"
-- [ ] تأكد من ظهور "Connect Wallet" مرة أخرى
-- [ ] تأكد من اختفاء بيانات المحفظة
-
----
-
-## 🎯 النتيجة المتوقعة
-إذا نجحت جميع النقاط أعلاه، فالمشروع يعمل بشكل أساسي صحيح! 🎉
-
-## 🐛 إذا واجهت مشاكل
-1. تأكد من تشغيل `./start-all.sh`
-2. تحقق من http://localhost:3001/health/health
-3. افتح Developer Console (F12) وابحث عن أخطاء
-4. جرب إعادة تحميل الصفحة (Ctrl+F5)
+### 5. Disconnect (2 minutes)
+- [ ] Click wallet icon
+- [ ] Click "Disconnect Wallet"
+- [ ] Verify "Connect Wallet" appears again
+- [ ] Verify wallet data disappears
 
 ---
 
-## 📱 اختبار إضافي (اختياري)
-- [ ] جرب الموقع على الهاتف (F12 > Device Toolbar)
-- [ ] جرب صفحات أخرى (Escrow, Usernames, AI Agent)
-- [ ] جرب إنشاء مجموعة أو إناء ادخار
+## 🎯 Expected Result
+If all points above succeed, the project is working correctly! 🎉
 
-**وقت التست الإجمالي: 15 دقيقة ⏱️**
+## 🐛 If You Encounter Issues
+1. Ensure `./start-all.sh` is running
+2. Check http://localhost:3001/health/health
+3. Open Developer Console (F12) and look for errors
+4. Try reloading the page (Ctrl+F5)
+
+---
+
+## 📱 Additional Testing (Optional)
+- [ ] Test website on mobile (F12 > Device Toolbar)
+- [ ] Try other pages (Escrow, Usernames, AI Agent)
+- [ ] Try creating a group or savings pot
+
+**Total Test Time: 15 minutes ⏱️**

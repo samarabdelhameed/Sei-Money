@@ -1,62 +1,62 @@
-# 📋 دليل الاختبار الشامل لتطبيق SeiMoney
+# 📋 Comprehensive Testing Guide for SeiMoney Application
 
-## 🎯 نظرة عامة
+## 🎯 Overview
 
-هذا الدليل الشامل يوفر إجراءات اختبار مفصلة للتحقق من جميع وظائف تطبيق SeiMoney. يغطي الدليل جميع الشاشات والميزات والسيناريوهات المختلفة لضمان جودة التطبيق قبل النشر.
+This comprehensive guide provides detailed testing procedures to verify all functions of the SeiMoney application. The guide covers all screens, features, and different scenarios to ensure application quality before deployment.
 
-## 📚 فهرس المحتويات
+## 📚 Table of Contents
 
-1. [متطلبات الاختبار](#متطلبات-الاختبار)
-2. [إعداد بيئة الاختبار](#إعداد-بيئة-الاختبار)
-3. [اختبارات الشاشة الرئيسية](#اختبارات-الشاشة-الرئيسية)
-4. [اختبارات لوحة التحكم](#اختبارات-لوحة-التحكم)
-5. [اختبارات المدفوعات](#اختبارات-المدفوعات)
-6. [اختبارات الخزائن](#اختبارات-الخزائن)
-7. [اختبارات المجموعات](#اختبارات-المجموعات)
-8. [اختبارات الوكيل الذكي](#اختبارات-الوكيل-الذكي)
-9. [اختبارات الأداء](#اختبارات-الأداء)
-10. [اختبارات إمكانية الوصول](#اختبارات-إمكانية-الوصول)
-11. [اختبارات الأمان](#اختبارات-الأمان)
-12. [اختبارات التوافق](#اختبارات-التوافق)
-13. [استكشاف الأخطاء وإصلاحها](#استكشاف-الأخطاء-وإصلاحها)
-
----
-
-## 🔧 متطلبات الاختبار
-
-### البرامج المطلوبة
-- **المتصفحات**: Chrome 120+, Firefox 121+, Safari 17+, Edge 120+
-- **المحافظ**: Keplr, Leap, MetaMask
-- **أدوات التطوير**: Node.js 18+, npm/yarn
-- **أدوات الاختبار**: Jest, Playwright, Lighthouse
-
-### البيانات المطلوبة
-- **محافظ اختبار** مع أرصدة SEI
-- **عناوين اختبار** للمعاملات
-- **بيانات API** للاختبار
-- **شهادات SSL** للاختبار الآمن
-
-### البيئات
-- **التطوير**: `http://localhost:3000`
-- **الاختبار**: `https://test.seimoney.com`
-- **الإنتاج**: `https://seimoney.com`
+1. [Testing Requirements](#testing-requirements)
+2. [Test Environment Setup](#test-environment-setup)
+3. [Home Screen Tests](#home-screen-tests)
+4. [Dashboard Tests](#dashboard-tests)
+5. [Payment Tests](#payment-tests)
+6. [Vault Tests](#vault-tests)
+7. [Group Tests](#group-tests)
+8. [AI Agent Tests](#ai-agent-tests)
+9. [Performance Tests](#performance-tests)
+10. [Accessibility Tests](#accessibility-tests)
+11. [Security Tests](#security-tests)
+12. [Compatibility Tests](#compatibility-tests)
+13. [Troubleshooting and Debugging](#troubleshooting-and-debugging)
 
 ---
 
-## ⚙️ إعداد بيئة الاختبار
+## 🔧 Testing Requirements
 
-### 1. تثبيت التبعيات
+### Required Software
+- **Browsers**: Chrome 120+, Firefox 121+, Safari 17+, Edge 120+
+- **Wallets**: Keplr, Leap, MetaMask
+- **Development Tools**: Node.js 18+, npm/yarn
+- **Testing Tools**: Jest, Playwright, Lighthouse
+
+### Required Data
+- **Test Wallets** with SEI balances
+- **Test Addresses** for transactions
+- **API Data** for testing
+- **SSL Certificates** for secure testing
+
+### Environments
+- **Development**: `http://localhost:3000`
+- **Testing**: `https://test.seimoney.com`
+- **Production**: `https://seimoney.com`
+
+---
+
+## ⚙️ Test Environment Setup
+
+### 1. Install Dependencies
 ```bash
-# تثبيت تبعيات المشروع
+# Install project dependencies
 npm install
 
-# تثبيت أدوات الاختبار
+# Install testing tools
 npm install --save-dev @playwright/test lighthouse jest
 ```
 
-### 2. إعداد المحافظ
+### 2. Setup Wallets
 ```javascript
-// إعداد محفظة اختبار
+// Setup test wallet
 const testWallet = {
   address: "sei1...",
   mnemonic: "test mnemonic phrase...",
@@ -64,340 +64,340 @@ const testWallet = {
 };
 ```
 
-### 3. تشغيل الخوادم
+### 3. Start Servers
 ```bash
-# تشغيل خادم التطوير
+# Start development server
 npm run dev
 
-# تشغيل خادم الاختبار
+# Start test server
 npm run test:server
 ```
 
 ---
 
-## 🏠 اختبارات الشاشة الرئيسية
+## 🏠 Home Screen Tests
 
-### ✅ قائمة اختبار الشاشة الرئيسية
+### ✅ Home Screen Test Checklist
 
-#### اختبارات التحميل الأساسية
-- [ ] **تحميل الصفحة**: تتحمل الصفحة في أقل من 3 ثوانٍ
-- [ ] **عرض الشعار**: يظهر شعار SeiMoney بوضوح
-- [ ] **القائمة الرئيسية**: تظهر جميع عناصر القائمة
-- [ ] **المحتوى الرئيسي**: يتم عرض المحتوى بشكل صحيح
+#### Basic Loading Tests
+- [ ] **Page Loading**: Page loads in less than 3 seconds
+- [ ] **Logo Display**: SeiMoney logo appears clearly
+- [ ] **Main Menu**: All menu items appear
+- [ ] **Main Content**: Content displays correctly
 
-#### اختبارات البيانات الحية
-- [ ] **إحصائيات السوق**: تظهر بيانات حقيقية ومحدثة
-- [ ] **مخطط TVL**: يعرض البيانات التاريخية الصحيحة
-- [ ] **بطاقات الميزات**: تعمل الروابط بشكل صحيح
-- [ ] **حالات التحميل**: تظهر مؤشرات التحميل عند الحاجة
+#### Live Data Tests
+- [ ] **Market Statistics**: Real and updated data appears
+- [ ] **TVL Chart**: Displays correct historical data
+- [ ] **Feature Cards**: Links work correctly
+- [ ] **Loading States**: Loading indicators appear when needed
 
-#### اختبارات التفاعل
-- [ ] **زر "ابدأ الآن"**: ينقل إلى صفحة التسجيل
-- [ ] **زر "اعرف المزيد"**: يفتح معلومات إضافية
-- [ ] **روابط التذييل**: تعمل جميع الروابط
-- [ ] **أزرار وسائل التواصل**: تفتح الصفحات الصحيحة
+#### Interaction Tests
+- [ ] **"Get Started" Button**: Navigates to registration page
+- [ ] **"Learn More" Button**: Opens additional information
+- [ ] **Footer Links**: All links work
+- [ ] **Social Media Buttons**: Open correct pages
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: تحميل الصفحة الرئيسية
+#### Test 1: Loading the Home Page
 ```
-الخطوات:
-1. افتح المتصفح
-2. انتقل إلى الرابط الرئيسي
-3. انتظر تحميل الصفحة كاملة
-4. تحقق من ظهور جميع العناصر
+Steps:
+1. Open the browser
+2. Navigate to the main URL
+3. Wait for the page to load completely
+4. Verify the appearance of all elements
 
-النتيجة المتوقعة:
-- تحميل الصفحة في أقل من 3 ثوانٍ
-- ظهور الشعار والقائمة
-- عرض المحتوى الرئيسي
-- عدم وجود أخطاء في وحدة التحكم
-```
-
-#### اختبار 2: إحصائيات السوق
-```
-الخطوات:
-1. تحقق من قسم إحصائيات السوق
-2. تأكد من عرض البيانات الحقيقية
-3. تحقق من تحديث البيانات
-4. اختبر استجابة التصميم
-
-النتيجة المتوقعة:
-- عرض بيانات حقيقية ومحدثة
-- تحديث البيانات كل 30 ثانية
-- عمل التصميم على جميع الأحجام
-- عدم وجود أخطاء في البيانات
+Expected Result:
+- Page loads in less than 3 seconds
+- Logo and menu appear
+- Main content displays
+- No errors in the console
 ```
 
----
-
-## 📊 اختبارات لوحة التحكم
-
-### ✅ قائمة اختبار لوحة التحكم
-
-#### اختبارات ربط المحفظة
-- [ ] **ربط Keplr**: يتم الربط بنجاح
-- [ ] **ربط Leap**: يتم الربط بنجاح  
-- [ ] **ربط MetaMask**: يتم الربط بنجاح
-- [ ] **تبديل المحافظ**: يعمل التبديل بسلاسة
-- [ ] **قطع الاتصال**: يتم قطع الاتصال بشكل صحيح
-
-#### اختبارات عرض البيانات
-- [ ] **قيمة المحفظة**: تظهر القيمة الصحيحة
-- [ ] **الربح/الخسارة اليومية**: حسابات دقيقة
-- [ ] **عدد الخزائن النشطة**: عدد صحيح
-- [ ] **بيانات المجموعات**: معلومات محدثة
-- [ ] **تحديث الأرصدة**: تحديث فوري
-
-#### اختبارات المكونات التفاعلية
-- [ ] **مخطط الأداء**: يعرض بيانات حقيقية
-- [ ] **أزرار الإجراءات السريعة**: تعمل بشكل صحيح
-- [ ] **تغذية النشاط**: تظهر المعاملات الحقيقية
-- [ ] **مؤشرات أهداف الادخار**: تعكس التقدم الفعلي
-- [ ] **وظيفة التحديث**: تعمل التحديث التلقائي
-
-### 📝 إجراءات الاختبار التفصيلية
-
-#### اختبار 1: ربط محفظة Keplr
+#### Test 2: Market Statistics
 ```
-الخطوات:
-1. انقر على زر "ربط المحفظة"
-2. اختر محفظة Keplr
-3. وافق على الاتصال في النافذة المنبثقة
-4. تحقق من عرض عنوان المحفظة
-5. تأكد من عرض الرصيد الصحيح
+Steps:
+1. Check the market statistics section
+2. Ensure real data is displayed
+3. Verify data updates
+4. Test the design responsiveness
 
-النتيجة المتوقعة:
-- ظهور نافذة Keplr للموافقة
-- نجاح الاتصال
-- عرض عنوان المحفظة
-- عرض الرصيد الصحيح
-- تحديث حالة الاتصال
-```
-
-#### اختبار 2: عرض قيمة المحفظة
-```
-الخطوات:
-1. تأكد من ربط المحفظة
-2. تحقق من قسم قيمة المحفظة
-3. قارن مع البيانات الفعلية للمحفظة
-4. اختبر التحديث التلقائي
-
-النتيجة المتوقعة:
-- عرض القيمة الإجمالية الصحيحة
-- تطابق مع بيانات البلوك تشين
-- تحديث البيانات كل دقيقة
-- عرض العملات المختلفة
+Expected Result:
+- Real and updated data
+- Data updates every 30 seconds
+- Design works on all sizes
+- No errors in data
 ```
 
 ---
 
-## 💳 اختبارات المدفوعات
+## 📊 Dashboard Tests
 
-### ✅ قائمة اختبار المدفوعات
+### ✅ Dashboard Test Checklist
 
-#### اختبارات التحقق من النموذج
-- [ ] **التحقق من العنوان**: يقبل العناوين الصحيحة فقط
-- [ ] **التحقق من المبلغ**: يتحقق من الرصيد المتاح
-- [ ] **التحقق من تاريخ الانتهاء**: يقبل التواريخ المستقبلية فقط
-- [ ] **حقل الملاحظة**: يقبل النص الاختياري
-- [ ] **معالجة الأخطاء**: تظهر رسائل خطأ واضحة
+#### Wallet Connection Tests
+- [ ] **Keplr Connection**: Successful connection
+- [ ] **Leap Connection**: Successful connection  
+- [ ] **MetaMask Connection**: Successful connection
+- [ ] **Wallet Switching**: Works smoothly
+- [ ] **Disconnect**: Disconnects correctly
 
-#### اختبارات التكامل مع العقود الذكية
-- [ ] **إنشاء الدفعة**: ينشئ الدفعة بنجاح
-- [ ] **توقيع المعاملة**: يتم التوقيع بالمحفظة المتصلة
-- [ ] **تتبع حالة الدفعة**: يتتبع حالة المعاملة
-- [ ] **تقدير الرسوم**: يحسب رسوم الغاز بدقة
-- [ ] **معالجة الأخطاء**: يتعامل مع فشل العقود
+#### Data Display Tests
+- [ ] **Wallet Value**: Displays correct value
+- [ ] **Daily Profit/Loss**: Accurate calculations
+- [ ] **Active Vaults**: Correct number
+- [ ] **Group Data**: Updated information
+- [ ] **Data Updates**: Real-time
 
-#### اختبارات إدارة المدفوعات
-- [ ] **استلام الدفعات**: يمكن استلام الدفعات المرسلة
-- [ ] **إلغاء الدفعات**: يمكن إلغاء الدفعات المرسلة
-- [ ] **سجل المدفوعات**: يعرض البيانات من البلوك تشين
-- [ ] **تصفية البحث**: تعمل خيارات التصفية
-- [ ] **تحديث الحالة**: تتحدث حالات الدفع تلقائياً
+#### Interactive Components
+- [ ] **Performance Chart**: Displays real data
+- [ ] **Quick Action Buttons**: Work correctly
+- [ ] **Activity Feed**: Displays real transactions
+- [ ] **Savings Goals Indicator**: Reflects actual progress
+- [ ] **Update Functionality**: Works automatically
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: إنشاء دفعة جديدة
+#### Test 1: Connecting Keplr Wallet
 ```
-الخطوات:
-1. انتقل إلى صفحة المدفوعات
-2. انقر على "إنشاء دفعة جديدة"
-3. أدخل عنوان المستلم الصحيح
-4. أدخل مبلغ أقل من الرصيد المتاح
-5. اختر تاريخ انتهاء مستقبلي
-6. أضف ملاحظة اختيارية
-7. انقر على "إرسال"
-8. وافق على المعاملة في المحفظة
+Steps:
+1. Click "Connect Wallet" button
+2. Select Keplr wallet
+3. Approve connection in the pop-up window
+4. Verify wallet address display
+5. Ensure correct balance display
 
-النتيجة المتوقعة:
-- قبول جميع البيانات الصحيحة
-- ظهور نافذة تأكيد المحفظة
-- نجاح إرسال المعاملة
-- ظهور رقم المعاملة
-- تحديث سجل المدفوعات
+Expected Result:
+- Keplr pop-up for approval appears
+- Successful connection
+- Wallet address displayed
+- Correct balance displayed
+- Update connection status
 ```
 
----
-
-## 🏦 اختبارات الخزائن
-
-### ✅ قائمة اختبار الخزائن
-
-#### اختبارات عرض البيانات والحسابات
-- [ ] **مقاييس أداء الخزائن**: تعرض بيانات APY حقيقية
-- [ ] **حسابات TVL**: حسابات دقيقة ومخططات تاريخية
-- [ ] **مؤشرات مستوى المخاطر**: أوصاف استراتيجيات واضحة
-- [ ] **حالة الخزائن**: معلومات التوفر محدثة
-- [ ] **ترتيب وتصفية**: تعمل خيارات الترتيب والتصفية
-
-#### اختبارات سير عمل الاستثمار
-- [ ] **عملية إيداع الخزينة**: تتكامل مع العقود الحقيقية
-- [ ] **التحقق من مبلغ الاستثمار**: يتحقق من الرصيد
-- [ ] **تأكيد المعاملة**: يتكامل مع المحفظة
-- [ ] **تتبع المركز**: يتتبع المراكز بعد الإيداع
-- [ ] **عملية السحب**: حساب الرسوم والسحب
-
-### 📝 إجراءات الاختبار التفصيلية
-
-#### اختبار 1: الاستثمار في خزينة
+#### Test 2: Displaying Wallet Value
 ```
-الخطوات:
-1. انتقل إلى صفحة الخزائن
-2. اختر خزينة متاحة
-3. انقر على "استثمر"
-4. أدخل مبلغ الاستثمار
-5. راجع تفاصيل المعاملة
-6. أكد الاستثمار
-7. وافق على المعاملة في المحفظة
-8. تحقق من تحديث المركز
+Steps:
+1. Ensure wallet is connected
+2. Check the wallet value section
+3. Compare with actual wallet data
+4. Test auto-update
 
-النتيجة المتوقعة:
-- عرض تفاصيل الخزينة بدقة
-- قبول مبلغ الاستثمار الصحيح
-- نجاح المعاملة
-- تحديث مركز المستثمر
-- عرض العائد المتوقع
+Expected Result:
+- Display total value correctly
+- Matches block explorer data
+- Data updates every minute
+- Display different currencies
 ```
 
 ---
 
-## 👥 اختبارات المجموعات
+## 💳 Payment Tests
 
-### ✅ قائمة اختبار المجموعات
+### ✅ Payment Test Checklist
 
-#### اختبارات إنشاء وإدارة المجموعات
-- [ ] **نموذج إنشاء المجموعة**: يتحقق من البيانات
-- [ ] **نشر العقد الذكي**: ينشر عقد المجموعة
-- [ ] **عملية الدعوة والانضمام**: تعمل الدعوات
-- [ ] **خيارات إعدادات المجموعة**: تحفظ الإعدادات
-- [ ] **حذف المجموعة وإدارة الأعضاء**: تعمل إدارة الأعضاء
+#### Form Validation Tests
+- [ ] **Address Validation**: Only accepts correct addresses
+- [ ] **Amount Validation**: Validates available balance
+- [ ] **Expiration Date Validation**: Only accepts future dates
+- [ ] **Note Field**: Accepts optional text
+- [ ] **Error Handling**: Displays clear error messages
 
-#### اختبارات سير عمل المشاركة
-- [ ] **عملية المساهمة**: معاملات حقيقية
-- [ ] **تتبع المساهمات**: تتبع دقيق للتقدم
-- [ ] **إشعارات المعالم**: إشعارات الإنجازات
-- [ ] **نشاط الأعضاء**: سجل مساهمات الأعضاء
-- [ ] **إكمال المجموعة**: توزيع الأموال
+#### Smart Contract Integration Tests
+- [ ] **Create Payment**: Successful creation
+- [ ] **Transaction Signing**: Signed with connected wallet
+- [ ] **Track Payment Status**: Tracks payment status
+- [ ] **Estimate Fees**: Accurately calculates gas fees
+- [ ] **Error Handling**: Handles smart contract failures
 
-### 📝 إجراءات الاختبار التفصيلية
+#### Payment Management
+- [ ] **Receiving Payments**: Can receive sent payments
+- [ ] **Canceling Payments**: Can cancel sent payments
+- [ ] **Log Payments**: Displays data from the blockchain
+- [ ] **Search Filtering**: Works filtering options
+- [ ] **Update Status**: Updates payment status automatically
 
-#### اختبار 1: إنشاء مجموعة جديدة
+### 📝 Detailed Testing Procedures
+
+#### Test 1: Creating a New Payment
 ```
-الخطوات:
-1. انتقل إلى صفحة المجموعات
-2. انقر على "إنشاء مجموعة"
-3. أدخل اسم المجموعة
-4. حدد الهدف المالي
-5. اختر مدة المجموعة
-6. أضف وصف المجموعة
-7. انقر على "إنشاء"
-8. وافق على نشر العقد
+Steps:
+1. Navigate to the payments page
+2. Click "Create New Payment"
+3. Enter the correct recipient address
+4. Enter an amount less than available balance
+5. Select a future expiration date
+6. Add an optional note
+7. Click "Send"
+8. Approve the transaction in the wallet
 
-النتيجة المتوقعة:
-- قبول جميع البيانات الصحيحة
-- نجاح نشر العقد الذكي
-- إنشاء صفحة المجموعة
-- إمكانية دعوة الأعضاء
-- عرض تفاصيل المجموعة
-```
-
----
-
-## 🤖 اختبارات الوكيل الذكي
-
-### ✅ قائمة اختبار الوكيل الذكي
-
-#### اختبارات الاتصال والاستجابات
-- [ ] **اتصال خدمة الوكيل**: يتصل ويتوفر
-- [ ] **إرسال الاستعلامات**: يتعامل مع الاستعلامات
-- [ ] **دقة الاستجابات**: استجابات دقيقة وذات صلة
-- [ ] **إدارة سجل المحادثة**: يحفظ السياق
-- [ ] **معالجة الأخطاء**: استجابات احتياطية للأخطاء
-
-#### اختبارات التوصيات والرؤى
-- [ ] **تحليل السوق**: ينتج توصيات السوق
-- [ ] **دقة التوصيات**: دقة مقابل بيانات السوق الحقيقية
-- [ ] **النصائح الشخصية**: نصائح مبنية على محفظة المستخدم
-- [ ] **تقييم المخاطر**: اقتراحات استراتيجيات المخاطر
-- [ ] **تكامل البوت**: إجراءات آلية
-
-### 📝 إجراءات الاختبار التفصيلية
-
-#### اختبار 1: استعلام الوكيل الذكي
-```
-الخطوات:
-1. انتقل إلى صفحة الوكيل الذكي
-2. اكتب سؤال حول السوق
-3. أرسل الاستعلام
-4. انتظر الاستجابة
-5. تحقق من دقة المعلومات
-6. اختبر أسئلة متتالية
-
-النتيجة المتوقعة:
-- استجابة سريعة (أقل من 5 ثوانٍ)
-- معلومات دقيقة وحديثة
-- حفظ سياق المحادثة
-- اقتراحات مفيدة
-- واجهة سهلة الاستخدام
+Expected Result:
+- Accept all correct data
+- Confirmation pop-up appears
+- Successful transaction
+- Transaction ID displayed
+- Update payment log
 ```
 
 ---
 
-## ⚡ اختبارات الأداء
+## 🏦 Vault Tests
 
-### ✅ قائمة اختبار الأداء
+### ✅ Vault Test Checklist
 
-#### اختبارات مقاييس الأداء
-- [ ] **أوقات تحميل الصفحة**: قياس والتحقق من جميع الشاشات
-- [ ] **استجابة التطبيق**: اختبار تحت الحمل العادي
-- [ ] **استخدام الذاكرة**: التحقق من تسريبات الذاكرة المحتملة
-- [ ] **حجم الحزمة**: التحقق من تحسين التحميل
-- [ ] **أداء تحميل الصور**: التحقق من تحميل الأصول
+#### Data and Account Tests
+- [ ] **Vault Performance Metrics**: Displays real APY
+- [ ] **TVL**: Accurate and historical charts
+- [ ] **Risk Indicators**: Clear strategy descriptions
+- [ ] **Vault Status**: Updated information
+- [ ] **Sorting and Filtering**: Works sorting and filtering
 
-#### اختبارات معالجة البيانات الحية
-- [ ] **سجلات المعاملات الكبيرة**: اختبار الأداء مع البيانات الكبيرة
-- [ ] **تحديثات الأسعار الحية**: معالجة فعالة للتحديثات
-- [ ] **ترقيم الصفحات والافتراضية**: للمجموعات البيانات الكبيرة
-- [ ] **أداء اتصال WebSocket**: اختبار الاتصالات الحية
-- [ ] **محاكاة المستخدمين المتزامنين**: اختبار الحمل المتزامن
+#### Investment Workflow
+- [ ] **Deposit Process**: Integrates with real smart contracts
+- [ ] **Investment Amount Verification**: Verifies balance
+- [ ] **Transaction Confirmation**: Integrates with wallet
+- [ ] **Track Position**: Tracks positions after deposit
+- [ ] **Withdrawal Process**: Calculates fees and withdrawal
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: قياس أداء تحميل الصفحة
+#### Test 1: Investing in a Vault
 ```
-الأدوات المطلوبة: Lighthouse, WebPageTest
+Steps:
+1. Navigate to the vaults page
+2. Select an available vault
+3. Click "Invest"
+4. Enter the investment amount
+5. Review transaction details
+6. Confirm investment
+7. Approve the transaction in the wallet
+8. Verify update of position
 
-الخطوات:
-1. افتح أدوات المطور
-2. انتقل إلى تبويب Lighthouse
-3. اختر "Performance"
-4. شغل التحليل
-5. راجع النتائج
-6. كرر لجميع الصفحات
+Expected Result:
+- Display vault details accurately
+- Accept correct investment amount
+- Successful transaction
+- Update investor position
+- Display expected return
+```
 
-المعايير المقبولة:
+---
+
+## 👥 Group Tests
+
+### ✅ Group Test Checklist
+
+#### Create and Manage Groups
+- [ ] **Group Creation Form**: Verifies data
+- [ ] **Smart Contract Deployment**: Deploys smart contract
+- [ ] **Invitation and Join Process**: Handles invitations
+- [ ] **Group Settings**: Saves settings
+- [ ] **Delete Group and Member Management**: Handles member management
+
+#### Share Workflow
+- [ ] **Participation Process**: Real transactions
+- [ ] **Track Participation**: Accurately tracks progress
+- [ ] **Notifications**: Achievement notifications
+- [ ] **Member Activity**: Logs member contributions
+- [ ] **Complete Group**: Distributes funds
+
+### 📝 Detailed Testing Procedures
+
+#### Test 1: Creating a New Group
+```
+Steps:
+1. Navigate to the groups page
+2. Click "Create Group"
+3. Enter group name
+4. Select financial goal
+5. Choose group duration
+6. Add group description
+7. Click "Create"
+8. Approve smart contract deployment
+
+Expected Result:
+- Accept all correct data
+- Successful smart contract deployment
+- Create group page
+- Ability to invite members
+- Display group details
+```
+
+---
+
+## 🤖 AI Agent Tests
+
+### ✅ AI Agent Test Checklist
+
+#### Connection and Responses
+- [ ] **Service Agent Connection**: Connects and is available
+- [ ] **Sending Queries**: Interacts with queries
+- [ ] **Accuracy of Responses**: Accurate and relevant responses
+- [ ] **Chat Log Management**: Saves context
+- [ ] **Error Handling**: Provides fallback responses for errors
+
+#### Recommendations and Insights
+- [ ] **Market Analysis**: Generates market recommendations
+- [ ] **Accuracy of Recommendations**: Accuracy against real market data
+- [ ] **Personalized Advice**: Advice based on user's wallet
+- [ ] **Risk Assessment**: Suggestions for risk strategies
+- [ ] **Bot Integration**: Automated actions
+
+### 📝 Detailed Testing Procedures
+
+#### Test 1: Querying the AI Agent
+```
+Steps:
+1. Navigate to the AI agent page
+2. Type a question about the market
+3. Send the query
+4. Wait for the response
+5. Verify information accuracy
+6. Test sequential questions
+
+Expected Result:
+- Quick response (less than 5 seconds)
+- Accurate and up-to-date information
+- Save chat context
+- Useful suggestions
+- Easy-to-use interface
+```
+
+---
+
+## ⚡ Performance Tests
+
+### ✅ Performance Test Checklist
+
+#### Performance Metrics
+- [ ] **Page Loading Times**: Measure and verify all screens
+- [ ] **Application Response**: Regular load test
+- [ ] **Memory Usage**: Check for potential memory leaks
+- [ ] **Bundle Size**: Verify load optimization
+- [ ] **Image Loading**: Verify image optimization
+
+#### Real-time Data Processing
+- [ ] **Large Transaction Logs**: Performance test with large data
+- [ ] **Live Price Updates**: Effective handling of updates
+- [ ] **Pagination and Default Pages**: For large data sets
+- [ ] **WebSocket Connection**: Performance of live connections
+- [ ] **Simultaneous User Load Testing**: Simultaneous load testing
+
+### 📝 Detailed Testing Procedures
+
+#### Test 1: Measuring Page Loading Performance
+```
+Required Tools: Lighthouse, WebPageTest
+
+Steps:
+1. Open developer tools
+2. Navigate to the Lighthouse tab
+3. Select "Performance"
+4. Run the analysis
+5. Review results
+6. Repeat for all pages
+
+Accepted Standards:
 - First Contentful Paint: < 1.5s
 - Time to Interactive: < 4.0s
 - Cumulative Layout Shift: < 0.1
@@ -406,280 +406,280 @@ npm run test:server
 
 ---
 
-## ♿ اختبارات إمكانية الوصول
+## ♿ Accessibility Tests
 
-### ✅ قائمة اختبار إمكانية الوصول
+### ✅ Accessibility Test Checklist
 
-#### اختبارات الامتثال لإمكانية الوصول
-- [ ] **التنقل بلوحة المفاتيح**: جميع العناصر التفاعلية
-- [ ] **توافق قارئ الشاشة**: تسميات ARIA
-- [ ] **نسب تباين الألوان**: إمكانية الوصول البصري
-- [ ] **إدارة التركيز**: ترتيب التبويب
-- [ ] **إمكانية الوصول للمحتوى الديناميكي**: النوافذ المنبثقة
+#### Compliance to Accessibility
+- [ ] **Keyboard Navigation**: All interactive elements
+- [ ] **Screen Reader Compatibility**: ARIA labels
+- [ ] **Color Contrast**: Visual accessibility
+- [ ] **Focus Management**: Tab order
+- [ ] **Modality**: Pop-ups
 
-#### اختبارات سير عمل تجربة المستخدم
-- [ ] **تجربة المستخدم الجديد**: تجربة الإعداد الكاملة
-- [ ] **معدلات إكمال المهام**: العمليات الشائعة
-- [ ] **استرداد الأخطاء**: فعالية نظام المساعدة
-- [ ] **قابلية اكتشاف الميزات**: تصميم بديهي
-- [ ] **جمع ملاحظات المستخدم**: الاستجابة
+#### User Experience Testing
+- [ ] **New User Experience**: Full setup experience
+- [ ] **Task Completion Rates**: Common tasks
+- [ ] **Error Recovery**: Effectiveness of help system
+- [ ] **Feature Discovery**: Design simplicity
+- [ ] **User Feedback Collection**: Response
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: التنقل بلوحة المفاتيح
+#### Test 1: Keyboard Navigation
 ```
-الخطوات:
-1. أغلق الماوس أو تجاهله
-2. استخدم Tab للتنقل
-3. استخدم Enter لتفعيل الأزرار
-4. استخدم مفاتيح الأسهم للقوائم
-5. استخدم Escape لإغلاق النوافذ
-6. تحقق من ترتيب التبويب المنطقي
+Steps:
+1. Close mouse or ignore it
+2. Use Tab for navigation
+3. Use Enter to activate buttons
+4. Use arrow keys for menus
+5. Use Escape to close windows
+6. Verify logical tab order
 
-النتيجة المتوقعة:
-- إمكانية الوصول لجميع العناصر
-- ترتيب تبويب منطقي
-- مؤشرات تركيز واضحة
-- عمل جميع الوظائف
+Expected Result:
+- Access to all elements
+- Logical tab order
+- Clear focus indicators
+- Perform all functions
 ```
 
 ---
 
-## 🔒 اختبارات الأمان
+## 🔒 Security Tests
 
-### ✅ قائمة اختبار الأمان
+### ✅ Security Test Checklist
 
-#### اختبارات التدابير الأمنية والتحقق من الإدخال
-- [ ] **تنظيف الإدخال**: منع XSS
-- [ ] **التعامل الآمن مع المفاتيح الخاصة**: أمان المحفظة
-- [ ] **أمان إدارة الجلسات**: أمان المصادقة
-- [ ] **أمان API**: التفويض
-- [ ] **الحماية من الثغرات**: الثغرات الشائعة
+#### Security Measures and Input Validation
+- [ ] **Input Cleaning**: Prevent XSS
+- [ ] **Secure Handling of Private Keys**: Wallet security
+- [ ] **Session Security**: Authentication security
+- [ ] **API Security**: Authorization
+- [ ] **Protection Against Vulnerabilities**: Common vulnerabilities
 
-#### اختبارات دقة البيانات وتكامل البلوك تشين
-- [ ] **مرجعية البيانات**: مقارنة مع مستكشفات البلوك تشين
-- [ ] **دقة تفاصيل المعاملة**: اكتمال ودقة
-- [ ] **تسوية الأرصدة**: مع أرصدة المحفظة الفعلية
-- [ ] **اتساق حالة العقد الذكي**: اتساق الحالة
-- [ ] **تكامل البيانات**: أثناء التحديثات والمزامنة
+#### Data Accuracy and Blockchain Integration
+- [ ] **Data Consistency**: Comparison with blockchain explorers
+- [ ] **Transaction Detail Accuracy**: Completeness and accuracy
+- [ ] **Balance Adjustments**: With actual wallet balances
+- [ ] **Smart Contract State Consistency**: State consistency
+- [ ] **Data Integration**: During updates and synchronization
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: منع XSS
+#### Test 1: Preventing XSS
 ```
-الخطوات:
-1. ابحث عن حقول الإدخال
-2. أدخل نصوص JavaScript ضارة
-3. تحقق من تنظيف الإدخال
-4. راجع وحدة التحكم للأخطاء
-5. تأكد من عدم تنفيذ الكود
+Steps:
+1. Search for input fields
+2. Enter malicious JavaScript code
+3. Verify input cleaning
+4. Review console for errors
+5. Ensure no code execution
 
-أمثلة الإدخال الضار:
+Examples of malicious input:
 - <script>alert('XSS')</script>
 - javascript:alert('XSS')
 - <img src=x onerror=alert('XSS')>
 
-النتيجة المتوقعة:
-- تنظيف جميع الإدخالات الضارة
-- عدم تنفيذ أي كود JavaScript
-- عرض النص كنص عادي
-- عدم وجود تحذيرات أمنية
+Expected Result:
+- Clean all malicious inputs
+- No JavaScript code execution
+- Display text as plain text
+- No security warnings
 ```
 
 ---
 
-## 🌐 اختبارات التوافق
+## 🌐 Compatibility Tests
 
-### ✅ قائمة اختبار التوافق
+### ✅ Compatibility Test Checklist
 
-#### اختبارات توافق المتصفح
-- [ ] **Chrome**: الوظائف الكاملة (أحدث إصدار وسابق)
-- [ ] **Safari**: التوافق بما في ذلك تكاملات المحفظة
-- [ ] **Firefox**: التوافق والأداء
-- [ ] **Edge**: وظائف المتصفح
-- [ ] **المتصفحات المحمولة**: iOS Safari, Chrome Mobile
+#### Browser Compatibility
+- [ ] **Chrome**: Full functionality (latest and previous versions)
+- [ ] **Safari**: Compatibility including wallet integrations
+- [ ] **Firefox**: Compatibility and performance
+- [ ] **Edge**: Browser functionality
+- [ ] **Mobile Browsers**: iOS Safari, Chrome Mobile
 
-#### اختبارات التصميم المتجاوب وتوافق الأجهزة
-- [ ] **تخطيطات سطح المكتب**: 1920x1080, 1366x768, 1440x900
-- [ ] **توافق الأجهزة اللوحية**: iPad, أجهزة Android اللوحية
-- [ ] **توافق الأجهزة المحمولة**: iPhone, هواتف Android
-- [ ] **التفاعلات اللمسية**: الميزات الخاصة بالمحمول
-- [ ] **كثافات الشاشة المختلفة**: الاتجاهات
+#### Responsive Design and Device Compatibility
+- [ ] **Desktop Layouts**: 1920x1080, 1366x768, 1440x900
+- [ ] **Tablet Devices**: iPad, Android tablets
+- [ ] **Mobile Devices**: iPhone, Android phones
+- [ ] **Touch Interactions**: Mobile-specific features
+- [ ] **Different Screen Densities**: Orientations
 
-### 📝 إجراءات الاختبار التفصيلية
+### 📝 Detailed Testing Procedures
 
-#### اختبار 1: توافق Chrome
+#### Test 1: Compatibility with Chrome
 ```
-الإصدارات للاختبار:
-- Chrome 120 (أحدث)
-- Chrome 119 (سابق)
+Test Versions:
+- Chrome 120 (Latest)
+- Chrome 119 (Previous)
 
-الخطوات:
-1. افتح كل إصدار من Chrome
-2. اختبر جميع الوظائف الأساسية
-3. اختبر تكاملات المحفظة
-4. تحقق من الأداء
-5. راجع وحدة التحكم للأخطاء
+Steps:
+1. Open each Chrome version
+2. Test all basic functions
+3. Test wallet integrations
+4. Check performance
+5. Review console for errors
 
-النتيجة المتوقعة:
-- عمل جميع الوظائف
-- عدم وجود أخطاء JavaScript
-- أداء مقبول
-- تكامل محفظة ناجح
+Expected Result:
+- All functions work
+- No JavaScript errors
+- Acceptable performance
+- Successful wallet integration
 ```
 
 ---
 
-## 🔧 استكشاف الأخطاء وإصلاحها
+## 🔧 Troubleshooting and Debugging
 
-### 🚨 المشاكل الشائعة والحلول
+### 🚨 Common Issues and Solutions
 
-#### مشاكل ربط المحفظة
-**المشكلة**: فشل ربط المحفظة
+#### Wallet Connection Issues
+**Issue**: Failed wallet connection
 ```
-الأسباب المحتملة:
-- المحفظة غير مثبتة
-- المحفظة مقفلة
-- شبكة خاطئة
-- رفض المستخدم للاتصال
+Possible Causes:
+- Wallet not installed
+- Wallet locked
+- Wrong network
+- User rejection
 
-الحلول:
-1. تحقق من تثبيت المحفظة
-2. تأكد من إلغاء قفل المحفظة
-3. تحقق من إعدادات الشبكة
-4. أعد المحاولة
-5. امسح ذاكرة التخزين المؤقت
-```
-
-#### مشاكل تحميل البيانات
-**المشكلة**: عدم تحميل البيانات
-```
-الأسباب المحتملة:
-- مشاكل الشبكة
-- خطأ في API
-- انتهاء مهلة الطلب
-- بيانات تالفة
-
-الحلول:
-1. تحقق من اتصال الإنترنت
-2. راجع حالة API
-3. أعد تحميل الصفحة
-4. امسح ذاكرة التخزين المؤقت
-5. تحقق من وحدة التحكم
+Solutions:
+1. Check wallet installation
+2. Ensure wallet is unlocked
+3. Check network settings
+4. Retry
+5. Clear browser cache
 ```
 
-#### مشاكل الأداء
-**المشكلة**: بطء التطبيق
+#### Data Loading Issues
+**Issue**: Data not loading
 ```
-الأسباب المحتملة:
-- حجم حزمة كبير
-- تسريبات الذاكرة
-- استعلامات غير محسنة
-- صور غير محسنة
+Possible Causes:
+- Network issues
+- API error
+- Request timeout
+- Corrupted data
 
-الحلول:
-1. تحليل حجم الحزمة
-2. فحص استخدام الذاكرة
-3. تحسين الاستعلامات
-4. ضغط الصور
-5. تفعيل التخزين المؤقت
+Solutions:
+1. Check internet connection
+2. Review API status
+3. Retry loading the page
+4. Clear browser cache
+5. Check console
 ```
 
-### 📊 أدوات التشخيص
+#### Performance Issues
+**Issue**: Slow application
+```
+Possible Causes:
+- Large bundle size
+- Memory leaks
+- Unoptimized queries
+- Unoptimized images
 
-#### أدوات المتصفح
-- **وحدة التحكم**: للأخطاء والتحذيرات
-- **Network Tab**: لمراقبة طلبات API
-- **Performance Tab**: لتحليل الأداء
-- **Application Tab**: للتخزين المحلي
-- **Security Tab**: للتحقق من الأمان
+Solutions:
+1. Analyze bundle size
+2. Check memory usage
+3. Optimize queries
+4. Compress images
+5. Enable caching
+```
 
-#### أدوات خارجية
-- **Lighthouse**: تحليل الأداء والجودة
-- **WebPageTest**: اختبار الأداء المتقدم
-- **GTmetrix**: تحليل سرعة الموقع
-- **WAVE**: اختبار إمكانية الوصول
-- **Postman**: اختبار API
+### 📊 Diagnostic Tools
+
+#### Browser Tools
+- **Console**: For errors and warnings
+- **Network Tab**: For monitoring API requests
+- **Performance Tab**: For performance analysis
+- **Application Tab**: For local storage
+- **Security Tab**: For security checks
+
+#### External Tools
+- **Lighthouse**: Performance and quality analysis
+- **WebPageTest**: Advanced performance testing
+- **GTmetrix**: Website speed analysis
+- **WAVE**: Accessibility testing
+- **Postman**: API testing
 
 ---
 
-## 📋 قوائم التحقق للقبول
+## 📋 Acceptance Checklists
 
-### ✅ قائمة التحقق النهائية قبل النشر
+### ✅ Final Acceptance Checklist Before Deployment
 
-#### الوظائف الأساسية
-- [ ] جميع الشاشات تتحمل بشكل صحيح
-- [ ] ربط المحفظة يعمل مع جميع المحافظ المدعومة
-- [ ] المعاملات تتم بنجاح
-- [ ] البيانات تعرض بدقة
-- [ ] التنقل يعمل بسلاسة
+#### Basic Functions
+- [ ] All screens load correctly
+- [ ] Wallet connection works with all supported wallets
+- [ ] Transactions succeed
+- [ ] Data displays accurately
+- [ ] Navigation works smoothly
 
-#### الأداء
-- [ ] أوقات التحميل أقل من 3 ثوانٍ
-- [ ] لا توجد تسريبات ذاكرة
-- [ ] الاستجابة سريعة
-- [ ] التحديثات الحية تعمل
-- [ ] التخزين المؤقت فعال
+#### Performance
+- [ ] Loading times less than 3 seconds
+- [ ] No memory leaks
+- [ ] Quick response
+- [ ] Live updates work
+- [ ] Caching is effective
 
-#### الأمان
-- [ ] جميع الإدخالات منظفة
-- [ ] المفاتيح الخاصة آمنة
-- [ ] الجلسات محمية
-- [ ] API آمن
-- [ ] لا توجد ثغرات معروفة
+#### Security
+- [ ] All inputs are cleaned
+- [ ] Private keys are secure
+- [ ] Sessions are protected
+- [ ] Secure API
+- [ ] No known vulnerabilities
 
-#### إمكانية الوصول
-- [ ] التنقل بلوحة المفاتيح يعمل
-- [ ] قارئ الشاشة متوافق
-- [ ] تباين الألوان مناسب
-- [ ] التركيز واضح
-- [ ] المحتوى الديناميكي قابل للوصول
+#### Accessibility
+- [ ] Keyboard navigation works
+- [ ] Screen reader compatible
+- [ ] Color contrast appropriate
+- [ ] Focus is clear
+- [ ] Dynamic content is accessible
 
-#### التوافق
-- [ ] يعمل على جميع المتصفحات المدعومة
-- [ ] التصميم متجاوب
-- [ ] الأجهزة المحمولة مدعومة
-- [ ] اللمس يعمل بشكل صحيح
-- [ ] جميع الأحجام مدعومة
+#### Compatibility
+- [ ] Works on all supported browsers
+- [ ] Responsive design
+- [ ] Mobile browsers supported
+- [ ] Touch works correctly
+- [ ] All sizes supported
 
 ---
 
-## 📞 الدعم والمساعدة
+## 📞 Support and Assistance
 
-### 🆘 الحصول على المساعدة
+### 🆘 Getting Help
 
-#### فريق التطوير
-- **البريد الإلكتروني**: dev@seimoney.com
+#### Development Team
+- **Email**: dev@seimoney.com
 - **Slack**: #testing-support
-- **GitHub Issues**: للمشاكل التقنية
-- **الوثائق**: docs.seimoney.com
+- **GitHub Issues**: For technical issues
+- **Documentation**: docs.seimoney.com
 
-#### الموارد الإضافية
-- **دليل API**: api-docs.seimoney.com
-- **أمثلة الكود**: github.com/seimoney/examples
-- **مجتمع Discord**: discord.gg/seimoney
-- **قاعدة المعرفة**: kb.seimoney.com
-
----
-
-## 📈 التحسين المستمر
-
-### 🔄 عملية التحسين
-
-#### مراجعة دورية
-- **أسبوعياً**: مراجعة نتائج الاختبارات
-- **شهرياً**: تحديث إجراءات الاختبار
-- **ربع سنوياً**: مراجعة شاملة للعملية
-- **سنوياً**: تقييم الأدوات والتقنيات
-
-#### مقاييس الجودة
-- **معدل النجاح**: > 95%
-- **وقت الاستجابة**: < 3 ثوانٍ
-- **رضا المستخدم**: > 4.5/5
-- **معدل الأخطاء**: < 1%
-- **التوفر**: > 99.9%
+#### Additional Resources
+- **API Documentation**: api-docs.seimoney.com
+- **Code Examples**: github.com/seimoney/examples
+- **Discord Community**: discord.gg/seimoney
+- **Knowledge Base**: kb.seimoney.com
 
 ---
 
-*تم إنشاء هذا الدليل بواسطة فريق ضمان الجودة في SeiMoney*
-*آخر تحديث: ديسمبر 2024*
+## 📈 Continuous Improvement
+
+### 🔄 Improvement Process
+
+#### Regular Reviews
+- **Weekly**: Review test results
+- **Monthly**: Update testing procedures
+- **Quarterly**: Comprehensive review of the process
+- **Annually**: Tool and technology evaluation
+
+#### Quality Metrics
+- **Success Rate**: > 95%
+- **Response Time**: < 3 seconds
+- **User Satisfaction**: > 4.5/5
+- **Error Rate**: < 1%
+- **Availability**: > 99.9%
+
+---
+
+*This guide was created by the SeiMoney Quality Assurance Team*
+*Last updated: December 2024*

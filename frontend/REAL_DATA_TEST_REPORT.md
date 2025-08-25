@@ -2,7 +2,7 @@
 
 ## 🎯 Executive Summary
 
-تم إنشاء نظام اختبار شامل للتحقق من عرض البيانات الحقيقية في الفرونت إند. النظام يفحص كل شاشة ويتحقق من مصدر البيانات (حقيقية أم تجريبية).
+A comprehensive testing system has been created to verify the display of real data in the frontend. The system examines each screen and verifies the data source (real or demo).
 
 ## 🧪 Testing Methods Available
 
@@ -10,53 +10,53 @@
 **File**: `frontend/src/testing/real-data-tester.ts`
 **Usage**: 
 ```javascript
-// في console المتصفح
+// In browser console
 RealDataTester.testRealDataIntegration()
 ```
 
 ### Method 2: Visual Testing Interface
 **File**: `frontend/TEST_REAL_DATA.html`
-**Usage**: افتح الملف في المتصفح واضغط "Test Real Data Integration"
+**Usage**: Open the file in browser and click "Test Real Data Integration"
 
 ### Method 3: Console Commands
 ```javascript
-// اختبار شاشة معينة
+// Test specific screen
 RealDataTester.testHomeScreenRealData()
 RealDataTester.testDashboardRealData()
 RealDataTester.testPaymentsRealData()
 
-// اختبار الاتصال بالـ API
+// Test API connectivity
 RealDataTester.testAPIConnectivity()
 
-// الحصول على تقرير مفصل
+// Get detailed report
 RealDataTester.generateReport()
 ```
 
 ## 🔍 What the Tests Check
 
 ### 🏠 Home Screen Real Data Tests
-- ✅ **Market Statistics**: يتحقق من عرض إحصائيات السوق الحقيقية
-- ✅ **TVL Chart**: يفحص بيانات الرسم البياني
-- ✅ **Feature Cards**: يتأكد من عمل البطاقات التفاعلية
-- ✅ **API Integration**: يختبر الاتصال بـ API الباك إند
+- ✅ **Market Statistics**: Verifies display of real market statistics
+- ✅ **TVL Chart**: Examines chart data
+- ✅ **Feature Cards**: Ensures interactive cards work
+- ✅ **API Integration**: Tests backend API connectivity
 
 ### 📊 Dashboard Real Data Tests
-- ✅ **Wallet Connection**: يفحص خيارات ربط المحفظة
-- ✅ **Portfolio Data**: يتحقق من بيانات المحفظة
-- ✅ **Balance Display**: يفحص عرض الأرصدة
-- ✅ **Charts & Visualizations**: يتأكد من الرسوم البيانية
+- ✅ **Wallet Connection**: Examines wallet connection options
+- ✅ **Portfolio Data**: Verifies portfolio data
+- ✅ **Balance Display**: Checks balance display
+- ✅ **Charts & Visualizations**: Ensures charts work
 
 ### 💸 Payments Real Data Tests
-- ✅ **Form Elements**: يفحص عناصر النموذج
-- ✅ **Form Validation**: يختبر التحقق من صحة البيانات
-- ✅ **Balance Integration**: يتحقق من عرض الرصيد
-- ✅ **Transaction History**: يفحص سجل المعاملات
+- ✅ **Form Elements**: Examines form elements
+- ✅ **Form Validation**: Tests data validation
+- ✅ **Balance Integration**: Verifies balance display
+- ✅ **Transaction History**: Checks transaction history
 
 ### 🌐 API Connectivity Tests
 - ✅ **Health Endpoint**: `/health`
 - ✅ **Market Stats**: `/api/v1/market/stats`
 - ✅ **TVL History**: `/api/v1/market/tvl-history`
-- ✅ **Response Times**: قياس أوقات الاستجابة
+- ✅ **Response Times**: Measures response times
 
 ## 📊 Test Results Interpretation
 
@@ -87,25 +87,25 @@ RealDataTester.generateReport()
 ## 🚀 How to Run the Tests
 
 ### Quick Test (Console)
-1. **افتح SeiMoney app** في المتصفح
-2. **افتح Developer Console** (F12)
-3. **شغل الاختبار**:
+1. **Open SeiMoney app** in browser
+2. **Open Developer Console** (F12)
+3. **Run the test**:
    ```javascript
    RealDataTester.testRealDataIntegration()
    ```
 
 ### Visual Test (HTML Interface)
-1. **افتح** `frontend/TEST_REAL_DATA.html`
-2. **اضغط** "Test Real Data Integration"
-3. **راجع النتائج** المفصلة
+1. **Open** `frontend/TEST_REAL_DATA.html`
+2. **Click** "Test Real Data Integration"
+3. **Review detailed results**
 
 ### Manual Verification
-1. **تصفح كل شاشة** (Home, Dashboard, Payments)
-2. **ابحث عن البيانات الحقيقية**:
-   - أرقام متغيرة (ليست ثابتة)
-   - أوقات حديثة
-   - بيانات منطقية
-3. **تحقق من الرسائل**:
+1. **Browse each screen** (Home, Dashboard, Payments)
+2. **Look for real data**:
+   - Variable numbers (not static)
+   - Recent times
+   - Logical data
+3. **Check messages**:
    - "⚠️ Backend not available, using demo data"
    - "✅ Real data loaded successfully"
 
@@ -149,20 +149,20 @@ Test Results:
    cd backend
    npm run dev
    ```
-2. **Check Port 3001**: تأكد أن الباك إند يعمل على البورت الصحيح
-3. **Refresh Frontend**: أعد تحميل الصفحة
+2. **Check Port 3001**: Ensure backend is running on the correct port
+3. **Refresh Frontend**: Reload the page
 
 ### If Tests Fail Completely
-1. **Check Console Errors**: ابحث عن أخطاء في console
-2. **Verify App is Running**: تأكد أن التطبيق يعمل
-3. **Clear Cache**: امسح cache المتصفح
-4. **Try Different Browser**: جرب متصفح آخر
+1. **Check Console Errors**: Look for errors in console
+2. **Verify App is Running**: Ensure the application is running
+3. **Clear Cache**: Clear browser cache
+4. **Try Different Browser**: Try a different browser
 
 ### If API Tests Fail
-1. **Check Backend Status**: تأكد من تشغيل الباك إند
-2. **Verify Endpoints**: تحقق من صحة الـ endpoints
-3. **Check CORS Settings**: تأكد من إعدادات CORS
-4. **Network Issues**: تحقق من الاتصال بالشبكة
+1. **Check Backend Status**: Ensure backend is running
+2. **Verify Endpoints**: Verify endpoint correctness
+3. **Check CORS Settings**: Ensure CORS settings are correct
+4. **Network Issues**: Check network connectivity
 
 ## 📈 Performance Benchmarks
 

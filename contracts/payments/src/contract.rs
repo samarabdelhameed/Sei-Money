@@ -41,7 +41,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
 
 fn must_one_fund(info: &MessageInfo, denom: &str) -> Result<Coin, ContractError> {
     let coin = info.funds.iter().find(|c| c.denom == denom).cloned().ok_or(InvalidFunds)?;
-    // منع إرسال أكثر من Coin واحد لنفس الدالة (تبسيط)
+    // Prevent sending more than one Coin to the same function (simplification)
     ensure!(info.funds.len() == 1, InvalidFunds);
     ensure!(coin.amount > Uint128::zero(), InvalidFunds);
     Ok(coin)
@@ -113,11 +113,11 @@ fn exec_refund(deps: DepsMut, env: Env, info: MessageInfo, id: u64) -> Result<Re
     let mut tr = TRANSFERS.load(deps.storage, id).map_err(|_| NotFound)?;
     ensure!(matches!(tr.status, TransferStatus::Open), AlreadyFinalized);
 
-    // لو فيه expiry لازم يكون عدى
+    // If there's expiry, it must be expired
     if let Some(ts) = tr.expiry_ts {
         ensure!(Timestamp::from_seconds(ts) <= env.block.time, NotExpired);
     }
-    // لازم المرسل هو اللي يرجّع
+    // The sender must be the one to refund
     ensure!(info.sender == tr.sender, NotSender);
 
     tr.status = TransferStatus::Refunded;

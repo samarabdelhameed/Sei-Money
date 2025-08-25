@@ -1,62 +1,62 @@
-# 🔧 دليل استكشاف الأخطاء وإصلاحها - SeiMoney
+# 🔧 Troubleshooting Guide - SeiMoney
 
-## 🎯 نظرة عامة
+## 🎯 Overview
 
-هذا الدليل يوفر حلول شاملة للمشاكل الشائعة التي قد تواجهها أثناء اختبار أو استخدام تطبيق SeiMoney. يغطي الدليل جميع المكونات من ربط المحافظ إلى مشاكل الأداء.
+This guide provides comprehensive solutions for common issues you may encounter while testing or using the SeiMoney application. The guide covers all components from wallet connections to performance issues.
 
-## 📚 فهرس المحتويات
+## 📚 Table of Contents
 
-1. [مشاكل ربط المحفظة](#مشاكل-ربط-المحفظة)
-2. [مشاكل تحميل البيانات](#مشاكل-تحميل-البيانات)
-3. [مشاكل المعاملات](#مشاكل-المعاملات)
-4. [مشاكل الأداء](#مشاكل-الأداء)
-5. [مشاكل التوافق](#مشاكل-التوافق)
-6. [مشاكل الأمان](#مشاكل-الأمان)
-7. [مشاكل إمكانية الوصول](#مشاكل-إمكانية-الوصول)
-8. [أدوات التشخيص](#أدوات-التشخيص)
-9. [الحصول على المساعدة](#الحصول-على-المساعدة)
+1. [Wallet Connection Issues](#wallet-connection-issues)
+2. [Data Loading Issues](#data-loading-issues)
+3. [Transaction Issues](#transaction-issues)
+4. [Performance Issues](#performance-issues)
+5. [Compatibility Issues](#compatibility-issues)
+6. [Security Issues](#security-issues)
+7. [Accessibility Issues](#accessibility-issues)
+8. [Diagnostic Tools](#diagnostic-tools)
+9. [Getting Help](#getting-help)
 
 ---
 
-## 💼 مشاكل ربط المحفظة
+## 💼 Wallet Connection Issues
 
-### 🚨 المشكلة: فشل ربط محفظة Keplr
+### 🚨 Problem: Keplr Wallet Connection Failure
 
-#### الأعراض
-- رسالة خطأ "فشل الاتصال بالمحفظة"
-- عدم ظهور نافذة Keplr
-- رفض الاتصال
+#### Symptoms
+- Error message "Failed to connect to wallet"
+- Keplr window doesn't appear
+- Connection rejected
 
-#### الأسباب المحتملة
-1. **المحفظة غير مثبتة**
-2. **المحفظة مقفلة**
-3. **شبكة خاطئة**
-4. **إعدادات المتصفح**
-5. **تضارب الإضافات**
+#### Possible Causes
+1. **Wallet not installed**
+2. **Wallet locked**
+3. **Wrong network**
+4. **Browser settings**
+5. **Extension conflicts**
 
-#### الحلول خطوة بخطوة
+#### Step-by-Step Solutions
 
-##### الحل 1: التحقق من التثبيت
+##### Solution 1: Check Installation
 ```bash
-# تحقق من وجود Keplr في المتصفح
-1. افتح Chrome/Firefox
-2. انتقل إلى chrome://extensions/
-3. ابحث عن Keplr
-4. تأكد من تفعيل الإضافة
+# Check if Keplr exists in browser
+1. Open Chrome/Firefox
+2. Go to chrome://extensions/
+3. Search for Keplr
+4. Ensure extension is enabled
 ```
 
-##### الحل 2: إلغاء قفل المحفظة
+##### Solution 2: Unlock Wallet
 ```bash
-# خطوات إلغاء القفل
-1. انقر على أيقونة Keplr
-2. أدخل كلمة المرور
-3. تأكد من إلغاء القفل
-4. أعد المحاولة
+# Unlock steps
+1. Click on Keplr icon
+2. Enter password
+3. Ensure wallet is unlocked
+4. Try again
 ```
 
-##### الحل 3: تغيير الشبكة
+##### Solution 3: Change Network
 ```javascript
-// التحقق من الشبكة المطلوبة
+// Check required network
 const requiredChainId = "sei-chain";
 const currentChain = await window.keplr.getChainId();
 
@@ -65,28 +65,28 @@ if (currentChain !== requiredChainId) {
 }
 ```
 
-##### الحل 4: مسح ذاكرة التخزين المؤقت
+##### Solution 4: Clear Cache
 ```bash
-# مسح البيانات المحفوظة
-1. اضغط F12 لفتح أدوات المطور
-2. انتقل إلى Application
-3. امسح Local Storage
-4. امسح Session Storage
-5. أعد تحميل الصفحة
+# Clear saved data
+1. Press F12 to open developer tools
+2. Go to Application
+3. Clear Local Storage
+4. Clear Session Storage
+5. Reload page
 ```
 
-### 🚨 المشكلة: فشل ربط محفظة MetaMask
+### 🚨 Problem: MetaMask Wallet Connection Failure
 
-#### الأعراض
-- رسالة "MetaMask not detected"
-- عدم استجابة النافذة المنبثقة
-- خطأ في الشبكة
+#### Symptoms
+- "MetaMask not detected" message
+- Popup window not responding
+- Network error
 
-#### الحلول
+#### Solutions
 
-##### الحل 1: إضافة شبكة SEI
+##### Solution 1: Add SEI Network
 ```javascript
-// إعدادات شبكة SEI لـ MetaMask
+// SEI network settings for MetaMask
 const seiNetwork = {
   chainId: '0x531', // 1329 in hex
   chainName: 'SEI Network',
@@ -98,61 +98,45 @@ const seiNetwork = {
   rpcUrls: ['https://evm-rpc.sei-apis.com'],
   blockExplorerUrls: ['https://seitrace.com']
 };
-
-// إضافة الشبكة
-await window.ethereum.request({
-  method: 'wallet_addEthereumChain',
-  params: [seiNetwork]
-});
-```
-
-##### الحل 2: إعادة تعيين الاتصال
-```bash
-# خطوات إعادة التعيين
-1. افتح MetaMask
-2. انتقل إلى Settings > Advanced
-3. انقر على "Reset Account"
-4. أكد العملية
-5. أعد ربط المحفظة
 ```
 
 ---
 
-## 📊 مشاكل تحميل البيانات
+## 📊 Data Loading Issues
 
-### 🚨 المشكلة: عدم تحميل بيانات السوق
+### 🚨 Problem: Market Data Not Loading
 
-#### الأعراض
-- شاشات فارغة
-- رسائل "Loading..." دائمة
-- بيانات قديمة
-- أخطاء API
+#### Symptoms
+- Empty screens
+- "Loading..." messages forever
+- Outdated data
+- API errors
 
-#### التشخيص
+#### Diagnostics
 
-##### فحص حالة API
+##### API Health Check
 ```bash
-# تحقق من حالة الخدمات
+# Check service status
 curl -X GET "https://api.seimoney.com/health"
 
-# فحص endpoint محدد
+# Check specific endpoint
 curl -X GET "https://api.seimoney.com/market/stats"
 ```
 
-##### فحص وحدة التحكم
+##### Console Debugging
 ```javascript
-// افتح وحدة التحكم وابحث عن:
-// - أخطاء CORS
-// - أخطاء 404/500
-// - انتهاء مهلة الطلبات
-// - أخطاء JSON parsing
+// Open console and search for:
+// - CORS errors
+// - 404/500 errors
+// - Request timeouts
+// - JSON parsing errors
 ```
 
-#### الحلول
+#### Solutions
 
-##### الحل 1: إعادة تحميل البيانات
+##### Solution 1: Reload Data
 ```javascript
-// إعادة تحميل يدوية
+// Manual data refresh
 const refreshData = async () => {
   try {
     await fetch('/api/market/refresh', { method: 'POST' });
@@ -163,21 +147,21 @@ const refreshData = async () => {
 };
 ```
 
-##### الحل 2: التحقق من الشبكة
+##### Solution 2: Check Network
 ```bash
-# اختبار الاتصال
+# Test connection
 ping api.seimoney.com
 
-# اختبار DNS
+# Test DNS
 nslookup api.seimoney.com
 
-# اختبار HTTPS
+# Test HTTPS
 curl -I https://api.seimoney.com
 ```
 
-##### الحل 3: مسح ذاكرة التخزين المؤقت
+##### Solution 3: Clear Cache
 ```javascript
-// مسح cache programmatically
+// Programmatic cache clearing
 if ('caches' in window) {
   caches.keys().then(names => {
     names.forEach(name => {
@@ -187,19 +171,19 @@ if ('caches' in window) {
 }
 ```
 
-### 🚨 المشكلة: بطء تحميل البيانات
+### 🚨 Problem: Slow Data Loading
 
-#### الأسباب والحلول
+#### Causes and Solutions
 
-##### السبب 1: حجم البيانات الكبير
+##### Cause 1: Large Data Volume
 ```javascript
-// تنفيذ pagination
+// Implement pagination
 const loadDataInChunks = async (page = 1, limit = 50) => {
   const response = await fetch(`/api/data?page=${page}&limit=${limit}`);
   return response.json();
 };
 
-// تنفيذ lazy loading
+// Implement lazy loading
 const lazyLoadData = () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -211,9 +195,9 @@ const lazyLoadData = () => {
 };
 ```
 
-##### السبب 2: عدم تحسين الاستعلامات
+##### Cause 2: Inefficient Queries
 ```javascript
-// استخدام caching
+// Use caching
 const cache = new Map();
 
 const getCachedData = async (key) => {
@@ -229,21 +213,21 @@ const getCachedData = async (key) => {
 
 ---
 
-## 💳 مشاكل المعاملات
+## 💳 Transaction Issues
 
-### 🚨 المشكلة: فشل إرسال المعاملة
+### 🚨 Problem: Failed Transaction
 
-#### الأعراض
-- رسالة "Transaction failed"
-- معاملة معلقة
-- رسوم غاز عالية
-- رفض المحفظة
+#### Symptoms
+- "Transaction failed" message
+- Pending transaction
+- High gas fees
+- Wallet rejection
 
-#### التشخيص والحلول
+#### Diagnostics and Solutions
 
-##### فحص رصيد الغاز
+##### Check Gas Balance
 ```javascript
-// التحقق من رصيد الغاز
+// Check gas balance
 const checkGasBalance = async (address) => {
   const balance = await web3.eth.getBalance(address);
   const gasPrice = await web3.eth.getGasPrice();
@@ -257,9 +241,9 @@ const checkGasBalance = async (address) => {
 };
 ```
 
-##### تحسين رسوم الغاز
+##### Optimize Gas Fees
 ```javascript
-// حساب رسوم الغاز المثلى
+// Calculate optimal gas fees
 const optimizeGasFees = async () => {
   const gasPrice = await web3.eth.getGasPrice();
   const optimizedPrice = Math.floor(gasPrice * 1.1); // 10% buffer
@@ -271,9 +255,9 @@ const optimizeGasFees = async () => {
 };
 ```
 
-##### إعادة المحاولة التلقائية
+##### Automatic Retry System
 ```javascript
-// نظام إعادة المحاولة
+// Retry system
 const retryTransaction = async (txFunction, maxRetries = 3) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -281,20 +265,20 @@ const retryTransaction = async (txFunction, maxRetries = 3) => {
     } catch (error) {
       if (i === maxRetries - 1) throw error;
       
-      // انتظار قبل إعادة المحاولة
+      // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
     }
   }
 };
 ```
 
-### 🚨 المشكلة: معاملة معلقة
+### 🚨 Problem: Pending Transaction
 
-#### الحلول
+#### Solutions
 
-##### تسريع المعاملة
+##### Speed Up Transaction
 ```javascript
-// زيادة رسوم الغاز للمعاملة المعلقة
+// Increase gas fees for pending transaction
 const speedUpTransaction = async (txHash) => {
   const tx = await web3.eth.getTransaction(txHash);
   const newGasPrice = Math.floor(tx.gasPrice * 1.5);
@@ -306,9 +290,9 @@ const speedUpTransaction = async (txHash) => {
 };
 ```
 
-##### إلغاء المعاملة
+##### Cancel Transaction
 ```javascript
-// إرسال معاملة بنفس nonce ورسوم أعلى
+// Send transaction with higher nonce and gas price
 const cancelTransaction = async (txHash) => {
   const tx = await web3.eth.getTransaction(txHash);
   
@@ -324,15 +308,15 @@ const cancelTransaction = async (txHash) => {
 
 ---
 
-## ⚡ مشاكل الأداء
+## ⚡ Performance Issues
 
-### 🚨 المشكلة: بطء التطبيق
+### 🚨 Problem: Slow Application
 
-#### التشخيص
+#### Diagnostics
 
-##### فحص استخدام الذاكرة
+##### Memory Usage Monitoring
 ```javascript
-// مراقبة استخدام الذاكرة
+// Monitor memory usage
 const monitorMemory = () => {
   if (performance.memory) {
     console.log({
@@ -343,13 +327,13 @@ const monitorMemory = () => {
   }
 };
 
-// تشغيل كل 5 ثوانٍ
+// Run every 5 seconds
 setInterval(monitorMemory, 5000);
 ```
 
-##### فحص تسريبات الذاكرة
+##### Memory Leak Detection
 ```javascript
-// كشف تسريبات الذاكرة
+// Detect memory leaks
 const detectMemoryLeaks = () => {
   const initialMemory = performance.memory.usedJSHeapSize;
   
@@ -364,11 +348,11 @@ const detectMemoryLeaks = () => {
 };
 ```
 
-#### الحلول
+#### Solutions
 
-##### تحسين الصور
+##### Image Optimization
 ```javascript
-// تحسين تحميل الصور
+// Optimize image loading
 const optimizeImages = () => {
   const images = document.querySelectorAll('img');
   
@@ -389,9 +373,9 @@ const optimizeImages = () => {
 };
 ```
 
-##### تحسين الشبكة
+##### Network Optimization
 ```javascript
-// تنفيذ service worker للتخزين المؤقت
+// Implement service worker for caching
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(registration => {
@@ -403,66 +387,66 @@ if ('serviceWorker' in navigator) {
 }
 ```
 
-### 🚨 المشكلة: بطء تحميل الصفحة
+### 🚨 Problem: Slow Page Loading
 
-#### الحلول
+#### Solutions
 
-##### تقسيم الكود
+##### Code Splitting
 ```javascript
-// تقسيم الكود بـ dynamic imports
+// Split code using dynamic imports
 const loadComponent = async (componentName) => {
   const { default: Component } = await import(`./components/${componentName}`);
   return Component;
 };
 
-// lazy loading للمسارات
+// Lazy loading for routes
 const LazyDashboard = lazy(() => import('./pages/Dashboard'));
 const LazyPayments = lazy(() => import('./pages/Payments'));
 ```
 
-##### تحسين الحزمة
+##### Bundle Optimization
 ```bash
-# تحليل حجم الحزمة
+# Analyze bundle size
 npm run build -- --analyze
 
-# تحسين التبعيات
+# Improve dependencies
 npm audit
 npm update
 
-# إزالة التبعيات غير المستخدمة
+# Remove unused dependencies
 npm prune
 ```
 
 ---
 
-## 🌐 مشاكل التوافق
+## 🌐 Compatibility Issues
 
-### 🚨 المشكلة: عدم عمل التطبيق في Safari
+### 🚨 Problem: Application Not Working in Safari
 
-#### الأسباب الشائعة
-1. **عدم دعم Web3**
-2. **مشاكل CORS**
-3. **قيود الأمان**
-4. **عدم دعم ES6**
+#### Common Causes
+1. **Web3 Support**
+2. **CORS Issues**
+3. **Security Restrictions**
+4. **ES6 Support**
 
-#### الحلول
+#### Solutions
 
-##### إضافة polyfills
+##### Add Polyfills
 ```javascript
-// إضافة polyfills للمتصفحات القديمة
+// Add polyfills for older browsers
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
-// polyfill للـ Web3
+// Polyfill for Web3
 if (!window.ethereum) {
   console.warn('Web3 not detected, using fallback');
-  // استخدام WalletConnect كبديل
+  // Use WalletConnect as a fallback
 }
 ```
 
-##### إعدادات CORS
+##### CORS Settings
 ```javascript
-// إعداد CORS headers
+// Set CORS headers
 const corsOptions = {
   origin: ['https://seimoney.com', 'https://app.seimoney.com'],
   credentials: true,
@@ -470,60 +454,60 @@ const corsOptions = {
 };
 ```
 
-### 🚨 المشكلة: مشاكل الأجهزة المحمولة
+### 🚨 Problem: Mobile Device Issues
 
-#### الحلول
+#### Solutions
 
-##### تحسين اللمس
+##### Touch Optimization
 ```css
-/* تحسين التفاعل اللمسي */
+/* Improve touch interaction */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
   touch-action: manipulation;
 }
 
-/* منع التكبير غير المرغوب */
+/* Prevent unwanted zoom */
 input, select, textarea {
   font-size: 16px;
 }
 ```
 
-##### تحسين الأداء المحمول
+##### Mobile Performance
 ```javascript
-// تحسين الأداء للأجهزة المحمولة
+// Optimize for mobile devices
 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 if (isMobile) {
-  // تقليل الرسوم المتحركة
+  // Reduce animations
   document.body.classList.add('reduced-motion');
   
-  // تحسين التمرير
+  // Improve scrolling
   document.body.style.overflowScrolling = 'touch';
 }
 ```
 
 ---
 
-## 🔒 مشاكل الأمان
+## 🔒 Security Issues
 
-### 🚨 المشكلة: تحذيرات أمنية
+### 🚨 Problem: Security Warnings
 
-#### أنواع التحذيرات والحلول
+#### Types of Warnings and Solutions
 
 ##### Mixed Content
 ```html
-<!-- تأكد من استخدام HTTPS لجميع الموارد -->
+<!-- Ensure HTTPS for all resources -->
 <script src="https://cdn.example.com/script.js"></script>
 <img src="https://images.example.com/image.jpg" alt="Image">
 
-<!-- تجنب HTTP في HTTPS pages -->
-<!-- خطأ: <script src="http://..."> -->
+<!-- Avoid HTTP in HTTPS pages -->
+<!-- Error: <script src="http://..."> -->
 ```
 
 ##### CSP Violations
 ```html
-<!-- إعداد Content Security Policy -->
+<!-- Set Content Security Policy -->
 <meta http-equiv="Content-Security-Policy" 
       content="default-src 'self'; 
                script-src 'self' 'unsafe-inline' https://trusted-cdn.com;
@@ -533,32 +517,32 @@ if (isMobile) {
 
 ##### XSS Prevention
 ```javascript
-// تنظيف الإدخالات
+// Sanitize inputs
 const sanitizeInput = (input) => {
   const div = document.createElement('div');
   div.textContent = input;
   return div.innerHTML;
 };
 
-// استخدام DOMPurify للتنظيف المتقدم
+// Use DOMPurify for advanced sanitization
 import DOMPurify from 'dompurify';
 const cleanHTML = DOMPurify.sanitize(userInput);
 ```
 
 ---
 
-## ♿ مشاكل إمكانية الوصول
+## ♿ Accessibility Issues
 
-### 🚨 المشكلة: فشل اختبارات إمكانية الوصول
+### 🚨 Problem: Failed Accessibility Tests
 
-#### الحلول الشائعة
+#### Common Solutions
 
-##### إضافة ARIA Labels
+##### Add ARIA Labels
 ```html
-<!-- قبل -->
+<!-- Before -->
 <button onclick="submitForm()">Submit</button>
 
-<!-- بعد -->
+<!-- After -->
 <button onclick="submitForm()" 
         aria-label="Submit payment form"
         aria-describedby="form-help">
@@ -567,9 +551,9 @@ const cleanHTML = DOMPurify.sanitize(userInput);
 <div id="form-help">This will process your payment</div>
 ```
 
-##### تحسين التباين
+##### Contrast Enhancement
 ```css
-/* تحسين تباين الألوان */
+/* Improve contrast */
 .button {
   background-color: #0066cc; /* 4.5:1 contrast ratio */
   color: #ffffff;
@@ -581,9 +565,9 @@ const cleanHTML = DOMPurify.sanitize(userInput);
 }
 ```
 
-##### إصلاح ترتيب التبويب
+##### Tab Order Fix
 ```html
-<!-- ترتيب منطقي للتبويب -->
+<!-- Logical tab order -->
 <form>
   <input type="text" tabindex="1" placeholder="Name">
   <input type="email" tabindex="2" placeholder="Email">
@@ -593,65 +577,65 @@ const cleanHTML = DOMPurify.sanitize(userInput);
 
 ---
 
-## 🛠️ أدوات التشخيص
+## 🛠️ Diagnostic Tools
 
-### 🔍 أدوات المتصفح
+### 🔍 Browser Tools
 
 #### Chrome DevTools
 ```bash
-# فتح أدوات المطور
-F12 أو Ctrl+Shift+I
+# Open Developer Tools
+F12 or Ctrl+Shift+I
 
-# تبويبات مهمة:
-- Console: للأخطاء والتحذيرات
-- Network: لمراقبة الطلبات
-- Performance: لتحليل الأداء
-- Application: للتخزين المحلي
-- Security: للتحقق من الأمان
+# Important Tabs:
+- Console: For errors and warnings
+- Network: For monitoring requests
+- Performance: For performance analysis
+- Application: For local storage
+- Security: For security checks
 ```
 
 #### Firefox Developer Tools
 ```bash
-# فتح أدوات المطور
-F12 أو Ctrl+Shift+I
+# Open Developer Tools
+F12 or Ctrl+Shift+I
 
-# ميزات خاصة:
+# Special Features:
 - Accessibility Inspector
 - CSS Grid Inspector
 - Font Inspector
 ```
 
-### 🔧 أدوات خارجية
+### 🔧 External Tools
 
 #### Lighthouse
 ```bash
-# تشغيل Lighthouse من سطر الأوامر
+# Run Lighthouse from command line
 npm install -g lighthouse
 lighthouse https://seimoney.com --output html --output-path ./report.html
 
-# أو من Chrome DevTools
-# انتقل إلى تبويب Lighthouse وشغل التحليل
+# Or from Chrome DevTools
+# Go to Lighthouse tab and run analysis
 ```
 
 #### WebPageTest
 ```bash
-# اختبار الأداء المتقدم
-# زيارة webpagetest.org
-# أدخل URL وشغل الاختبار
+# Advanced performance testing
+# Visit webpagetest.org
+# Enter URL and run test
 ```
 
 #### WAVE (Web Accessibility Evaluation Tool)
 ```bash
-# تثبيت إضافة WAVE
-# أو زيارة wave.webaim.org
-# أدخل URL للتحليل
+# Install WAVE extension
+# Or visit wave.webaim.org
+# Enter URL for analysis
 ```
 
-### 📊 مراقبة الأداء
+### 📊 Performance Monitoring
 
-#### Performance Monitoring
+#### Real-time Monitoring
 ```javascript
-// مراقبة الأداء في الوقت الفعلي
+// Monitor performance in real-time
 const observer = new PerformanceObserver((list) => {
   list.getEntries().forEach((entry) => {
     console.log(`${entry.name}: ${entry.duration}ms`);
@@ -663,7 +647,7 @@ observer.observe({ entryTypes: ['measure', 'navigation'] });
 
 #### Error Tracking
 ```javascript
-// تتبع الأخطاء
+// Track errors
 window.addEventListener('error', (event) => {
   console.error('Global error:', {
     message: event.message,
@@ -673,92 +657,92 @@ window.addEventListener('error', (event) => {
     error: event.error
   });
   
-  // إرسال إلى خدمة التتبع
+  // Send to error tracking service
   // sendErrorToService(event);
 });
 ```
 
 ---
 
-## 📞 الحصول على المساعدة
+## 📞 Getting Help
 
-### 🆘 قنوات الدعم
+### 🆘 Support Channels
 
-#### الدعم التقني
-- **البريد الإلكتروني**: support@seimoney.com
+#### Technical Support
+- **Email**: support@seimoney.com
 - **Discord**: discord.gg/seimoney
 - **GitHub Issues**: github.com/seimoney/frontend/issues
-- **الوثائق**: docs.seimoney.com
+- **Documentation**: docs.seimoney.com
 
-#### المجتمع
+#### Community
 - **Reddit**: r/SeiMoney
 - **Twitter**: @SeiMoney
 - **Telegram**: t.me/seimoney
 - **Medium**: medium.com/@seimoney
 
-### 📋 معلومات مطلوبة عند طلب المساعدة
+### 📋 Information Required When Requesting Help
 
-#### معلومات النظام
+#### System Information
 ```bash
-# جمع معلومات النظام
-- نظام التشغيل ونسخته
-- المتصفح ونسخته
-- نسخة التطبيق
-- المحفظة المستخدمة
-- رسالة الخطأ الكاملة
-- خطوات إعادة إنتاج المشكلة
+# Collect system information
+- Operating system and version
+- Browser and version
+- Application version
+- Wallet used
+- Full error message
+- Steps to reproduce the issue
 ```
 
-#### لقطات الشاشة والسجلات
+#### Screenshots and Logs
 ```bash
-# معلومات إضافية مفيدة
-- لقطة شاشة للخطأ
-- سجل وحدة التحكم
-- سجل الشبكة
-- إعدادات المحفظة
-- معرف المعاملة (إن وجد)
+# Additional useful information
+- Screenshot of the error
+- Console logs
+- Network logs
+- Wallet settings
+- Transaction ID (if applicable)
 ```
 
-### 🔄 عملية حل المشاكل
+### 🔄 Problem Solving Process
 
-#### الخطوات الأساسية
-1. **تحديد المشكلة**: وصف دقيق للمشكلة
-2. **جمع المعلومات**: سجلات وأخطاء
-3. **البحث عن الحلول**: في هذا الدليل أو الوثائق
-4. **تطبيق الحل**: اتباع الخطوات بدقة
-5. **التحقق من النتيجة**: تأكيد حل المشكلة
-6. **التوثيق**: تسجيل الحل للمستقبل
+#### Basic Steps
+1. **Identify the Issue**: Precise description of the issue
+2. **Gather Information**: Logs and errors
+3. **Search for Solutions**: In this guide or documentation
+4. **Apply the Solution**: Following steps carefully
+5. **Verify the Result**: Confirming the issue is resolved
+6. **Document the Fix**: Logging the fix for future reference
 
-#### مستويات الأولوية
-- **حرج**: يؤثر على الأمان أو المعاملات
-- **عالي**: يؤثر على الوظائف الأساسية
-- **متوسط**: يؤثر على تجربة المستخدم
-- **منخفض**: مشاكل تجميلية أو تحسينات
+#### Priority Levels
+- **Critical**: Affects security or transactions
+- **High**: Affects core functionality
+- **Medium**: Affects user experience
+- **Low**: Cosmetic or minor improvements
 
 ---
 
-## 📈 الوقاية من المشاكل
+## 📈 Preventing Issues
 
-### 🛡️ أفضل الممارسات
+### 🛡️ Best Practices
 
-#### الصيانة الدورية
+#### Regular Maintenance
 ```bash
-# مهام صيانة أسبوعية
-- تحديث التبعيات
-- مراجعة السجلات
-- اختبار النسخ الاحتياطية
-- فحص الأمان
+# Weekly Maintenance Tasks
+- Update dependencies
+- Review logs
+- Test backups
+- Security checks
 
-# مهام صيانة شهرية
-- تحليل الأداء
-- مراجعة التوافق
-- تحديث الوثائق
-- تدريب الفريق
+# Monthly Maintenance Tasks
+- Analyze performance
+- Review compatibility
+- Update documentation
+- Train team
 ```
 
-#### المراقبة المستمرة
+#### Continuous Monitoring
 ```javascript
-// إعداد مراقبة تلقائية
+// Set up automatic monitoring
 const healthCheck = async () => {
   try {
     const response = await fetch('/api/health');
@@ -768,15 +752,15 @@ const healthCheck = async () => {
     console.log('✅ System healthy');
   } catch (error) {
     console.error('❌ Health check failed:', error);
-    // إرسال تنبيه
+    // Send alert
   }
 };
 
-// تشغيل كل 5 دقائق
+// Run every 5 minutes
 setInterval(healthCheck, 5 * 60 * 1000);
 ```
 
 ---
 
-*تم إنشاء هذا الدليل بواسطة فريق الدعم التقني في SeiMoney*
-*آخر تحديث: ديسمبر 2024*
+*Created by the SeiMoney Technical Support Team*
+*Last updated: December 2024*

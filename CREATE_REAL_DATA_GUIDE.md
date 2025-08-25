@@ -1,92 +1,92 @@
-# 📊 دليل إنشاء البيانات الحقيقية - SeiMoney
+# 📊 Real Data Creation Guide - SeiMoney
 
-## 🎯 الهدف
-إنشاء بيانات حقيقية في المشروع عشان الداش بورد يعرض أرقام حقيقية بدل الأصفار.
+## 🎯 Objective
+Create real data in the project so the dashboard displays real numbers instead of zeros.
 
 ---
 
-## 🚀 الخطوات
+## 🚀 Steps
 
-### 1. تشغيل المشروع
+### 1. Start the Project
 ```bash
 ./start-all.sh
 ```
-انتظري حتى ترى: "🚀 All Services Started Successfully!"
+Wait until you see: "🚀 All Services Started Successfully!"
 
-### 2. فتح الموقع
-- اذهبي إلى: http://localhost:5175
-- تأكدي إن الموقع يعمل
+### 2. Open the Website
+- Go to: http://localhost:5175
+- Make sure the website is working
 
-### 3. ربط المحفظة
-- اضغطي "Connect Wallet"
-- اختاري أي محفظة متاحة (MetaMask مثلاً)
-- **مهم:** لازم تكون المحفظة متصلة عشان تقدري تنشئي داتا
+### 3. Connect Wallet
+- Click "Connect Wallet"
+- Choose any available wallet (MetaMask for example)
+- **Important:** The wallet must be connected to create data
 
-### 4. إنشاء تحويلات (Transfers)
-1. اذهبي لصفحة **Payments**
-2. املأي النموذج:
-   - **Recipient:** `sei1abc123def456ghi789jkl012mno345pqr678stu` (عنوان وهمي)
+### 4. Create Transfers
+1. Go to **Payments** page
+2. Fill out the form:
+   - **Recipient:** `sei1abc123def456ghi789jkl012mno345pqr678stu` (dummy address)
    - **Amount:** `10.5`
    - **Remark:** `Test transfer`
-3. اضغطي **Send**
-4. كرري العملية 2-3 مرات بمبالغ مختلفة
+3. Click **Send**
+4. Repeat the process 2-3 times with different amounts
 
-### 5. إنشاء مجموعات (Groups)
-1. اذهبي لصفحة **Groups**
-2. اضغطي **Create Group**
-3. املأي البيانات:
+### 5. Create Groups
+1. Go to **Groups** page
+2. Click **Create Group**
+3. Fill in the data:
    - **Name:** `Test Group 1`
    - **Description:** `This is a test group`
    - **Target Amount:** `1000`
    - **Type:** `savings`
-4. احفظي المجموعة
-5. كرري العملية لإنشاء 2-3 مجموعات
+4. Save the group
+5. Repeat the process to create 2-3 groups
 
-### 6. إنشاء أواني ادخار (Pots)
-1. اذهبي لصفحة **Pots**
-2. اضغطي **Create Pot**
-3. املأي البيانات:
+### 6. Create Savings Pots
+1. Go to **Pots** page
+2. Click **Create Pot**
+3. Fill in the data:
    - **Name:** `Emergency Fund`
    - **Target Amount:** `5000`
    - **Target Date:** `2024-12-31`
    - **Description:** `Emergency savings pot`
-4. احفظي الإناء
-5. أضيفي مبلغ أولي (مثلاً 100 SEI)
-6. كرري العملية لإنشاء 2-3 أواني
+4. Save the pot
+5. Add initial amount (e.g., 100 SEI)
+6. Repeat the process to create 2-3 pots
 
-### 7. إنشاء خزائن (Vaults)
-1. اذهبي لصفحة **Vaults**
-2. اضغطي **Create Vault**
-3. املأي البيانات:
+### 7. Create Vaults
+1. Go to **Vaults** page
+2. Click **Create Vault**
+3. Fill in the data:
    - **Name:** `High Yield Vault`
    - **Strategy:** `yield-farming`
    - **Initial Deposit:** `500`
    - **Lock Period:** `30 days`
-4. احفظي الخزنة
-5. كرري العملية لإنشاء 2-3 خزائن
+4. Save the vault
+5. Repeat the process to create 2-3 vaults
 
-### 8. العودة للداش بورد
-1. اذهبي لصفحة **Dashboard**
-2. اضغطي زر **Refresh** (🔄)
-3. انتظري ثواني قليلة
-4. **النتيجة:** هتشوفي الأرقام الحقيقية!
+### 8. Return to Dashboard
+1. Go to **Dashboard** page
+2. Click **Refresh** button (🔄)
+3. Wait a few seconds
+4. **Result:** You will see real numbers!
 
 ---
 
-## 📈 النتيجة المتوقعة
+## 📈 Expected Result
 
-بعد إنشاء البيانات، الداش بورد هيعرض:
+After creating data, the dashboard will display:
 
 ### Portfolio Overview
-- **Total Portfolio:** مجموع كل استثماراتك
-- **Daily P&L:** الربح/الخسارة اليومية
-- **Active Vaults:** عدد الخزائن النشطة
-- **Group Pools:** عدد المجموعات النشطة
+- **Total Portfolio:** Sum of all your investments
+- **Daily P&L:** Daily profit/loss
+- **Active Vaults:** Number of active vaults
+- **Group Pools:** Number of active groups
 
 ### Charts & Graphs
-- **Portfolio Performance:** رسم بياني لأداء المحفظة
-- **Savings Progress:** تقدم أهداف الادخار
-- **Recent Activity:** آخر العمليات
+- **Portfolio Performance:** Chart showing portfolio performance
+- **Savings Progress:** Progress of savings goals
+- **Recent Activity:** Latest operations
 
 ### Real Numbers Example
 ```
@@ -98,43 +98,43 @@ Group Pools: 2
 
 ---
 
-## 🐛 إذا لم تظهر البيانات
+## 🐛 If Data Doesn't Appear
 
-### تحقق من:
-1. **المحفظة متصلة:** تأكدي إن عنوان المحفظة ظاهر في الـ Navbar
-2. **البيانات محفوظة:** تأكدي إن العمليات نجحت (رسائل النجاح)
-3. **الـ Refresh:** اضغطي زر التحديث في الداش بورد
-4. **الـ Console:** افتحي F12 وشوفي لو فيه أخطاء
+### Check:
+1. **Wallet Connected:** Make sure wallet address is visible in Navbar
+2. **Data Saved:** Make sure operations succeeded (success messages)
+3. **Refresh:** Click refresh button in dashboard
+4. **Console:** Open F12 and check for errors
 
-### إذا فشلت العمليات:
-1. **تحققي من الـ Backend:** http://localhost:3001/health/health
-2. **أعيدي تشغيل المشروع:** `./stop-all.sh` ثم `./start-all.sh`
-3. **تحققي من الـ Logs:** `tail -f logs/backend.log`
-
----
-
-## ⚡ نصائح سريعة
-
-### للحصول على بيانات سريعاً:
-1. **ابدأي بالتحويلات** - أسهل وأسرع
-2. **استخدمي مبالغ صغيرة** - للتست فقط
-3. **انشئي 3-5 عمليات** - كافية لرؤية البيانات
-4. **اضغطي Refresh** - بعد كل عملية
-
-### للحصول على بيانات غنية:
-1. **انشئي أنواع مختلفة** - تحويلات، مجموعات، أواني، خزائن
-2. **استخدمي تواريخ مختلفة** - لرؤية التقدم الزمني
-3. **أضيفي أوصاف** - لتمييز العمليات
-4. **جربي سيناريوهات مختلفة** - ادخار، استثمار، تحويلات
+### If Operations Failed:
+1. **Check Backend:** http://localhost:3001/health/health
+2. **Restart Project:** `./stop-all.sh` then `./start-all.sh`
+3. **Check Logs:** `tail -f logs/backend.log`
 
 ---
 
-## 🎉 النتيجة النهائية
+## ⚡ Quick Tips
 
-بعد اتباع هذه الخطوات، هتحصلي على:
-- ✅ داش بورد مليان بالبيانات الحقيقية
-- ✅ رسوم بيانية تفاعلية
-- ✅ إحصائيات دقيقة
-- ✅ تجربة مستخدم كاملة
+### To Get Data Quickly:
+1. **Start with Transfers** - Easiest and fastest
+2. **Use Small Amounts** - For testing only
+3. **Create 3-5 Operations** - Enough to see data
+4. **Click Refresh** - After each operation
 
-**مبروك! 🎊 دلوقتي عندك مشروع DeFi حقيقي يعمل بالكامل!**
+### To Get Rich Data:
+1. **Create Different Types** - Transfers, groups, pots, vaults
+2. **Use Different Dates** - To see time progress
+3. **Add Descriptions** - To distinguish operations
+4. **Try Different Scenarios** - Savings, investment, transfers
+
+---
+
+## 🎉 Final Result
+
+After following these steps, you will have:
+- ✅ Dashboard filled with real data
+- ✅ Interactive charts and graphs
+- ✅ Accurate statistics
+- ✅ Complete user experience
+
+**Congratulations! 🎊 Now you have a real DeFi project working completely!**
