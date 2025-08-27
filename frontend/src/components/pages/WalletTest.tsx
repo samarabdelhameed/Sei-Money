@@ -310,8 +310,8 @@ export const WalletTest: React.FC = () => {
               <div>
                 <p className="text-sm text-yellow-400 font-medium">Note:</p>
                 <p className="text-sm" style={{ color: colors.textMuted }}>
-                  This is a development test environment. Make sure your backend is running on localhost:3001 
-                  and that CORS is properly configured for testing.
+                  This is a development test environment. Make sure your backend is running on localhost:3001;
+  and that CORS is properly configured for testing.
                 </p>
               </div>
             </div>

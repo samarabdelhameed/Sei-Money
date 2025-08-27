@@ -17,15 +17,15 @@ const redisConfig = {
 
 // Expired Transfers Queue
 export const expiredTransfersQueue = new Queue(QUEUES.EXPIRED_TRANSFERS, redisConfig);
-new QueueScheduler(QUEUES.EXPIRED_TRANSFERS, redisConfig);
+// QueueScheduler is deprecated in newer versions of BullMQ
 
 // Vault Harvests Queue
 export const vaultHarvestsQueue = new Queue(QUEUES.VAULT_HARVESTS, redisConfig);
-new QueueScheduler(QUEUES.VAULT_HARVESTS, redisConfig);
+// QueueScheduler is deprecated in newer versions of BullMQ
 
 // Escrow Expiries Queue
 export const escrowExpiriesQueue = new Queue(QUEUES.ESCROW_EXPIRIES, redisConfig);
-new QueueScheduler(QUEUES.ESCROW_EXPIRIES, redisConfig);
+// QueueScheduler is deprecated in newer versions of BullMQ
 
 // Job scheduling functions
 export async function scheduleExpiredTransfersScan() {
@@ -81,7 +81,7 @@ async function scanExpiredTransfers() {
   
   const expired = await prisma.transfer.findMany({
     where: {
-      expiryTs: { not: null, lte: now },
+      expiry: { lte: new Date(Number(now)) },
       status: 'created'
     },
     take: 200
@@ -95,16 +95,16 @@ async function scanExpiredTransfers() {
     try {
       await expiredTransfersQueue.add(
         'refund',
-        { id: transfer.transferId.toString() },
+        { id: transfer.id.toString() },
         { 
-          jobId: `refund:${transfer.transferId}`, 
+          jobId: `refund:${transfer.id}`, 
           removeOnComplete: true, 
           attempts: 3, 
           backoff: { type: 'exponential', delay: 5000 } 
         }
       );
     } catch (error) {
-      logger.warn(`Refund job already enqueued for transfer ${transfer.transferId}`);
+      logger.warn(`Refund job already enqueued for transfer ${transfer.id}`);
     }
   }
 }
@@ -116,7 +116,7 @@ async function refundExpiredTransfer(transferId: string) {
     
     // Update local status
     await prisma.transfer.updateMany({
-      where: { transferId: BigInt(transferId) },
+      where: { id: transferId },
       data: { status: 'refunded' }
     });
 

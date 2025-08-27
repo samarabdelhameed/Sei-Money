@@ -9,6 +9,51 @@ export {
   resetEnvironment 
 } from './utils/environment';
 
+// UI Automation exports
+export {
+  UIAutomation,
+  FormHelpers,
+  VisualValidation,
+  PageNavigation,
+} from './ui';
+export type {
+  UIAutomationConfig,
+  FormField,
+  NavigationOptions,
+  ElementInteractionOptions,
+  PaymentFormData,
+  GroupFormData,
+  PotFormData,
+  VaultFormData,
+  VisualComparisonOptions,
+  ScreenshotOptions,
+  VisualValidationResult,
+  SeiMoneyPages,
+  NavigationResult,
+} from './ui';
+
+// API Testing exports
+export {
+  APITester,
+  HTTPClient,
+  ResponseValidator,
+  APIEndpoints,
+} from './api';
+export type {
+  APITestConfig,
+  APIResponse,
+  APITestResult,
+  APITestError,
+  ValidationResult,
+  EndpointTest,
+  ValidationRule,
+  TransferData,
+  GroupData,
+  PotData,
+  VaultData,
+  APIEndpointConfig,
+} from './api';
+
 // Export all types
 export * from './types';
 

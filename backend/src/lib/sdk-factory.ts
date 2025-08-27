@@ -78,7 +78,7 @@ export class SDKFactory {
       const readOnlySDK = await this.getReadOnlySDK();
       const health = await readOnlySDK.healthCheck();
       result.readOnlySDK = health.healthy;
-      result.contractsHealth = health.contracts;
+      result.contractsHealth = health.contracts as any || {};
     } catch (error) {
       logger.error('Read-only SDK health check failed:', error);
     }

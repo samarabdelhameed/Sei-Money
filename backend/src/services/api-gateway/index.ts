@@ -74,7 +74,7 @@ export class ApiGateway {
       });
 
       // Routes
-      await this.fastify.register(healthRoutes, { prefix: '/health' });
+      await this.fastify.register(healthRoutes);
       await this.fastify.register(transfersRoutes, { prefix: '/api/v1/transfers' });
       await this.fastify.register(vaultsRoutes, { prefix: '/api/v1/vaults' });
       await this.fastify.register(groupsRoutes, { prefix: '/api/v1/groups' });

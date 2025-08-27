@@ -72,8 +72,8 @@ export async function walletRoutes(app: FastifyInstance): Promise<void> {
       }
 
       // Clear any cookies
-      reply.clearCookie('session');
-      reply.clearCookie('wallet-session');
+      (reply as any).clearCookie('session');
+      (reply as any).clearCookie('wallet-session');
 
       return reply.send({
         ok: true,

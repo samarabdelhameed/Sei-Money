@@ -1,24 +1,23 @@
 /**
- * High-level helper functions for Sei Money SDK
+ * Helper functions for common operations
  */
 
-import { Coin, Address, Uint128 } from './types';
 import { PaymentsClient } from './clients/payments';
-import { retry, formatCoin, parseCoin, addCoins, subtractCoins } from './utils';
+import { Coin, Address, Uint64 } from './types';
 
 /**
- * Send secure transfer with automatic retry
+ * Send a simple transfer with remark
  */
-export async function sendSecure(
+export async function sendWithRemark(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  remark?: string,
-  expiry?: number
+  remark: string,
+  expiry?: Uint64
 ) {
-  return retry(async () => {
-    return await payments.createTransfer(recipient, amount, remark, expiry);
-  });
+  const options: any = { remark };
+  if (expiry !== undefined) options.expiry = expiry;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
@@ -30,92 +29,79 @@ export async function sendBatch(
     recipient: Address;
     amount: Coin;
     remark?: string;
-    expiry?: number;
+    expiry?: Uint64;
   }>
 ) {
   const results = [];
-  
   for (const transfer of transfers) {
-    try {
-      const result = await payments.createTransfer(
-        transfer.recipient,
-        transfer.amount,
-        transfer.remark,
-        transfer.expiry
-      );
-      results.push({ ...transfer, success: true, result });
-    } catch (error) {
-      results.push({ ...transfer, success: false, error });
-    }
+    const options: any = {};
+    if (transfer.remark) options.remark = transfer.remark;
+    if (transfer.expiry !== undefined) options.expiry = transfer.expiry;
+    
+    const result = await payments.createTransfer(
+      transfer.recipient,
+      transfer.amount,
+      options
+    );
+    results.push(result);
   }
-  
   return results;
 }
 
 /**
- * Create scheduled transfer (with expiry)
+ * Send with automatic expiry (24 hours)
  */
-export async function scheduleTransfer(
+export async function sendWithAutoExpiry(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  delaySeconds: number,
   remark?: string
 ) {
-  const expiry = Math.floor(Date.now() / 1000) + delaySeconds;
-  return await payments.createTransfer(recipient, amount, remark, expiry);
+  const expiry = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours
+  const options: any = { expiry };
+  if (remark) options.remark = remark;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
- * Send with percentage fee calculation
+ * Send with fee deduction
  */
-export async function sendWithFee(
+export async function sendWithFeeDeduction(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
   feePercentage: number,
   remark?: string
 ) {
-  if (feePercentage < 0 || feePercentage > 100) {
-    throw new Error('Fee percentage must be between 0 and 100');
-  }
-  
-  const feeAmount = {
-    denom: amount.denom,
-    amount: Math.floor(parseInt(amount.amount) * (feePercentage / 100)).toString(),
+  const fee = Math.floor(parseFloat(amount.amount) * feePercentage / 100);
+  const netAmount = {
+    ...amount,
+    amount: (parseFloat(amount.amount) - fee).toString()
   };
-  
-  const netAmount = subtractCoins(amount, feeAmount);
-  
-  return await payments.createTransfer(recipient, netAmount, remark);
+  const options: any = {};
+  if (remark) options.remark = remark;
+  return await payments.createTransfer(recipient, netAmount, options);
 }
 
 /**
  * Split amount among multiple recipients
  */
-export async function splitTransfer(
+export async function splitSend(
   payments: PaymentsClient,
   recipients: Address[],
   totalAmount: Coin,
   remark?: string
 ) {
-  if (recipients.length === 0) {
-    throw new Error('At least one recipient is required');
-  }
-  
-  const amountPerRecipient = Math.floor(parseInt(totalAmount.amount) / recipients.length);
-  const remainder = parseInt(totalAmount.amount) % recipients.length;
+  const amountPerRecipient = Math.floor(parseFloat(totalAmount.amount) / recipients.length);
   
   const transfers = recipients.map((recipient, index) => {
-    const amount = index === 0 
-      ? amountPerRecipient + remainder 
-      : amountPerRecipient;
-    
-    return {
+    const amount = (amountPerRecipient).toString();
+    const transfer: any = {
       recipient,
       amount: { denom: totalAmount.denom, amount: amount.toString() },
-      remark: remark ? `${remark} (${index + 1}/${recipients.length})` : undefined,
     };
+    if (remark) transfer.remark = `${remark} (${index + 1}/${recipients.length})`;
+    return transfer;
   });
   
   return await sendBatch(payments, transfers);
@@ -124,176 +110,160 @@ export async function splitTransfer(
 /**
  * Send with automatic expiry based on amount
  */
-export async function sendWithAutoExpiry(
+export async function sendWithSmartExpiry(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
   remark?: string
 ) {
   // Larger amounts get longer expiry times
-  const amountValue = parseInt(amount.amount);
+  const amountValue = parseFloat(amount.amount);
   let expiryHours = 24; // Default 24 hours
   
-  if (amountValue > 1000000) { // 1M usei
-    expiryHours = 168; // 1 week
-  } else if (amountValue > 100000) { // 100K usei
-    expiryHours = 72; // 3 days
-  } else if (amountValue > 10000) { // 10K usei
-    expiryHours = 48; // 2 days
-  }
+  if (amountValue > 1000000) expiryHours = 72; // 3 days for large amounts
+  else if (amountValue > 100000) expiryHours = 48; // 2 days for medium amounts
   
-  const expiry = Math.floor(Date.now() / 1000) + (expiryHours * 3600);
-  return await payments.createTransfer(recipient, amount, remark, expiry);
+  const expiry = Math.floor(Date.now() / 1000) + expiryHours * 60 * 60;
+  const options: any = { expiry };
+  if (remark) options.remark = remark;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
- * Send with reminder system
+ * Send with reminder remark
  */
 export async function sendWithReminder(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  reminderDays: number = 7,
-  remark?: string
+  originalRemark: string,
+  expiry?: Uint64
 ) {
-  const expiry = Math.floor(Date.now() / 1000) + (reminderDays * 24 * 3600);
-  const reminderRemark = remark 
-    ? `${remark} (Expires in ${reminderDays} days)`
-    : `Transfer expires in ${reminderDays} days`;
-  
-  return await payments.createTransfer(recipient, amount, reminderRemark, expiry);
+  const reminderRemark = `REMINDER: ${originalRemark}`;
+  const options: any = { remark: reminderRemark };
+  if (expiry !== undefined) options.expiry = expiry;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
- * Send with escrow-like behavior
+ * Send with escrow-like remark
  */
 export async function sendWithEscrow(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  escrowDays: number = 30,
-  remark?: string
+  terms: string,
+  expiry?: Uint64
 ) {
-  const expiry = Math.floor(Date.now() / 1000) + (escrowDays * 24 * 3600);
-  const escrowRemark = remark 
-    ? `${remark} (Escrow: ${escrowDays} days)`
-    : `Escrow transfer for ${escrowDays} days`;
-  
-  return await payments.createTransfer(recipient, amount, escrowRemark, expiry);
+  const escrowRemark = `ESCROW: ${terms}`;
+  const options: any = { remark: escrowRemark };
+  if (expiry !== undefined) options.expiry = expiry;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
- * Send with automatic refund notification
+ * Send with refund protection
  */
-export async function sendWithRefundNotification(
+export async function sendWithRefundProtection(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  refundHours: number = 24,
+  protectionPeriod: number, // in seconds
   remark?: string
 ) {
-  const expiry = Math.floor(Date.now() / 1000) + (refundHours * 3600);
-  const refundRemark = remark 
-    ? `${remark} (Auto-refund in ${refundHours}h if unclaimed)`
-    : `Auto-refund in ${refundHours} hours if unclaimed`;
-  
-  return await payments.createTransfer(recipient, amount, refundRemark, expiry);
+  const expiry = Math.floor(Date.now() / 1000) + protectionPeriod;
+  const refundRemark = remark ? `${remark} (Refund protected)` : 'Refund protected';
+  return await payments.createTransfer(recipient, amount, { remark: refundRemark, expiry });
 }
 
 /**
- * Send with conditional expiry
+ * Send recurring payment setup
  */
-export async function sendWithConditionalExpiry(
+export async function setupRecurringPayment(
   payments: PaymentsClient,
   recipient: Address,
   amount: Coin,
-  condition: 'business_hours' | 'weekdays' | 'monthly' | 'quarterly',
+  intervalDays: number,
+  totalPayments: number,
   remark?: string
 ) {
-  let expiry: number;
-  const now = Math.floor(Date.now() / 1000);
+  const results = [];
   
-  switch (condition) {
-    case 'business_hours':
-      // Expire at end of next business day (5 PM)
-      const tomorrow = new Date(now * 1000);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(17, 0, 0, 0); // 5 PM
-      expiry = Math.floor(tomorrow.getTime() / 1000);
-      break;
-      
-    case 'weekdays':
-      // Expire at end of next weekday
-      const nextWeekday = new Date(now * 1000);
-      do {
-        nextWeekday.setDate(nextWeekday.getDate() + 1);
-      } while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6);
-      nextWeekday.setHours(17, 0, 0, 0); // 5 PM
-      expiry = Math.floor(nextWeekday.getTime() / 1000);
-      break;
-      
-    case 'monthly':
-      // Expire at end of current month
-      const endOfMonth = new Date(now * 1000);
-      endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
-      endOfMonth.setHours(23, 59, 59, 999);
-      expiry = Math.floor(endOfMonth.getTime() / 1000);
-      break;
-      
-    case 'quarterly':
-      // Expire at end of current quarter
-      const endOfQuarter = new Date(now * 1000);
-      const quarter = Math.floor(endOfQuarter.getMonth() / 3);
-      endOfQuarter.setMonth((quarter + 1) * 3, 0);
-      endOfQuarter.setHours(23, 59, 59, 999);
-      expiry = Math.floor(endOfQuarter.getTime() / 1000);
-      break;
-      
-    default:
-      expiry = now + (24 * 3600); // Default 24 hours
+  for (let i = 0; i < totalPayments; i++) {
+    const paymentDate = new Date();
+    paymentDate.setDate(paymentDate.getDate() + (i * intervalDays));
+    
+    const recurringRemark = remark 
+      ? `${remark} (Payment ${i + 1}/${totalPayments})`
+      : `Recurring payment ${i + 1}/${totalPayments}`;
+    
+    // For now, we'll create all payments immediately
+    // In a real implementation, you'd schedule these
+    const result = await payments.createTransfer(recipient, amount, { remark: recurringRemark });
+    results.push(result);
   }
   
-  const conditionalRemark = remark 
-    ? `${remark} (Expires: ${condition})`
-    : `Conditional expiry: ${condition}`;
-  
-  return await payments.createTransfer(recipient, amount, conditionalRemark, expiry);
+  return results;
 }
 
 /**
- * Send with smart amount formatting
+ * Send with conditional remark based on amount
  */
-export async function sendSmart(
+export async function sendWithConditionalRemark(
   payments: PaymentsClient,
   recipient: Address,
-  amount: string | Coin,
-  remark?: string
+  amount: Coin,
+  baseRemark: string,
+  expiry?: Uint64
 ) {
-  const coin = typeof amount === 'string' ? parseCoin(amount) : amount;
-  return await payments.createTransfer(recipient, coin, remark);
+  const amountValue = parseFloat(amount.amount);
+  let conditionalRemark = baseRemark;
+  
+  if (amountValue > 1000000) {
+    conditionalRemark += ' (Large transfer)';
+  } else if (amountValue < 1000) {
+    conditionalRemark += ' (Micro transfer)';
+  }
+  
+  const options: any = { remark: conditionalRemark };
+  if (expiry !== undefined) options.expiry = expiry;
+  return await payments.createTransfer(recipient, amount, options);
 }
 
 /**
- * Send with automatic denomination conversion
+ * Convert and send (utility for different denominations)
  */
-export async function sendConverted(
+export async function convertAndSend(
   payments: PaymentsClient,
   recipient: Address,
-  amount: number,
+  amount: string,
   fromDenom: string,
   toDenom: string,
-  exchangeRate: number,
   remark?: string
 ) {
-  const convertedAmount = Math.floor(amount * exchangeRate);
-  const coin: Coin = {
-    denom: toDenom,
-    amount: convertedAmount.toString(),
-  };
-  
+  // Simple conversion logic (in real implementation, you'd use exchange rates)
+  const coin = { amount, denom: toDenom };
+  const options: any = {};
+  if (remark) options.remark = remark;
+  return await payments.createTransfer(recipient, coin, options);
+}
+
+/**
+ * Send with currency conversion remark
+ */
+export async function sendWithConversion(
+  payments: PaymentsClient,
+  recipient: Address,
+  amount: string,
+  denom: string,
+  originalAmount: string,
+  originalDenom: string,
+  remark?: string
+) {
+  const coin = { amount, denom };
   const conversionRemark = remark 
-    ? `${remark} (Converted: ${amount} ${fromDenom} → ${convertedAmount} ${toDenom})`
-    : `Converted: ${amount} ${fromDenom} → ${convertedAmount} ${toDenom}`;
+    ? `${remark} (Converted from ${originalAmount}${originalDenom})`
+    : `Converted from ${originalAmount}${originalDenom}`;
   
-  return await payments.createTransfer(recipient, coin, conversionRemark);
+  return await payments.createTransfer(recipient, coin, { remark: conversionRemark });
 }

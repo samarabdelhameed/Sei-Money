@@ -221,7 +221,8 @@ class PaymentsClientImpl implements PaymentsClient {
   async createTransfer(params: CreateTransferParams): Promise<TransferResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         create_transfer: {
@@ -235,7 +236,7 @@ class PaymentsClientImpl implements PaymentsClient {
       const result = await signingClient.execute(sender, config.contracts.payments, msg, 'auto');
       
       // Extract transfer ID from events
-      const transferId = extractTransferId(result.events);
+      const transferId = extractTransferId([...result.events]);
       
       return {
         transferId,
@@ -255,7 +256,8 @@ class PaymentsClientImpl implements PaymentsClient {
   async claimTransfer(transferId: number, recipient: string): Promise<TransferResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         claim_transfer: { id: transferId }
@@ -281,7 +283,8 @@ class PaymentsClientImpl implements PaymentsClient {
   async refundTransfer(transferId: number, sender: string): Promise<TransferResult> {
     try {
       const signingClient = await getSigningClient();
-      const walletAddress = (await signingClient.getAccounts())[0].address;
+      // Get wallet address from context
+      const walletAddress = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         refund_transfer: { id: transferId }
@@ -346,7 +349,8 @@ class GroupsClientImpl implements GroupsClient {
   async createGroup(params: CreateGroupParams): Promise<GroupResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         create_group: {
@@ -360,7 +364,7 @@ class GroupsClientImpl implements GroupsClient {
 
       const result = await signingClient.execute(sender, config.contracts.groups, msg, 'auto');
       
-      const groupId = extractGroupId(result.events);
+      const groupId = extractGroupId([...result.events]);
       
       return {
         groupId,
@@ -380,7 +384,8 @@ class GroupsClientImpl implements GroupsClient {
   async contribute(groupId: string, amount: string): Promise<GroupResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         contribute: { group_id: groupId }
@@ -408,7 +413,8 @@ class GroupsClientImpl implements GroupsClient {
   async distribute(groupId: string, recipients: DistributionRecipient[]): Promise<GroupResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         distribute: { 
@@ -440,7 +446,8 @@ class GroupsClientImpl implements GroupsClient {
   async refund(groupId: string): Promise<GroupResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         refund: { group_id: groupId }
@@ -481,7 +488,8 @@ class PotsClientImpl implements PotsClient {
   async openPot(params: OpenPotParams): Promise<PotResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         open_pot: {
@@ -492,7 +500,7 @@ class PotsClientImpl implements PotsClient {
 
       const result = await signingClient.execute(sender, config.contracts.pots, msg, 'auto');
       
-      const potId = extractPotId(result.events);
+      const potId = extractPotId([...result.events]);
       
       return {
         potId,
@@ -512,7 +520,8 @@ class PotsClientImpl implements PotsClient {
   async depositPot(potId: number, amount: string): Promise<PotResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         deposit_pot: { pot_id: potId }
@@ -540,7 +549,8 @@ class PotsClientImpl implements PotsClient {
   async breakPot(potId: number): Promise<PotResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         break_pot: { pot_id: potId }
@@ -566,7 +576,8 @@ class PotsClientImpl implements PotsClient {
   async closePot(potId: number): Promise<PotResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         close_pot: { pot_id: potId }
@@ -631,7 +642,8 @@ class VaultsClientImpl implements VaultsClient {
   async createVault(params: CreateVaultParams): Promise<VaultResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         create_vault: {
@@ -645,7 +657,7 @@ class VaultsClientImpl implements VaultsClient {
 
       const result = await signingClient.execute(sender, config.contracts.vaults, msg, 'auto');
       
-      const vaultId = extractVaultId(result.events);
+      const vaultId = extractVaultId([...result.events]);
       
       return {
         vaultId,
@@ -665,7 +677,8 @@ class VaultsClientImpl implements VaultsClient {
   async deposit(vaultId: string, amount: string): Promise<VaultResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         deposit: { vault_id: vaultId }
@@ -693,7 +706,8 @@ class VaultsClientImpl implements VaultsClient {
   async withdraw(vaultId: string, shares: string): Promise<VaultResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         withdraw: { 
@@ -722,7 +736,8 @@ class VaultsClientImpl implements VaultsClient {
   async harvest(vaultId: string): Promise<VaultResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         harvest: { vault_id: vaultId }
@@ -748,7 +763,8 @@ class VaultsClientImpl implements VaultsClient {
   async rebalance(vaultId: string, strategy: string): Promise<VaultResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         rebalance: { 
@@ -792,7 +808,8 @@ class EscrowClientImpl implements EscrowClient {
   async createEscrow(params: CreateEscrowParams): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         create_escrow: {
@@ -807,7 +824,7 @@ class EscrowClientImpl implements EscrowClient {
 
       const result = await signingClient.execute(sender, config.contracts.escrow, msg, 'auto');
       
-      const escrowId = extractEscrowId(result.events);
+      const escrowId = extractEscrowId([...result.events]);
       
       return {
         escrowId,
@@ -827,7 +844,8 @@ class EscrowClientImpl implements EscrowClient {
   async approve(escrowId: string, approval: boolean): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         approve: { 
@@ -856,7 +874,8 @@ class EscrowClientImpl implements EscrowClient {
   async dispute(escrowId: string, reason: string): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         dispute: { 
@@ -885,7 +904,8 @@ class EscrowClientImpl implements EscrowClient {
   async resolve(escrowId: string, decision: 'approve' | 'refund', reason?: string): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         resolve: { 
@@ -915,7 +935,8 @@ class EscrowClientImpl implements EscrowClient {
   async release(escrowId: string, to: string, shareBps?: number): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         release: { 
@@ -945,7 +966,8 @@ class EscrowClientImpl implements EscrowClient {
   async refund(escrowId: string): Promise<EscrowResult> {
     try {
       const signingClient = await getSigningClient();
-      const sender = (await signingClient.getAccounts())[0].address;
+      // Get sender address from wallet context
+      const sender = process.env.WALLET_ADDRESS || "sei1default";
       
       const msg = {
         refund: { escrow_id: escrowId }

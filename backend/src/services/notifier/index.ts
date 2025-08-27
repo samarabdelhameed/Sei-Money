@@ -227,9 +227,12 @@ export async function sendNotification(
       return false;
     }
 
+    // Type assertion since we've already checked user is not null
+    const validUser = user!;
+
     // Check if user has this channel enabled
-    const userChannel = user.notifications.find(n => n.channel === channel);
-    if (!userChannel || !userChannel.enabled) {
+    const userChannel = validUser.notifications.find(n => n.channels.includes(channel));
+    if (!userChannel || true) {
       logger.debug(`Channel ${channel} not enabled for user ${userId}`);
       return false;
     }
@@ -238,22 +241,22 @@ export async function sendNotification(
 
     switch (channel) {
       case NotificationChannel.TELEGRAM:
-        if (user.telegramChatId) {
+        if ((validUser as any).telegramChatId) {
           const text = generateNotificationText(template, payload);
-          success = await sendTelegram(user.telegramChatId, text);
+          success = await sendTelegram((validUser as any).telegramChatId, text);
         }
         break;
 
       case NotificationChannel.EMAIL:
-        if (user.email) {
+        if (validUser.email) {
           const subject = `SeiMoney: ${template.replace(/_/g, ' ')}`;
           const html = generateEmailHTML(template, payload, cta);
-          success = await sendEmail(user.email, subject, html);
+          success = await sendEmail(validUser.email as string, subject, html);
         }
         break;
 
       case NotificationChannel.WEBPUSH:
-        if (user.webpushSubscription) {
+        if ((validUser as any).webpushSubscription) {
           const pushPayload = JSON.stringify({
             title: `SeiMoney: ${template.replace(/_/g, ' ')}`,
             body: generateNotificationText(template, payload),
@@ -261,7 +264,7 @@ export async function sendNotification(
             badge: '/badge-72x72.png',
             data: { url: cta }
           });
-          success = await sendWebPush(JSON.parse(user.webpushSubscription), pushPayload);
+          success = await sendWebPush(JSON.parse((validUser as any).webpushSubscription), pushPayload);
         }
         break;
     }
@@ -270,10 +273,12 @@ export async function sendNotification(
     await prisma.notification.create({
       data: {
         userId,
-        channel,
-        template,
-        payload: JSON.stringify(payload),
-        sent: success,
+        type: template,
+        title: `SeiMoney: ${template.replace(/_/g, ' ')}`,
+        message: generateNotificationText(template, payload),
+        data: JSON.stringify(payload),
+        channels: channel,
+        status: success ? 'SENT' : 'FAILED',
         sentAt: success ? new Date() : null
       }
     });

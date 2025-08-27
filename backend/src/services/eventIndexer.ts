@@ -24,7 +24,7 @@ export interface EventIndexerConfig {
 }
 
 export class EventIndexer extends EventEmitter {
-  private sdk: SeiMoneySDKEnhanced;
+  private sdk!: SeiMoneySDKEnhanced;
   private config: EventIndexerConfig;
   private isRunning: boolean = false;
   private currentBlock: number = 0;
@@ -35,10 +35,10 @@ export class EventIndexer extends EventEmitter {
   constructor(config: EventIndexerConfig) {
     super();
     this.config = {
-      pollInterval: 5000, // 5 seconds default
-      batchSize: 100,
-      maxRetries: 3,
-      ...config
+      ...config,
+      pollInterval: config.pollInterval || 5000,
+      batchSize: config.batchSize || 100,
+      maxRetries: config.maxRetries || 3
     };
   }
 

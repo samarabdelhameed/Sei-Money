@@ -4,37 +4,33 @@
 
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { Coin, Address, Uint64, TxResult, ExecuteOptions } from '../types';
-import { PaymentsQueryClient } from '../gen/payments';
 import { 
-  ExecuteMsg, 
-  CreateTransferMsg, 
-  ClaimTransferMsg, 
-  RefundTransferMsg,
-  UpdateConfigMsg,
-  CollectFeesMsg
+  PaymentsQueryClient,
+  PaymentsExecuteMsg,
+  PaymentsQueryMsg,
+  Transfer
 } from '../gen/payments';
 import { retry, estimateGas } from '../utils';
 
 export class PaymentsClient {
   private readonly exec: SigningCosmWasmClient;
   private readonly query: PaymentsQueryClient;
-  private readonly contractAddress: string;
+  private readonly contractAddress: Address;
+  private readonly senderAddress: Address;
   private readonly defaultOptions: ExecuteOptions;
 
   constructor(
     exec: SigningCosmWasmClient,
     query: PaymentsQueryClient,
-    contractAddress: string,
+    contractAddress: Address,
+    senderAddress: Address,
     defaultOptions: ExecuteOptions = {}
   ) {
     this.exec = exec;
     this.query = query;
     this.contractAddress = contractAddress;
-    this.defaultOptions = {
-      gasAdjustment: 1.3,
-      memo: 'Sei Money Payments',
-      ...defaultOptions,
-    };
+    this.senderAddress = senderAddress;
+    this.defaultOptions = defaultOptions;
   }
 
   /**
@@ -43,211 +39,142 @@ export class PaymentsClient {
   async createTransfer(
     recipient: Address,
     amount: Coin,
-    remark?: string,
-    expiry?: number,
-    options: ExecuteOptions = {}
+    options: ExecuteOptions & { expiry?: Uint64; remark?: string } = {}
   ): Promise<TxResult> {
-    const msg: CreateTransferMsg = {
-      recipient,
-      amount,
-      remark,
-      expiry_ts: expiry?.toString(),
-    };
-
-    const executeMsg: ExecuteMsg = { create_transfer: msg };
-    
     const mergedOptions = { ...this.defaultOptions, ...options };
     
+    const createTransferData: any = {
+      recipient,
+      amount: amount.amount,
+      denom: amount.denom,
+    };
+    
+    if (options.expiry !== undefined) createTransferData.expiry = options.expiry;
+    if (options.remark !== undefined) createTransferData.remark = options.remark;
+    
+    const msg: PaymentsExecuteMsg = {
+      create_transfer: createTransferData
+    };
+
     return retry(async () => {
       const result = await this.exec.execute(
+        this.senderAddress,
         this.contractAddress,
-        executeMsg,
+        msg,
         'auto',
-        mergedOptions.memo,
-        undefined,
-        mergedOptions.gasAdjustment
+        mergedOptions.memo || '',
+        mergedOptions.funds
       );
 
       return {
         txHash: result.transactionHash,
         height: result.height,
-        gasUsed: result.gasUsed || 0,
-        success: result.code === 0,
-        code: result.code,
-        rawLog: result.rawLog,
+        gasUsed: Number(result.gasUsed),
+        success: true,
+        code: 0,
+        rawLog: (result as any).rawLog || '',
       };
-    });
+    }, mergedOptions.retries || 3);
   }
 
   /**
    * Claim a transfer
    */
   async claimTransfer(
-    transferId: string | number,
+    transferId: string,
     options: ExecuteOptions = {}
   ): Promise<TxResult> {
-    const msg: ClaimTransferMsg = {
-      transfer_id: transferId.toString(),
+    const mergedOptions = { ...this.defaultOptions, ...options };
+
+    const msg: PaymentsExecuteMsg = {
+      claim_transfer: {
+        transfer_id: transferId,
+      }
     };
 
-    const executeMsg: ExecuteMsg = { claim_transfer: msg };
-    
-    const mergedOptions = { ...this.defaultOptions, ...options };
-    
     return retry(async () => {
       const result = await this.exec.execute(
+        this.senderAddress,
         this.contractAddress,
-        executeMsg,
+        msg,
         'auto',
-        mergedOptions.memo,
-        undefined,
-        mergedOptions.gasAdjustment
+        mergedOptions.memo || '',
+        mergedOptions.funds
       );
 
       return {
         txHash: result.transactionHash,
         height: result.height,
-        gasUsed: result.gasUsed || 0,
-        success: result.code === 0,
-        code: result.code,
-        rawLog: result.rawLog,
+        gasUsed: Number(result.gasUsed),
+        success: true,
+        code: 0,
+        rawLog: (result as any).rawLog || '',
       };
-    });
+    }, mergedOptions.retries || 3);
   }
 
   /**
-   * Refund an expired transfer
+   * Refund a transfer
    */
   async refundTransfer(
-    transferId: string | number,
+    transferId: string,
     options: ExecuteOptions = {}
   ): Promise<TxResult> {
-    const msg: RefundTransferMsg = {
-      transfer_id: transferId.toString(),
+    const mergedOptions = { ...this.defaultOptions, ...options };
+
+    const msg: PaymentsExecuteMsg = {
+      refund_transfer: {
+        transfer_id: transferId,
+      }
     };
 
-    const executeMsg: ExecuteMsg = { refund_transfer: msg };
-    
-    const mergedOptions = { ...this.defaultOptions, ...options };
-    
     return retry(async () => {
       const result = await this.exec.execute(
+        this.senderAddress,
         this.contractAddress,
-        executeMsg,
+        msg,
         'auto',
-        mergedOptions.memo,
-        undefined,
-        mergedOptions.gasAdjustment
+        mergedOptions.memo || '',
+        mergedOptions.funds
       );
 
       return {
         txHash: result.transactionHash,
         height: result.height,
-        gasUsed: result.gasUsed || 0,
-        success: result.code === 0,
-        code: result.code,
-        rawLog: result.rawLog,
+        gasUsed: Number(result.gasUsed),
+        success: true,
+        code: 0,
+        rawLog: (result as any).rawLog || '',
       };
-    });
+    }, mergedOptions.retries || 3);
   }
 
   /**
-   * Update contract configuration (admin only)
+   * Get transfer by ID
    */
-  async updateConfig(
-    updates: Partial<{
-      admin: Address;
-      fee_collector: Address;
-      fee_rate: string;
-      max_fee_rate: string;
-      min_transfer_amount: string;
-    }>,
-    options: ExecuteOptions = {}
-  ): Promise<TxResult> {
-    const msg: UpdateConfigMsg = updates;
-    const executeMsg: ExecuteMsg = { update_config: msg };
-    
-    const mergedOptions = { ...this.defaultOptions, ...options };
-    
-    return retry(async () => {
-      const result = await this.exec.execute(
-        this.contractAddress,
-        executeMsg,
-        'auto',
-        mergedOptions.memo,
-        undefined,
-        mergedOptions.gasAdjustment
-      );
-
-      return {
-        txHash: result.transactionHash,
-        height: result.height,
-        gasUsed: result.gasUsed || 0,
-        success: result.code === 0,
-        code: result.code,
-        rawLog: result.rawLog,
-      };
-    });
+  async getTransfer(transferId: string): Promise<Transfer | null> {
+    try {
+      return await this.query.getTransfer(transferId);
+    } catch (error) {
+      return null;
+    }
   }
 
   /**
-   * Collect fees (admin only)
+   * Get user transfers
    */
-  async collectFees(
-    denom: string,
-    options: ExecuteOptions = {}
-  ): Promise<TxResult> {
-    const msg: CollectFeesMsg = { denom };
-    const executeMsg: ExecuteMsg = { collect_fees: msg };
-    
-    const mergedOptions = { ...this.defaultOptions, ...options };
-    
-    return retry(async () => {
-      const result = await this.exec.execute(
-        this.contractAddress,
-        executeMsg,
-        'auto',
-        mergedOptions.memo,
-        undefined,
-        mergedOptions.gasAdjustment
-      );
-
-      return {
-        txHash: result.transactionHash,
-        height: result.height,
-        gasUsed: result.gasUsed || 0,
-        success: result.code === 0,
-        code: result.code,
-        rawLog: result.rawLog,
-      };
-    });
-  }
-
-  /**
-   * Get query client for read operations
-   */
-  getQueryClient(): PaymentsQueryClient {
-    return this.query;
-  }
-
-  /**
-   * Get contract address
-   */
-  getContractAddress(): string {
-    return this.contractAddress;
-  }
-
-  /**
-   * Get default options
-   */
-  getDefaultOptions(): ExecuteOptions {
-    return { ...this.defaultOptions };
+  async getUserTransfers(address: Address): Promise<Transfer[]> {
+    try {
+      return await this.query.getUserTransfers(address);
+    } catch (error) {
+      return [];
+    }
   }
 
   /**
    * Update default options
    */
   updateDefaultOptions(options: Partial<ExecuteOptions>): void {
-    this.defaultOptions = { ...this.defaultOptions, ...options };
+    Object.assign(this.defaultOptions, options);
   }
 }

@@ -361,7 +361,7 @@ export class BlockchainErrorHandler {
         );
 
         logger.warn(`Operation failed, retrying in ${delay}ms (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`, {
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           attempt: attempt + 1,
           delay
         });

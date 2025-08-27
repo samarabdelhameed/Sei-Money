@@ -61,10 +61,10 @@ export function getConfig(environment: 'testnet' | 'mainnet' | 'local' = 'testne
 
 // Load configuration from environment variables
 export function loadConfigFromEnv(): ClientConfig {
-  const chainId = process.env.SEI_CHAIN_ID || 'sei-testnet-1';
-  const rpcUrl = process.env.SEI_RPC_URL || NETWORKS.TESTNET.rpcUrl;
-  const gasPrice = process.env.SEI_GAS_PRICE || '0.1usei';
-  const gasAdjustment = parseFloat(process.env.SEI_GAS_ADJUSTMENT || '1.3');
+  const chainId = process.env['SEI_CHAIN_ID'] || 'sei-testnet-1';
+  const rpcUrl = process.env['SEI_RPC_URL'] || NETWORKS.TESTNET.rpcUrl;
+  const gasPrice = process.env['SEI_GAS_PRICE'] || '0.1usei';
+  const gasAdjustment = parseFloat(process.env['SEI_GAS_ADJUSTMENT'] || '1.3');
 
   const network: NetworkConfig = {
     chainId,
@@ -74,12 +74,12 @@ export function loadConfigFromEnv(): ClientConfig {
   };
 
   const contracts: ContractAddresses = {
-    payments: process.env.SEI_PAYMENTS_CONTRACT || DEFAULT_CONTRACTS.payments,
-    groups: process.env.SEI_GROUPS_CONTRACT || DEFAULT_CONTRACTS.groups,
-    pots: process.env.SEI_POTS_CONTRACT || DEFAULT_CONTRACTS.pots,
-    alias: process.env.SEI_ALIAS_CONTRACT || DEFAULT_CONTRACTS.alias,
-    riskEscrow: process.env.SEI_RISK_ESCROW_CONTRACT || DEFAULT_CONTRACTS.riskEscrow,
-    vaults: process.env.SEI_VAULTS_CONTRACT || DEFAULT_CONTRACTS.vaults,
+    payments: process.env['SEI_PAYMENTS_CONTRACT'] || DEFAULT_CONTRACTS.payments,
+    groups: process.env['SEI_GROUPS_CONTRACT'] || DEFAULT_CONTRACTS.groups,
+    pots: process.env['SEI_POTS_CONTRACT'] || DEFAULT_CONTRACTS.pots,
+    alias: process.env['SEI_ALIAS_CONTRACT'] || DEFAULT_CONTRACTS.alias,
+    riskEscrow: process.env['SEI_RISK_ESCROW_CONTRACT'] || DEFAULT_CONTRACTS.riskEscrow,
+    vaults: process.env['SEI_VAULTS_CONTRACT'] || DEFAULT_CONTRACTS.vaults,
   };
 
   return {

@@ -138,13 +138,13 @@ async function getRecentTransactions(client: CosmWasmClient, address: Address): 
     ]);
 
     // Add transaction type and normalize timestamps
-    const normalizedSent = sentTransfers.map(tx => ({
+    const normalizedSent = sentTransfers.map((tx: any) => ({
       ...tx,
       type: 'sent',
       timestamp: new Date(tx.created_at || tx.timestamp || Date.now())
     }));
 
-    const normalizedReceived = receivedTransfers.map(tx => ({
+    const normalizedReceived = receivedTransfers.map((tx: any) => ({
       ...tx,
       type: 'received',
       timestamp: new Date(tx.created_at || tx.timestamp || Date.now())
@@ -158,7 +158,7 @@ async function getRecentTransactions(client: CosmWasmClient, address: Address): 
         list_pots_by_owner: { owner: address }
       });
       
-      const normalizedPots = (potResult.pots || []).map(pot => ({
+      const normalizedPots = (potResult.pots || []).map((pot: any) => ({
         ...pot,
         type: 'pot_operation',
         timestamp: new Date(pot.created_at || pot.timestamp || Date.now())

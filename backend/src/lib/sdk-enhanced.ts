@@ -181,7 +181,8 @@ export class SeiMoneySDKEnhanced {
   async getWalletBalance(address: string): Promise<Coin[]> {
     return RetryHandler.withRetry(async () => {
       const client = await this.connectionPool.getClient();
-      return client.getAllBalances(address);
+      const balance = await client.getBalance(address, 'usei');
+      return [balance];
     });
   }
 
@@ -334,7 +335,7 @@ export class SeiMoneySDKEnhanced {
         });
         return result.address;
       } catch (error) {
-        if (error.message?.includes('not found')) {
+        if (error instanceof Error && error.message?.includes('not found')) {
           return null;
         }
         throw error;
@@ -351,7 +352,7 @@ export class SeiMoneySDKEnhanced {
         });
         return result.alias;
       } catch (error) {
-        if (error.message?.includes('not found')) {
+        if (error instanceof Error && error.message?.includes('not found')) {
           return null;
         }
         throw error;
@@ -437,7 +438,7 @@ export class SeiMoneySDKEnhanced {
         await client.queryContractSmart(test.address, test.query);
         contracts[test.name] = 'healthy';
       } catch (error) {
-        contracts[test.name] = `error: ${error.message}`;
+        contracts[test.name] = `error: ${error instanceof Error ? error.message : String(error)}`;
         healthy = false;
       }
     }
@@ -469,7 +470,7 @@ export class SeiMoneySDKEnhanced {
         received: receivedTransfers.status === 'fulfilled' ? receivedTransfers.value : [],
       },
       pots: pots.status === 'fulfilled' ? pots.value : [],
-      alias: alias.status === 'fulfilled' ? alias.value : undefined,
+      alias: alias.status === 'fulfilled' && alias.value !== null ? alias.value : undefined,
     };
   }
 }

@@ -23,7 +23,7 @@
     "noImplicitOverride": false,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false,
-    "suppressImplicitAnyIndexErrors": true,
+
     "paths": {
       "@/*": ["./src/*"],
       "@/lib/*": ["./src/lib/*"],

@@ -88,18 +88,19 @@ export {
 
 // Re-export helper functions
 export {
-  sendSecure,
+  sendWithRemark,
   sendBatch,
-  scheduleTransfer,
-  sendWithFee,
-  splitTransfer,
   sendWithAutoExpiry,
+  sendWithFeeDeduction,
+  splitSend,
+  sendWithSmartExpiry,
   sendWithReminder,
   sendWithEscrow,
-  sendWithRefundNotification,
-  sendWithConditionalExpiry,
-  sendSmart,
-  sendConverted,
+  sendWithRefundProtection,
+  sendWithConditionalRemark,
+  setupRecurringPayment,
+  convertAndSend,
+  sendWithConversion,
 } from './helpers';
 
 // Default export for convenience

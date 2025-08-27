@@ -248,7 +248,7 @@ export class SeiMoneySDKEnhanced {
         });
         return result.position;
       } catch (error) {
-        if (error?.message?.includes('not found')) {
+        if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('not found')) {
           return null;
         }
         throw error;
@@ -310,7 +310,7 @@ export class SeiMoneySDKEnhanced {
         });
         return result.address;
       } catch (error) {
-        if (error?.message?.includes('not found')) {
+        if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('not found')) {
           return null;
         }
         throw error;
@@ -326,7 +326,7 @@ export class SeiMoneySDKEnhanced {
         });
         return result.alias;
       } catch (error) {
-        if (error?.message?.includes('not found')) {
+        if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('not found')) {
           return null;
         }
         throw error;

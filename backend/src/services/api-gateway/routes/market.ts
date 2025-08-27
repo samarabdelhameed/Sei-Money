@@ -41,7 +41,7 @@ export async function marketRoutes(app: FastifyInstance): Promise<void> {
         }));
 
       // Create recent activity from available data
-      const recentActivity = [];
+      const recentActivity: any[] = [];
       
       // Add vault activities
       vaults.slice(0, 3).forEach(vault => {
@@ -62,7 +62,7 @@ export async function marketRoutes(app: FastifyInstance): Promise<void> {
           value: stats?.totalTvl || 0,
           formatted: `${(stats?.totalTvl || 0).toFixed(2)} SEI`,
           change: tvl?.tvlGrowth24h || 0,
-          changeFormatted: `${tvl?.tvlGrowth24h > 0 ? '+' : ''}${(tvl?.tvlGrowth24h || 0).toFixed(1)}%`,
+          changeFormatted: `${(tvl?.tvlGrowth24h || 0) > 0 ? '+' : ''}${(tvl?.tvlGrowth24h || 0).toFixed(1)}%`,
           breakdown: {
             vaults: tvl?.vaultsTvl || 0,
             groups: tvl?.groupsTvl || 0,
@@ -197,17 +197,17 @@ export async function marketRoutes(app: FastifyInstance): Promise<void> {
           name: 'SeiMoney',
           version: '1.0.0',
           network: 'Sei Testnet',
-          chainId: networkData?.chainId || 'atlantic-2',
-          blockHeight: networkData?.blockHeight || 0,
-          healthy: healthData?.healthy || false
+          chainId: (networkData as any)?.chainId || 'atlantic-2',
+          blockHeight: (networkData as any)?.blockHeight || 0,
+          healthy: (healthData as any)?.healthy || false
         },
         metrics: {
-          totalValueLocked: marketData?.totalTvl || 0,
-          totalUsers: marketData?.activeUsers || 0,
-          totalTransactions: marketData?.totalTransactions || 0,
-          totalContracts: Object.keys(marketData?.contractsHealth || {}).length,
-          averageApy: (marketData?.avgApy || 0) * 100,
-          successRate: (marketData?.successRate || 0) * 100
+          totalValueLocked: (marketData as any)?.totalTvl || 0,
+          totalUsers: (marketData as any)?.activeUsers || 0,
+          totalTransactions: (marketData as any)?.totalTransactions || 0,
+          totalContracts: Object.keys((marketData as any)?.contractsHealth || {}).length,
+          averageApy: ((marketData as any)?.avgApy || 0) * 100,
+          successRate: ((marketData as any)?.successRate || 0) * 100
         },
         contracts: {
           payments: 'sei1kfpm92hs5gsmp84098wc3jpy2a440l50cq2ycsxlkpnlaygl9azqdhsygg',
@@ -217,20 +217,20 @@ export async function marketRoutes(app: FastifyInstance): Promise<void> {
           escrow: 'sei1q3gqr9ywvma6j6kja67n4h7fxz790x5lhj4v5phv2za0v7wsp5qqkrz0pj',
           alias: 'sei1thjuavd70uq7txe79uj8pfy2vfyl3zvmenkyxh6ew4vag9mckq4qrtjav4'
         },
-        contractsHealth: marketData?.contractsHealth || {},
+        contractsHealth: (marketData as any)?.contractsHealth || {},
         network: {
-          chainId: networkData?.chainId || 'atlantic-2',
-          blockHeight: networkData?.blockHeight || 0,
-          blockTime: networkData?.blockTime || new Date().toISOString(),
-          rpcEndpoints: networkData?.rpcEndpoints || [],
-          averageLatency: networkData?.averageLatency || 0,
-          healthy: networkData?.healthy || false
+          chainId: (networkData as any)?.chainId || 'atlantic-2',
+          blockHeight: (networkData as any)?.blockHeight || 0,
+          blockTime: (networkData as any)?.blockTime || new Date().toISOString(),
+          rpcEndpoints: (networkData as any)?.rpcEndpoints || [],
+          averageLatency: (networkData as any)?.averageLatency || 0,
+          healthy: (networkData as any)?.healthy || false
         },
         cache: {
-          entries: healthData?.cacheStats?.entries || 0,
-          hitRate: healthData?.cacheStats?.hitRate || 0
+          entries: (healthData as any)?.cacheStats?.entries || 0,
+          hitRate: (healthData as any)?.cacheStats?.hitRate || 0
         },
-        lastUpdated: marketData?.timestamp || new Date().toISOString()
+        lastUpdated: (marketData as any)?.timestamp || new Date().toISOString()
       };
 
       logger.info(`Market overview retrieved: TVL=${overview.metrics.totalValueLocked} SEI, Health=${overview.platform.healthy}`);

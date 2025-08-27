@@ -93,7 +93,7 @@ export class UIAutomation {
 
       // Create browser context
       this.context = await this.browser.newContext({
-        viewport: this.config.viewport,
+        viewport: this.config.viewport || null,
         ignoreHTTPSErrors: true,
       });
 
@@ -181,7 +181,7 @@ export class UIAutomation {
       const element = await this.waitForElement(selector, options);
       
       await element.click({
-        force: options.force,
+        force: options.force || false,
         timeout: options.timeout || this.config.timeout,
       });
 
@@ -475,19 +475,19 @@ export class UIAutomation {
   /**
    * Execute JavaScript in the browser
    */
-  async executeScript<T = any>(script: string, ...args: any[]): Promise<T> {
+  async executeScript<T = any>(script: string | Function, ...args: any[]): Promise<T> {
     if (!this.page) {
       throw new Error('UI automation not initialized. Call initialize() first.');
     }
 
-    this.logger.debug('Executing JavaScript', { script });
+    this.logger.debug('Executing JavaScript', { script: typeof script === 'function' ? script.toString() : script });
 
     try {
-      const result = await this.page.evaluate(script, ...args);
+      const result = await this.page.evaluate(script as any, ...args);
       this.logger.debug('JavaScript executed successfully', { result });
-      return result;
+      return result as T;
     } catch (error) {
-      this.logger.error('Failed to execute JavaScript', { error, script });
+      this.logger.error('Failed to execute JavaScript', { error, script: typeof script === 'function' ? script.toString() : script });
       throw error;
     }
   }

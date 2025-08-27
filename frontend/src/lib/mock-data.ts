@@ -91,4 +91,5 @@ export const mockGroups: Group[] = [
     creator: 'sei1def456ghi789jkl012mno345pqr678stu901abc',
     members: [
       'sei1abc123def456ghi789jkl012mno345pqr678stu',
-      'sei1def456ghi789jkl012mno34
+      'sei1def456ghi789jkl012mno345pqr678stu901abc'
+    ],

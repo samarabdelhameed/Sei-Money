@@ -113,12 +113,12 @@ async function getPriceFromInternal(denom: string): Promise<PriceData | null> {
     });
     */
 
-    if (priceRecord && priceRecord.price) {
+    if (priceRecord && (priceRecord as any).price) {
       return {
         denom,
-        price: priceRecord.price,
+        price: (priceRecord as any).price,
         source: OracleSource.INTERNAL,
-        timestamp: priceRecord.timestamp.getTime(),
+        timestamp: (priceRecord as any).timestamp.getTime(),
         confidence: 0.95
       };
     }
@@ -183,13 +183,13 @@ async function getAPRFromInternal(assetType: AssetType): Promise<APRData | null>
     });
     */
 
-    if (aprRecord && aprRecord.apr !== undefined) {
+    if (aprRecord && (aprRecord as any).apr !== undefined) {
       return {
         assetType,
-        apr: aprRecord.apr,
+        apr: (aprRecord as any).apr,
         source: 'internal',
-        timestamp: aprRecord.timestamp.getTime(),
-        volatility: aprRecord.volatility || 0.1
+        timestamp: (aprRecord as any).timestamp?.getTime() || Date.now(),
+        volatility: (aprRecord as any).volatility || 0.1
       };
     }
   } catch (error) {
@@ -347,9 +347,9 @@ export async function getTVL(identifier: string, forceRefresh = false): Promise<
     });
     */
 
-    if (tvlRecord && tvlRecord.tvl !== undefined) {
-      tvlCache.set(identifier, tvlRecord.tvl);
-      return tvlRecord.tvl;
+    if (tvlRecord && (tvlRecord as any).tvl !== undefined) {
+      tvlCache.set(identifier, (tvlRecord as any).tvl);
+      return (tvlRecord as any).tvl;
     }
   } catch (error) {
     logger.warn(`Failed to get TVL for ${identifier}:`, error);

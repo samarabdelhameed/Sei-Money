@@ -6,7 +6,7 @@ export type Address = string;
 export type Denom = string;
 export type Amount = string;
 export type Uint128 = string;
-export type Uint64 = string;
+export type Uint64 = number;
 export type Timestamp = string;
 
 /**
@@ -214,6 +214,9 @@ export interface ExecuteOptions {
   gasAdjustment?: number;
   memo?: string;
   timeout?: number;
+  fee?: 'auto' | number;
+  funds?: any[];
+  retries?: number;
 }
 
 /**

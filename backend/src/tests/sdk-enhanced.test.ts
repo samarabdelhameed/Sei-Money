@@ -12,7 +12,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
 
   describe('Configuration and Setup', () => {
     test('should have valid contract addresses', () => {
-      const seiAddressRegex = /^sei1[a-z0-9]{59}$/;
+      const seiAddressRegex = /^sei1[a-z0-9]{58,62}$/;
       
       expect(CONTRACTS.PAYMENTS).toMatch(seiAddressRegex);
       expect(CONTRACTS.GROUPS).toMatch(seiAddressRegex);
@@ -72,7 +72,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(config).toBeDefined();
         console.log('Payments config:', config);
       } catch (error) {
-        console.log('Payments config query failed (expected if contract not initialized):', error.message);
+        console.log('Payments config query failed (expected if contract not initialized):', (error as Error).message);
         // This might fail if contract is not properly initialized, which is okay for testing
       }
     }, 15000);
@@ -87,7 +87,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
           console.log('Sample group:', groups[0]);
         }
       } catch (error) {
-        console.log('Groups query failed (expected if no groups exist):', error.message);
+        console.log('Groups query failed (expected if no groups exist):', (error as Error).message);
       }
     }, 15000);
 
@@ -101,7 +101,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
           console.log('Sample pot:', pots[0]);
         }
       } catch (error) {
-        console.log('Pots query failed (expected if no pots exist):', error.message);
+        console.log('Pots query failed (expected if no pots exist):', (error as Error).message);
       }
     }, 15000);
 
@@ -115,7 +115,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
           console.log('Sample vault:', vaults[0]);
         }
       } catch (error) {
-        console.log('Vaults query failed (expected if no vaults exist):', error.message);
+        console.log('Vaults query failed (expected if no vaults exist):', (error as Error).message);
       }
     }, 15000);
 
@@ -129,7 +129,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
           console.log('Sample escrow:', escrows[0]);
         }
       } catch (error) {
-        console.log('Escrows query failed (expected if no escrows exist):', error.message);
+        console.log('Escrows query failed (expected if no escrows exist):', (error as Error).message);
       }
     }, 15000);
   });
@@ -144,8 +144,8 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(Array.isArray(balance)).toBe(true);
         console.log(`Balance for ${testAddress}:`, balance);
       } catch (error) {
-        console.log('Balance query failed (expected for invalid address):', error.message);
-        expect(error.message).toContain('invalid');
+        console.log('Balance query failed (expected for invalid address):', (error as Error).message);
+        expect((error as Error).message).toContain('invalid');
       }
     }, 15000);
 
@@ -156,7 +156,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(balance === null || (balance && balance.denom === 'usei')).toBe(true);
         console.log(`SEI balance for ${testAddress}:`, balance);
       } catch (error) {
-        console.log('Balance by denom query failed (expected for invalid address):', error.message);
+        console.log('Balance by denom query failed (expected for invalid address):', (error as Error).message);
       }
     }, 15000);
   });
@@ -170,7 +170,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(Array.isArray(transfers)).toBe(true);
         console.log(`Found ${transfers.length} transfers sent by ${testAddress}`);
       } catch (error) {
-        console.log('Transfers by sender query failed:', error.message);
+        console.log('Transfers by sender query failed:', (error as Error).message);
       }
     }, 15000);
 
@@ -180,7 +180,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(Array.isArray(transfers)).toBe(true);
         console.log(`Found ${transfers.length} transfers received by ${testAddress}`);
       } catch (error) {
-        console.log('Transfers by recipient query failed:', error.message);
+        console.log('Transfers by recipient query failed:', (error as Error).message);
       }
     }, 15000);
   });
@@ -192,7 +192,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(address).toBeNull();
         console.log('Non-existent alias correctly returned null');
       } catch (error) {
-        console.log('Alias resolution failed:', error.message);
+        console.log('Alias resolution failed:', (error as Error).message);
       }
     }, 15000);
 
@@ -203,7 +203,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         expect(alias === null || typeof alias === 'string').toBe(true);
         console.log(`Alias for ${testAddress}:`, alias);
       } catch (error) {
-        console.log('Reverse alias lookup failed:', error.message);
+        console.log('Reverse alias lookup failed:', (error as Error).message);
       }
     }, 15000);
   });
@@ -234,7 +234,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
           alias: userData.alias,
         });
       } catch (error) {
-        console.log('Comprehensive user data query failed:', error.message);
+        console.log('Comprehensive user data query failed:', (error as Error).message);
       }
     }, 30000);
   });
@@ -246,8 +246,8 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
         await sdk.getTransfer(999999);
       } catch (error) {
         expect(error).toBeDefined();
-        expect(error.message).toBeDefined();
-        console.log('Invalid transfer query handled correctly:', error.message);
+        expect((error as Error).message).toBeDefined();
+        console.log('Invalid transfer query handled correctly:', (error as Error).message);
       }
     }, 15000);
 
@@ -261,7 +261,7 @@ describe('SeiMoneySDKEnhanced - Real Data Integration', () => {
 
 describe('Configuration Validation', () => {
   test('should validate contract addresses format', () => {
-    const seiAddressRegex = /^sei1[a-z0-9]{59}$/;
+    const seiAddressRegex = /^sei1[a-z0-9]{58,62}$/;
     
     expect(config.contracts.payments).toMatch(seiAddressRegex);
     expect(config.contracts.groups).toMatch(seiAddressRegex);

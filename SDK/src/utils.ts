@@ -37,8 +37,8 @@ export function parseCoin(input: string): Coin {
   
   const [, amount, denom] = match;
   return {
-    denom,
-    amount: (parseFloat(amount) * Math.pow(10, 6)).toString(), // Assuming 6 decimals
+    denom: denom || 'usei',
+    amount: (parseFloat(amount || '0') * Math.pow(10, 6)).toString(), // Assuming 6 decimals
   };
 }
 
