@@ -1,7 +1,7 @@
-use cosmwasm_std::{Addr, Coin, Uint128};
+use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 
-use crate::msg::{StrategyConfig, AllocationPlan, AllocationLeg};
+use crate::msg::{AllocationLeg, StrategyConfig};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, schemars::JsonSchema)]
 pub struct Config {

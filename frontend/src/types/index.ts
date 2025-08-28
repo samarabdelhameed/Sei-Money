@@ -124,3 +124,10 @@ export interface MarketData {
   tvl: number;
   activeUsers: number;
 }
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  timestamp: number;
+}

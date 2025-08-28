@@ -105,7 +105,7 @@ fn exec_open_pot(
 fn exec_deposit_pot(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     pot_id: u64,
     amount: Coin,
 ) -> Result<Response, ContractError> {

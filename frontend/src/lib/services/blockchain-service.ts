@@ -7,24 +7,26 @@ export interface TransactionData {
   gasLimit?: number;
   gasPrice?: number;
   data?: string;
-};
-  export interface TransactionResult {
+}
+
+export interface TransactionResult {
   hash: string;
   status: 'pending' | 'confirmed' | 'failed';
   blockNumber?: number;
   gasUsed?: number;
-};
-  export interface BlockchainService {
+}
+
+export interface BlockchainService {
   getBalance(address: string): Promise<ApiResponse<number>>;
   sendTransaction(transaction: TransactionData): Promise<ApiResponse<TransactionResult>>;
   getTransactionStatus(hash: string): Promise<ApiResponse<TransactionResult>>;
   estimateGas(transaction: Partial<TransactionData>): Promise<ApiResponse<number>>;
-};
+}
   export const blockchainService: BlockchainService = {
   async getBalance(address: string): Promise<ApiResponse<number>> {
     try {
-      // Mock implementation - replace with actual blockchain calls;
-  const balance = Math.floor(Math.random() * 1000);
+      // Mock implementation - replace with actual blockchain calls
+      const balance = Math.floor(Math.random() * 1000);
       return {
         success: true,
         data: balance,
@@ -41,8 +43,8 @@ export interface TransactionData {
 
   async sendTransaction(transaction: TransactionData): Promise<ApiResponse<TransactionResult>> {
     try {
-      // Mock implementation - replace with actual blockchain calls;
-  const result: TransactionResult = {
+      // Mock implementation - replace with actual blockchain calls
+      const result: TransactionResult = {
         hash: `0x${Math.random().toString(16).substr(2, 64)}`,
         status: 'pending',
       };
@@ -61,10 +63,10 @@ export interface TransactionData {
     }
   },
 
-  async getTransactionStatus(hash: string): Promise<ApiResponse<TransactionResult>>> {
+  async getTransactionStatus(hash: string): Promise<ApiResponse<TransactionResult>> {
     try {
-      // Mock implementation - replace with actual blockchain calls;
-  const result: TransactionResult = {
+      // Mock implementation - replace with actual blockchain calls
+      const result: TransactionResult = {
         hash,
         status: Math.random() > 0.5 ? 'confirmed' : 'pending',
         blockNumber: Math.floor(Math.random() * 1000000),
@@ -85,10 +87,10 @@ export interface TransactionData {
     }
   },
 
-  async estimateGas(transaction: Partial<TransactionData>): Promise<ApiResponse<number>>> {
+  async estimateGas(transaction: Partial<TransactionData>): Promise<ApiResponse<number>> {
     try {
-      // Mock implementation - replace with actual gas estimation;
-  const gasEstimate = Math.floor(Math.random() * 50000) + 21000;
+      // Mock implementation - replace with actual gas estimation
+      const gasEstimate = Math.floor(Math.random() * 50000) + 21000;
       return {
         success: true,
         data: gasEstimate,

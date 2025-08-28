@@ -147,7 +147,7 @@ fn exec_approve(
 
 fn exec_dispute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     case_id: u64,
     reason: Option<String>,
@@ -172,7 +172,7 @@ fn exec_dispute(
 
 fn exec_resolve(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     case_id: u64,
     decision: Resolution,
@@ -206,7 +206,7 @@ fn exec_resolve(
 
 fn exec_release(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     case_id: u64,
     to: String,
@@ -242,7 +242,7 @@ fn exec_release(
 
 fn exec_refund(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     case_id: u64,
 ) -> Result<Response, ContractError> {

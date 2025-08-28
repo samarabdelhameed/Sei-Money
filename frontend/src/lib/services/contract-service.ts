@@ -5,37 +5,42 @@ export interface ContractMethod {
   inputs: ContractInput[];
   outputs: ContractOutput[];
   stateMutability: 'view' | 'pure' | 'nonpayable' | 'payable';
-};
-  export interface ContractInput {
+}
+
+export interface ContractInput {
   name: string;
   type: string;
   indexed?: boolean;
-};
-  export interface ContractOutput {
+}
+
+export interface ContractOutput {
   name: string;
   type: string;
-};
-  export interface ContractCallParams {
+}
+
+export interface ContractCallParams {
   contractAddress: string;
   method: string;
   args: unknown[];
   value?: number;
-};
-  export interface ContractCallResult {
+}
+
+export interface ContractCallResult {
   result: unknown;
   gasUsed: number;
   transactionHash?: string;
-};
-  export interface ContractService {
+}
+
+export interface ContractService {
   call(params: ContractCallParams): Promise<ApiResponse<ContractCallResult>>;
   getContractMethods(contractAddress: string): Promise<ApiResponse<ContractMethod[]>>;
   estimateGas(params: ContractCallParams): Promise<ApiResponse<number>>;
-};
+}
   export const contractService: ContractService = {
   async call(params: ContractCallParams): Promise<ApiResponse<ContractCallResult>> {
     try {
-      // Mock implementation - replace with actual contract calls;
-  const result: ContractCallResult = {
+      // Mock implementation - replace with actual contract calls
+      const result: ContractCallResult = {
         result: `Mock result for ${params.method}`,
         gasUsed: Math.floor(Math.random() * 100000),
         transactionHash: params.value ? `0x${Math.random().toString(16).substr(2, 64)}` : undefined,
@@ -55,10 +60,10 @@ export interface ContractMethod {
     }
   },
 
-  async getContractMethods(contractAddress: string): Promise<ApiResponse<ContractMethod>>[]]>> {
+  async getContractMethods(contractAddress: string): Promise<ApiResponse<ContractMethod[]>> {
     try {
-      // Mock implementation - replace with actual ABI parsing;
-  const methods: ContractMethod[] = [
+      // Mock implementation - replace with actual ABI parsing
+      const methods: ContractMethod[] = [
         {
           name: 'transfer',
           inputs: [
@@ -66,13 +71,13 @@ export interface ContractMethod {
             { name: 'amount', type: 'uint256' }
           ],
           outputs: [{ name: 'success', type: 'bool' }],
-          stateMutability: 'nonpayable';
+          stateMutability: 'nonpayable'
         },
         {
           name: 'balanceOf',
           inputs: [{ name: 'account', type: 'address' }],
           outputs: [{ name: 'balance', type: 'uint256' }],
-          stateMutability: 'view';
+          stateMutability: 'view'
         }
       ];
 
@@ -90,10 +95,10 @@ export interface ContractMethod {
     }
   },
 
-  async estimateGas(params: ContractCallParams): Promise<ApiResponse<number>>> {
+  async estimateGas(params: ContractCallParams): Promise<ApiResponse<number>> {
     try {
-      // Mock implementation - replace with actual gas estimation;
-  const gasEstimate = Math.floor(Math.random() * 200000) + 50000;
+      // Mock implementation - replace with actual gas estimation
+      const gasEstimate = Math.floor(Math.random() * 200000) + 50000;
       return {
         success: true,
         data: gasEstimate,

@@ -1,113 +1,238 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle, User, FileText, DollarSign } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { NeonButton } from '../ui/NeonButton';
 import { NeonText } from '../ui/NeonText';
 import { colors } from '../../lib/colors';
+import { escrowContractService, RealEscrowCase, CreateEscrowParams } from '../../lib/services/escrow-contract';
+import { disputeResolutionService } from '../../lib/services/dispute-resolution-service';
 
-interface EscrowTransaction {
-  id: string;
-  title: string;
-  description: string;
-  amount: string;
-  buyer: string;
-  seller: string;
-  status: 'pending' | 'funded' | 'disputed' | 'completed' | 'cancelled';
-  createdAt: string;
-  deadline: string;
-  milestones?: {
-    id: string;
-    title: string;
-    amount: string;
-    status: 'pending' | 'completed';
-  }[];
+// Real escrow data state
+interface EscrowStats {
+  totalSecured: number;
+  completed: number;
+  active: number;
+  successRate: number;
 }
-
-const mockEscrows: EscrowTransaction[] = [
-  {
-    id: '1',
-    title: 'Website Development',
-    description: 'Full-stack web application development with React and Node.js',
-    amount: '2,500.00',
-    buyer: 'sei1abc...xyz',
-    seller: 'sei1def...abc',
-    status: 'funded',
-    createdAt: '2024-08-20',
-    deadline: '2024-09-20',
-    milestones: [
-      { id: '1', title: 'UI/UX Design', amount: '500.00', status: 'completed' },
-      { id: '2', title: 'Frontend Development', amount: '1,000.00', status: 'completed' },
-      { id: '3', title: 'Backend Development', amount: '750.00', status: 'pending' },
-      { id: '4', title: 'Testing & Deployment', amount: '250.00', status: 'pending' },
-    ]
-  },
-  {
-    id: '2',
-    title: 'NFT Artwork Commission',
-    description: 'Custom NFT collection with 100 unique pieces',
-    amount: '1,200.00',
-    buyer: 'sei1ghi...def',
-    seller: 'sei1jkl...ghi',
-    status: 'pending',
-    createdAt: '2024-08-22',
-    deadline: '2024-09-15',
-  },
-  {
-    id: '3',
-    title: 'Smart Contract Audit',
-    description: 'Security audit for DeFi protocol smart contracts',
-    amount: '5,000.00',
-    buyer: 'sei1mno...jkl',
-    seller: 'sei1pqr...mno',
-    status: 'disputed',
-    createdAt: '2024-08-15',
-    deadline: '2024-08-30',
-  }
-];
 
 export const Escrow: React.FC = () => {
   const [activeTab, setActiveTab] = useState('browse');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedEscrow, setSelectedEscrow] = useState<EscrowTransaction | null>(null);
+  const [selectedEscrow, setSelectedEscrow] = useState<RealEscrowCase | null>(null);
+  const [escrows, setEscrows] = useState<RealEscrowCase[]>([]);
+  const [stats, setStats] = useState<EscrowStats>({
+    totalSecured: 0,
+    completed: 0,
+    active: 0,
+    successRate: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     amount: '',
     seller: '',
+    arbiter: '',
     deadline: '',
+    terms: '',
     milestones: false
   });
+
+  // Load real escrow data on component mount
+  useEffect(() => {
+    loadEscrowData();
+  }, []);
+
+  const loadEscrowData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // In a real app, we'd get the user address from wallet context
+      const userAddress = 'current_user_address';
+      
+      const response = await escrowContractService.getUserEscrows(userAddress);
+      
+      if (response.success && response.data) {
+        setEscrows(response.data);
+        calculateStats(response.data);
+      } else {
+        setError(response.error || 'Failed to load escrows');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load escrows');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStats = (escrowData: RealEscrowCase[]) => {
+    const totalSecured = escrowData.reduce((sum, escrow) => sum + escrow.amount, 0);
+    const completed = escrowData.filter(e => e.status === 'released').length;
+    const active = escrowData.filter(e => ['created', 'funded'].includes(e.status)).length;
+    const successRate = escrowData.length > 0 ? (completed / escrowData.length) * 100 : 0;
+    
+    setStats({
+      totalSecured,
+      completed,
+      active,
+      successRate
+    });
+  };
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Creating escrow:', formData);
-    setShowCreateForm(false);
+    
+    try {
+      setLoading(true);
+      
+      const createParams: CreateEscrowParams = {
+        title: formData.title,
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        seller: formData.seller,
+        arbiter: formData.arbiter || 'sei1default_arbiter...', // Default arbiter
+        expiryDate: new Date(formData.deadline),
+        terms: formData.terms.split('\n').filter(term => term.trim()),
+        milestones: formData.milestones ? [
+          {
+            title: 'Initial Milestone',
+            description: 'First milestone payment',
+            amount: parseFloat(formData.amount) * 0.5
+          },
+          {
+            title: 'Final Milestone', 
+            description: 'Final milestone payment',
+            amount: parseFloat(formData.amount) * 0.5
+          }
+        ] : undefined
+      };
+      
+      const response = await escrowContractService.createEscrow(createParams);
+      
+      if (response.success && response.data) {
+        // Add new escrow to list
+        setEscrows(prev => [response.data!, ...prev]);
+        calculateStats([response.data!, ...escrows]);
+        
+        // Reset form and close modal
+        setFormData({
+          title: '',
+          description: '',
+          amount: '',
+          seller: '',
+          arbiter: '',
+          deadline: '',
+          terms: '',
+          milestones: false
+        });
+        setShowCreateForm(false);
+      } else {
+        setError(response.error || 'Failed to create escrow');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create escrow');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusColor = (status: string) => {
+  const handleFundEscrow = async (escrowId: string, amount: number) => {
+    try {
+      setLoading(true);
+      
+      const response = await escrowContractService.fundEscrow(escrowId, amount);
+      
+      if (response.success) {
+        // Reload escrow data to reflect changes
+        await loadEscrowData();
+      } else {
+        setError(response.error || 'Failed to fund escrow');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fund escrow');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReleasePayment = async (escrowId: string) => {
+    try {
+      setLoading(true);
+      
+      const response = await escrowContractService.releasePayment(escrowId);
+      
+      if (response.success) {
+        // Reload escrow data to reflect changes
+        await loadEscrowData();
+      } else {
+        setError(response.error || 'Failed to release payment');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to release payment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRaiseDispute = async (escrowId: string, reason: string) => {
+    try {
+      setLoading(true);
+      
+      const response = await escrowContractService.raiseDispute(escrowId, reason, []);
+      
+      if (response.success) {
+        // Reload escrow data to reflect changes
+        await loadEscrowData();
+      } else {
+        setError(response.error || 'Failed to raise dispute');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to raise dispute');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: RealEscrowCase['status']) => {
     switch (status) {
-      case 'completed': return colors.neonGreen;
+      case 'released': return colors.neonGreen;
       case 'funded': return colors.neonPurple;
-      case 'pending': return colors.warning;
+      case 'created': return colors.warning;
       case 'disputed': return colors.error;
       case 'cancelled': return colors.textMuted;
+      case 'resolved': return colors.neonGreen;
       default: return colors.textMuted;
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: RealEscrowCase['status']) => {
     switch (status) {
-      case 'completed': return CheckCircle;
+      case 'released': return CheckCircle;
+      case 'resolved': return CheckCircle;
       case 'funded': return Shield;
-      case 'pending': return Clock;
+      case 'created': return Clock;
       case 'disputed': return AlertTriangle;
       case 'cancelled': return XCircle;
       default: return Clock;
+    }
+  };
+
+  const getStatusDisplayName = (status: RealEscrowCase['status']) => {
+    switch (status) {
+      case 'created': return 'Pending';
+      case 'funded': return 'Funded';
+      case 'released': return 'Completed';
+      case 'disputed': return 'Disputed';
+      case 'resolved': return 'Resolved';
+      case 'cancelled': return 'Cancelled';
+      default: return status;
     }
   };
 
@@ -155,7 +280,7 @@ export const Escrow: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Total Secured</p>
-              <p className="text-xl font-bold text-white">$45,230</p>
+              <p className="text-xl font-bold text-white">{stats.totalSecured.toFixed(2)} SEI</p>
             </div>
           </div>
         </GlassCard>
@@ -170,7 +295,7 @@ export const Escrow: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Completed</p>
-              <p className="text-xl font-bold text-white">127</p>
+              <p className="text-xl font-bold text-white">{stats.completed}</p>
             </div>
           </div>
         </GlassCard>
@@ -185,7 +310,7 @@ export const Escrow: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Active</p>
-              <p className="text-xl font-bold text-white">23</p>
+              <p className="text-xl font-bold text-white">{stats.active}</p>
             </div>
           </div>
         </GlassCard>
@@ -200,7 +325,7 @@ export const Escrow: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Success Rate</p>
-              <p className="text-xl font-bold text-white">98.5%</p>
+              <p className="text-xl font-bold text-white">{stats.successRate.toFixed(1)}%</p>
             </div>
           </div>
         </GlassCard>
@@ -230,14 +355,57 @@ export const Escrow: React.FC = () => {
         ))}
       </motion.div>
 
+      {/* Error Display */}
+      {error && (
+        <motion.div
+          className="p-4 rounded-lg border border-red-500 bg-red-500/10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <p className="text-red-400">{error}</p>
+          <NeonButton 
+            size="sm" 
+            color="green" 
+            className="mt-2"
+            onClick={() => {
+              setError(null);
+              loadEscrowData();
+            }}
+          >
+            Retry
+          </NeonButton>
+        </motion.div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <motion.div
+          className="flex items-center justify-center py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <span className="ml-3 text-white">Loading escrows...</span>
+        </motion.div>
+      )}
+
       {/* Escrow List */}
-      <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-      >
-        {mockEscrows.map((escrow, index) => {
+      {!loading && (
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          {escrows.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-400 mb-4">No escrows found</p>
+              <NeonButton color="green" onClick={() => setShowCreateForm(true)}>
+                Create Your First Escrow
+              </NeonButton>
+            </div>
+          ) : (
+            escrows.map((escrow, index) => {
           const StatusIcon = getStatusIcon(escrow.status);
           const statusColor = getStatusColor(escrow.status);
           
@@ -272,7 +440,7 @@ export const Escrow: React.FC = () => {
                         color: statusColor 
                       }}
                     >
-                      {escrow.status.charAt(0).toUpperCase() + escrow.status.slice(1)}
+                      {getStatusDisplayName(escrow.status)}
                     </span>
                   </div>
                 </div>
@@ -281,13 +449,13 @@ export const Escrow: React.FC = () => {
                   <div>
                     <p className="text-xs" style={{ color: colors.textMuted }}>Amount</p>
                     <p className="text-lg font-bold" style={{ color: colors.neonGreen }}>
-                      {escrow.amount} SEI
+                      {escrow.amount.toFixed(2)} SEI
                     </p>
                   </div>
                   <div>
                     <p className="text-xs" style={{ color: colors.textMuted }}>Deadline</p>
                     <p className="text-sm text-white">
-                      {new Date(escrow.deadline).toLocaleDateString()}
+                      {escrow.expiryDate.toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -330,13 +498,24 @@ export const Escrow: React.FC = () => {
                   >
                     View Details
                   </NeonButton>
-                  {escrow.status === 'pending' && (
+                  {escrow.status === 'created' && (
                     <NeonButton 
                       size="sm" 
                       variant="outline" 
                       color="purple"
+                      onClick={() => handleFundEscrow(escrow.id, escrow.amount)}
                     >
                       Fund Escrow
+                    </NeonButton>
+                  )}
+                  {escrow.status === 'funded' && (
+                    <NeonButton 
+                      size="sm" 
+                      variant="outline" 
+                      color="green"
+                      onClick={() => handleReleasePayment(escrow.id)}
+                    >
+                      Release Payment
                     </NeonButton>
                   )}
                   {escrow.status === 'disputed' && (
@@ -352,8 +531,9 @@ export const Escrow: React.FC = () => {
               </GlassCard>
             </motion.div>
           );
-        })}
+        }))}
       </motion.div>
+      )}
 
       {/* Create Escrow Modal */}
       {showCreateForm && (
@@ -466,6 +646,40 @@ export const Escrow: React.FC = () => {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">
+                    Arbiter Address (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.arbiter}
+                    onChange={(e) => handleInputChange('arbiter', e.target.value)}
+                    placeholder="sei1arbiter...xyz (leave empty for default)"
+                    className="w-full p-3 rounded-lg border bg-transparent text-white placeholder-gray-400"
+                    style={{
+                      backgroundColor: colors.glass,
+                      borderColor: colors.glassBorder,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">
+                    Terms & Conditions
+                  </label>
+                  <textarea
+                    value={formData.terms}
+                    onChange={(e) => handleInputChange('terms', e.target.value)}
+                    placeholder="Enter terms and conditions (one per line)"
+                    rows={3}
+                    className="w-full p-3 rounded-lg border bg-transparent text-white placeholder-gray-400 resize-none"
+                    style={{
+                      backgroundColor: colors.glass,
+                      borderColor: colors.glassBorder,
+                    }}
+                  />
+                </div>
+
                 <div className="flex items-center space-x-3">
                   <input
                     type="checkbox"
@@ -537,7 +751,7 @@ export const Escrow: React.FC = () => {
                   <div>
                     <h4 className="text-white font-medium mb-2">Amount</h4>
                     <p className="text-2xl font-bold" style={{ color: colors.neonGreen }}>
-                      {selectedEscrow.amount} SEI
+                      {selectedEscrow.amount.toFixed(2)} SEI
                     </p>
                   </div>
                   <div>
@@ -549,7 +763,7 @@ export const Escrow: React.FC = () => {
                         color: getStatusColor(selectedEscrow.status) 
                       }}
                     >
-                      {selectedEscrow.status.charAt(0).toUpperCase() + selectedEscrow.status.slice(1)}
+                      {getStatusDisplayName(selectedEscrow.status)}
                     </span>
                   </div>
                 </div>
@@ -568,6 +782,34 @@ export const Escrow: React.FC = () => {
                     </p>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-white font-medium mb-2">Arbiter</h4>
+                    <p className="font-mono text-sm" style={{ color: colors.textMuted }}>
+                      {selectedEscrow.arbiter}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium mb-2">Expiry Date</h4>
+                    <p className="text-sm" style={{ color: colors.textMuted }}>
+                      {selectedEscrow.expiryDate.toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                {selectedEscrow.terms.length > 0 && (
+                  <div>
+                    <h4 className="text-white font-medium mb-2">Terms & Conditions</h4>
+                    <ul className="space-y-1">
+                      {selectedEscrow.terms.map((term, index) => (
+                        <li key={index} className="text-sm" style={{ color: colors.textMuted }}>
+                          • {term}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {selectedEscrow.milestones && (
                   <div>
@@ -619,17 +861,29 @@ export const Escrow: React.FC = () => {
                 )}
 
                 <div className="flex space-x-3">
-                  {selectedEscrow.status === 'pending' && (
-                    <NeonButton color="green" className="flex-1">
+                  {selectedEscrow.status === 'created' && (
+                    <NeonButton 
+                      color="green" 
+                      className="flex-1"
+                      onClick={() => handleFundEscrow(selectedEscrow.id, selectedEscrow.amount)}
+                    >
                       Fund Escrow
                     </NeonButton>
                   )}
                   {selectedEscrow.status === 'funded' && (
                     <>
-                      <NeonButton color="green" className="flex-1">
+                      <NeonButton 
+                        color="green" 
+                        className="flex-1"
+                        onClick={() => handleReleasePayment(selectedEscrow.id)}
+                      >
                         Release Payment
                       </NeonButton>
-                      <NeonButton variant="outline" color="orange">
+                      <NeonButton 
+                        variant="outline" 
+                        color="orange"
+                        onClick={() => handleRaiseDispute(selectedEscrow.id, 'Dispute raised from UI')}
+                      >
                         Raise Dispute
                       </NeonButton>
                     </>
@@ -638,6 +892,11 @@ export const Escrow: React.FC = () => {
                     <NeonButton color="orange" className="flex-1">
                       View Dispute Details
                     </NeonButton>
+                  )}
+                  {selectedEscrow.status === 'released' && (
+                    <div className="flex-1 text-center py-2">
+                      <span className="text-green-400">✓ Escrow Completed Successfully</span>
+                    </div>
                   )}
                 </div>
               </div>

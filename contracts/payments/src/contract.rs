@@ -56,7 +56,7 @@ fn exec_create(
     remark: Option<String>,
     expiry_ts: Option<u64>,
 ) -> Result<Response, ContractError> {
-    let cfg = CONFIG.load(deps.storage)?;
+    let _cfg = CONFIG.load(deps.storage)?;
     let rcpt = deps.api.addr_validate(&recipient)?;
     
     // Validate that the amount matches the funds sent

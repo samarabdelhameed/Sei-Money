@@ -2,14 +2,14 @@
 use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{
-    ensure, to_json_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Timestamp, Uint128, Order, Addr,
+    ensure, to_json_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Order,
+    Response, StdResult, Timestamp, Uint128,
 };
 use cw2::set_contract_version;
 use cw_storage_plus::Bound;
 
-use crate::error::ContractError::*;
 use crate::error::ContractError;
+use crate::error::ContractError::*;
 use crate::events::*;
 use crate::msg::*;
 use crate::state::*;
@@ -18,13 +18,18 @@ const CONTRACT_NAME: &str = "crates.io:seimoney-groups";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[entry_point]
-pub fn instantiate(deps: DepsMut, _env: Env, info: MessageInfo, msg: InstantiateMsg) -> StdResult<Response> {
+pub fn instantiate(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    msg: InstantiateMsg,
+) -> StdResult<Response> {
     let admin = match msg.admin {
         Some(a) => deps.api.addr_validate(&a)?,
         None => info.sender.clone(),
     };
-    let cfg = Config { 
-        admin, 
+    let cfg = Config {
+        admin,
         default_denom: msg.default_denom,
         max_participants: msg.max_participants.unwrap_or(100),
     };
@@ -35,15 +40,27 @@ pub fn instantiate(deps: DepsMut, _env: Env, info: MessageInfo, msg: Instantiate
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> Result<Response, ContractError> {
+pub fn execute(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
+) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::CreatePool { target, max_participants, memo, expiry_ts } => {
-            exec_create_pool(deps, env, info, target, max_participants, memo, expiry_ts)
-        },
-        ExecuteMsg::Contribute { pool_id, amount } => exec_contribute(deps, env, info, pool_id, amount),
+        ExecuteMsg::CreatePool {
+            target,
+            max_participants,
+            memo,
+            expiry_ts,
+        } => exec_create_pool(deps, env, info, target, max_participants, memo, expiry_ts),
+        ExecuteMsg::Contribute { pool_id, amount } => {
+            exec_contribute(deps, env, info, pool_id, amount)
+        }
         ExecuteMsg::Distribute { pool_id } => exec_distribute(deps, env, info, pool_id),
         ExecuteMsg::CancelPool { pool_id } => exec_cancel_pool(deps, env, info, pool_id),
-        ExecuteMsg::RefundContribution { pool_id } => exec_refund_contribution(deps, env, info, pool_id),
+        ExecuteMsg::RefundContribution { pool_id } => {
+            exec_refund_contribution(deps, env, info, pool_id)
+        }
     }
 }
 
@@ -52,21 +69,21 @@ fn exec_create_pool(
     env: Env,
     info: MessageInfo,
     target: Coin,
-    max_participants: Option<u32>,
+    _max_participants: Option<u32>,
     memo: Option<String>,
     expiry_ts: Option<u64>,
 ) -> Result<Response, ContractError> {
     let cfg = CONFIG.load(deps.storage)?;
-    
+
     // Validate denom
     ensure!(target.denom == cfg.default_denom, InvalidContribution);
     ensure!(target.amount > Uint128::zero(), InvalidContribution);
-    
+
     // Validate expiry
     if let Some(ts) = expiry_ts {
         ensure!(Timestamp::from_seconds(ts) > env.block.time, PoolExpired);
     }
-    
+
     let mut id = NEXT_POOL_ID.load(deps.storage)?;
     let pool = Pool {
         id,
@@ -80,13 +97,18 @@ fn exec_create_pool(
         distributed: false,
         cancelled: false,
     };
-    
+
     POOLS.save(deps.storage, id, &pool)?;
     id += 1;
     NEXT_POOL_ID.save(deps.storage, &id)?;
 
     Ok(Response::new()
-        .add_event(evt_create_pool(pool.id, pool.creator.as_str(), &target, pool.memo.as_deref()))
+        .add_event(evt_create_pool(
+            pool.id,
+            pool.creator.as_str(),
+            &target,
+            pool.memo.as_deref(),
+        ))
         .add_attribute("action", "create_pool"))
 }
 
@@ -98,36 +120,41 @@ fn exec_contribute(
     amount: Coin,
 ) -> Result<Response, ContractError> {
     let cfg = CONFIG.load(deps.storage)?;
-    let mut pool = POOLS.load(deps.storage, pool_id).map_err(|_| PoolNotFound)?;
-    
+    let mut pool = POOLS
+        .load(deps.storage, pool_id)
+        .map_err(|_| PoolNotFound)?;
+
     // Validate pool state
     ensure!(!pool.distributed, PoolAlreadyDistributed);
     ensure!(!pool.cancelled, PoolAlreadyCancelled);
-    
+
     // Validate expiry
     if let Some(ts) = pool.expiry_ts {
         ensure!(Timestamp::from_seconds(ts) > env.block.time, PoolExpired);
     }
-    
+
     // Validate denom
     ensure!(amount.denom == cfg.default_denom, InvalidContribution);
     ensure!(amount.amount > Uint128::zero(), InvalidContribution);
-    
+
     // Check if target reached
     ensure!(pool.current < pool.target.amount, TargetReached);
-    
+
     // Check max participants
-    ensure!(pool.participants.len() < cfg.max_participants as usize, PoolFull);
-    
+    ensure!(
+        pool.participants.len() < cfg.max_participants as usize,
+        PoolFull
+    );
+
     // Add contribution
     let contribution = Contribution {
         contributor: info.sender.clone(),
         amount: amount.amount,
         contributed_at: env.block.time.seconds(),
     };
-    
+
     CONTRIBUTIONS.save(deps.storage, (pool_id, info.sender.clone()), &contribution)?;
-    
+
     // Update pool
     if !pool.participants.contains(&info.sender) {
         pool.participants.push(info.sender.clone());
@@ -136,7 +163,12 @@ fn exec_contribute(
     POOLS.save(deps.storage, pool_id, &pool)?;
 
     Ok(Response::new()
-        .add_event(evt_contribute(pool_id, info.sender.as_str(), &amount.amount, &amount.denom))
+        .add_event(evt_contribute(
+            pool_id,
+            info.sender.as_str(),
+            &amount.amount,
+            &amount.denom,
+        ))
         .add_attribute("action", "contribute"))
 }
 
@@ -146,31 +178,38 @@ fn exec_distribute(
     info: MessageInfo,
     pool_id: u64,
 ) -> Result<Response, ContractError> {
-    let mut pool = POOLS.load(deps.storage, pool_id).map_err(|_| PoolNotFound)?;
-    
+    let mut pool = POOLS
+        .load(deps.storage, pool_id)
+        .map_err(|_| PoolNotFound)?;
+
     // Only creator can distribute
     ensure!(info.sender == pool.creator, Unauthorized);
-    
+
     // Validate pool state
     ensure!(!pool.distributed, PoolAlreadyDistributed);
     ensure!(!pool.cancelled, PoolAlreadyCancelled);
-    
+
     // Check if target reached
     ensure!(pool.current >= pool.target.amount, InvalidPoolState);
-    
+
     // Mark as distributed
     pool.distributed = true;
     POOLS.save(deps.storage, pool_id, &pool)?;
-    
+
     // Send funds to creator
-    let bank = BankMsg::Send { 
-        to_address: pool.creator.to_string(), 
-        amount: vec![Coin::new(pool.current.u128(), pool.target.denom.clone())] 
+    let bank = BankMsg::Send {
+        to_address: pool.creator.to_string(),
+        amount: vec![Coin::new(pool.current.u128(), pool.target.denom.clone())],
     };
 
     Ok(Response::new()
         .add_message(bank)
-        .add_event(evt_distribute(pool_id, pool.creator.as_str(), &pool.current, &pool.target.denom))
+        .add_event(evt_distribute(
+            pool_id,
+            pool.creator.as_str(),
+            &pool.current,
+            &pool.target.denom,
+        ))
         .add_attribute("action", "distribute"))
 }
 
@@ -180,20 +219,25 @@ fn exec_cancel_pool(
     info: MessageInfo,
     pool_id: u64,
 ) -> Result<Response, ContractError> {
-    let mut pool = POOLS.load(deps.storage, pool_id).map_err(|_| PoolNotFound)?;
-    
+    let mut pool = POOLS
+        .load(deps.storage, pool_id)
+        .map_err(|_| PoolNotFound)?;
+
     // Only creator can cancel
     ensure!(info.sender == pool.creator, Unauthorized);
-    
+
     // Validate pool state
     ensure!(!pool.distributed, PoolAlreadyDistributed);
     ensure!(!pool.cancelled, PoolAlreadyCancelled);
-    
+
     // Check if expired
     if let Some(ts) = pool.expiry_ts {
-        ensure!(Timestamp::from_seconds(ts) <= env.block.time, PoolNotExpired);
+        ensure!(
+            Timestamp::from_seconds(ts) <= env.block.time,
+            PoolNotExpired
+        );
     }
-    
+
     // Mark as cancelled
     pool.cancelled = true;
     POOLS.save(deps.storage, pool_id, &pool)?;
@@ -209,27 +253,38 @@ fn exec_refund_contribution(
     info: MessageInfo,
     pool_id: u64,
 ) -> Result<Response, ContractError> {
-    let pool = POOLS.load(deps.storage, pool_id).map_err(|_| PoolNotFound)?;
-    
+    let pool = POOLS
+        .load(deps.storage, pool_id)
+        .map_err(|_| PoolNotFound)?;
+
     // Pool must be cancelled to refund
     ensure!(pool.cancelled, InvalidPoolState);
-    
+
     // Get contribution
-    let contribution = CONTRIBUTIONS.load(deps.storage, (pool_id, info.sender.clone()))
+    let contribution = CONTRIBUTIONS
+        .load(deps.storage, (pool_id, info.sender.clone()))
         .map_err(|_| InvalidContribution)?;
-    
+
     // Remove contribution
     CONTRIBUTIONS.remove(deps.storage, (pool_id, info.sender.clone()));
-    
+
     // Send refund
-    let bank = BankMsg::Send { 
-        to_address: info.sender.to_string(), 
-        amount: vec![Coin::new(contribution.amount.u128(), pool.target.denom.clone())] 
+    let bank = BankMsg::Send {
+        to_address: info.sender.to_string(),
+        amount: vec![Coin::new(
+            contribution.amount.u128(),
+            pool.target.denom.clone(),
+        )],
     };
 
     Ok(Response::new()
         .add_message(bank)
-        .add_event(evt_refund_contribution(pool_id, info.sender.as_str(), &contribution.amount, &pool.target.denom))
+        .add_event(evt_refund_contribution(
+            pool_id,
+            info.sender.as_str(),
+            &contribution.amount,
+            &pool.target.denom,
+        ))
         .add_attribute("action", "refund_contribution"))
 }
 
@@ -238,8 +293,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => {
             let c = CONFIG.load(deps.storage)?;
-            to_json_binary(&ConfigResp { 
-                admin: c.admin.to_string(), 
+            to_json_binary(&ConfigResp {
+                admin: c.admin.to_string(),
                 default_denom: c.default_denom,
                 max_participants: c.max_participants,
             })
@@ -259,7 +314,11 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
                 cancelled: p.cancelled,
             })
         }
-        QueryMsg::ListContributions { pool_id, start_after, limit } => {
+        QueryMsg::ListContributions {
+            pool_id,
+            start_after,
+            limit,
+        } => {
             let start = if let Some(addr) = start_after {
                 let validated_addr = deps.api.addr_validate(&addr)?;
                 Some(Bound::exclusive((pool_id, validated_addr)))
@@ -267,7 +326,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
                 None
             };
             let limit = limit.unwrap_or(30) as usize;
-            
+
             let contributions: StdResult<Vec<_>> = CONTRIBUTIONS
                 .range(deps.storage, start, None, Order::Ascending)
                 .take(limit)
@@ -280,13 +339,13 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
                     })
                 })
                 .collect();
-            
+
             to_json_binary(&contributions?)
         }
         QueryMsg::ListPools { start_after, limit } => {
             let start = start_after.map(|id| Bound::exclusive(id));
             let limit = limit.unwrap_or(30) as usize;
-            
+
             let pools: StdResult<Vec<_>> = POOLS
                 .range(deps.storage, start, None, Order::Ascending)
                 .take(limit)
@@ -306,7 +365,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
                     })
                 })
                 .collect();
-            
+
             to_json_binary(&pools?)
         }
     }
