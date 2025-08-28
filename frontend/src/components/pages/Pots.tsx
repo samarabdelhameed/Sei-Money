@@ -338,15 +338,15 @@ export function Pots() {
               transition={{ delay: 0.6, duration: 0.3 }}
             >
               <GlassCard className="p-6 text-center mt-6">
-                <PiggyBank size={48} className="mx-auto mb-4" style={{ color: colors.textMuted }} />
-                <p className="text-white mb-2">Connect Your Wallet</p>
-                <p style={{ color: colors.textMuted }} className="mb-4">
+              <PiggyBank size={48} className="mx-auto mb-4" style={{ color: colors.textMuted }} />
+              <p className="text-white mb-2">Connect Your Wallet</p>
+              <p style={{ color: colors.textMuted }} className="mb-4">
                   Connect your wallet to create and manage your own savings pots
-                </p>
-                <NeonButton onClick={() => actions.connectWallet('metamask')} color="green">
-                  Connect Wallet
-                </NeonButton>
-              </GlassCard>
+              </p>
+              <NeonButton onClick={() => actions.connectWallet('metamask')} color="green">
+                Connect Wallet
+              </NeonButton>
+            </GlassCard>
             </motion.div>
           )}
         </motion.div>
@@ -482,13 +482,13 @@ export function Pots() {
               </div>
             </GlassCard>
           ) : (
-            <GlassCard className="p-6 text-center">
-              <PiggyBank size={48} className="mx-auto mb-4" style={{ color: colors.textMuted }} />
-              <p className="text-white mb-2">Select a Pot</p>
-              <p style={{ color: colors.textMuted }}>
-                Choose a savings pot to view details and manage funds
-              </p>
-            </GlassCard>
+          <GlassCard className="p-6 text-center">
+            <PiggyBank size={48} className="mx-auto mb-4" style={{ color: colors.textMuted }} />
+            <p className="text-white mb-2">Select a Pot</p>
+            <p style={{ color: colors.textMuted }}>
+              Choose a savings pot to view details and manage funds
+            </p>
+          </GlassCard>
           )}
         </motion.div>
       </div>

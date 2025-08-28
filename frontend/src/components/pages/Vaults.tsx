@@ -349,7 +349,7 @@ export const Vaults: React.FC = () => {
   // Load vaults on mount
   useEffect(() => {
     if (state.isWalletConnected) {
-      actions.loadVaults();
+        actions.loadVaults();
     }
   }, [state.isWalletConnected, actions]);
 
@@ -390,12 +390,12 @@ export const Vaults: React.FC = () => {
               className={state.isLoading ? 'animate-spin' : ''} 
             />
           </button>
-                      <div className="text-right">
+          <div className="text-right">
               <p className="text-sm" style={{ color: colors.textMuted }}>Available Balance</p>
-              <p className="text-xl font-bold" style={{ color: colors.neonPurple }}>
+            <p className="text-xl font-bold" style={{ color: colors.neonPurple }}>
                 {formatSeiAmount(parseFloat(realBalance))}
-              </p>
-            </div>
+            </p>
+          </div>
         </div>
       </motion.div>
 
@@ -779,9 +779,9 @@ export const Vaults: React.FC = () => {
                       placeholder="0.00"
                       disabled={depositModal.isProcessing}
                     />
-                    <div className="absolute right-3 top-3 text-sm text-gray-400">
+                      <div className="absolute right-3 top-3 text-sm text-gray-400">
                       Max: {parseFloat(realBalance).toFixed(6)}
-                    </div>
+                      </div>
                   </div>
                   {formErrors.amount && (
                     <div className="flex items-center mt-1 text-red-400 text-sm">
