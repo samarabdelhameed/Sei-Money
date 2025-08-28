@@ -1,6 +1,22 @@
 # SeiMoney - Complete DeFi Platform
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/34b7eccb-7395-1948-3899-2a695b9a5280/deploy-status)](https://app.netlify.com/sites/sei-money/deploys)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-sei--money.netlify.app-brightgreen)](https://sei-money.netlify.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive DeFi platform built on the Sei Network, featuring smart payments, investment vaults, group savings, and AI-powered financial management.
+
+## 🌟 Live Demo
+
+**🚀 [Try SeiMoney Live](https://sei-money.netlify.app)**
+
+Experience the full platform with all features including:
+- Smart Payments & Escrow Services
+- Investment Vaults & Group Savings 
+- AI-Powered Financial Management
+- Multi-Wallet Support (Keplr, Leap, MetaMask)
+
+> **Note**: The demo is deployed on Netlify with automatic updates from the main branch.
 
 ## 🚀 Quick Start
 
@@ -199,6 +215,37 @@ npm run test:frontend     # Frontend tests only
    - Join a group
    - Create a savings pot
    - Explore vaults
+
+## 🌐 Deployment
+
+### Live Production
+- **Main Site**: https://sei-money.netlify.app
+- **Platform**: Netlify with auto-deployment from GitHub
+- **Updates**: Automatic on every push to main branch
+
+### Deploy Your Own Instance
+
+#### Option 1: Netlify (Recommended)
+1. Fork this repository
+2. Connect to [Netlify](https://netlify.com)
+3. Deploy with these settings:
+   ```
+   Build Command: cd frontend && npm run build
+   Publish Directory: frontend/dist
+   ```
+
+#### Option 2: Vercel
+1. Fork this repository  
+2. Connect to [Vercel](https://vercel.com)
+3. Import project - settings are auto-detected from `vercel.json`
+
+#### Option 3: Manual Build
+```bash
+cd frontend
+npm install
+npm run build
+# Upload dist/ folder to any static hosting
+```
 
 ## 🤝 Contributing
 
