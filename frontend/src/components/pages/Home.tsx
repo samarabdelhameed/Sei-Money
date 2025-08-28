@@ -93,10 +93,27 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         setIsLoading(true);
         setError(null);
 
-        // Try to load market stats from backend
+        // Try to load market stats from backend with retry
         try {
-          const statsResponse = await apiService.getMarketStats();
-          if (statsResponse.ok) {
+          let statsResponse;
+          let retries = 1; // Reduced to 1 retry instead of 3
+          
+          while (retries > 0) {
+            try {
+              statsResponse = await apiService.getMarketStats();
+              break; // Success, exit retry loop
+            } catch (error) {
+              retries--;
+              if (retries > 0) {
+                // Silently retry once without logging
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+              } else {
+                throw error; // Final attempt failed
+              }
+            }
+          }
+          
+          if (statsResponse && statsResponse.ok) {
             const { stats: apiStats } = statsResponse;
             setStats([
               { 
@@ -123,7 +140,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             console.log('✅ Market stats loaded from backend');
           }
         } catch (apiError) {
-          console.warn('⚠️ Backend not available, using demo data:', apiError);
+          // Silently use demo data when API is unavailable
+          console.log('📊 Using demo market stats - API unavailable');
           // Use realistic demo data when backend is not available
           setStats([
             { label: 'Total TVL', value: '$24.7M', change: '+18.3%' },

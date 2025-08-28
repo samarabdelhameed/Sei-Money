@@ -319,20 +319,10 @@ export class MetaMaskWalletService {
   // Create signing client for Cosmos transactions
   private async createSigningClient(evmAddress: string, publicKey: Uint8Array): Promise<SigningCosmWasmClient | undefined> {
     try {
-      // Create a wallet from the public key
-      const wallet = await DirectSecp256k1Wallet.fromKey(
-        publicKey.slice(1), // Remove the prefix byte
-        SEI_METAMASK_CONFIG.bech32Config.bech32PrefixAccAddr
-      );
-
-      // Create signing client
-      return SigningCosmWasmClient.connectWithSigner(
-        SEI_METAMASK_CONFIG.cosmosRpcUrl,
-        wallet,
-        {
-          gasPrice: GasPrice.fromString(SEI_METAMASK_CONFIG.gasPrice),
-        }
-      );
+      // We can't create a signing client from just a public key
+      // We need the actual private key for signing, which we don't have from MetaMask
+      console.warn('Cannot create signing client without private key - MetaMask only provides public key');
+      return undefined;
     } catch (error) {
       console.warn('Failed to create signing client, will use REST API for queries:', error);
       // Return undefined - we'll use REST API for balance queries
@@ -559,15 +549,10 @@ export class MetaMaskWalletService {
       
       const cosmosAddress = this.evmToCosmosAddress(accounts[0]);
       
-      // Create signing client in background to avoid blocking reconnection
+      // Skip signing client creation during auto-reconnect to avoid secp256k1 errors
       let signingClient: SigningCosmWasmClient | undefined;
-      this.createSigningClient(accounts[0], publicKey).then(client => {
-        if (this.connection) {
-          this.connection.signingClient = client;
-        }
-      }).catch(error => {
-        console.warn('Failed to create signing client during reconnection:', error);
-      });
+      // Don't create signing client during auto-reconnect to avoid key validation issues
+      console.log('Skipping signing client creation during auto-reconnect to prevent secp256k1 errors');
 
       this.connection = {
         evmAddress: accounts[0],

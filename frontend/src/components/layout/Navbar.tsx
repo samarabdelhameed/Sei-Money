@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, CreditCard, Users, PiggyBank, Vault, Shield, User, BarChart3, Settings, HelpCircle, Bot, TestTube } from 'lucide-react';
+import { Home, CreditCard, Users, PiggyBank, Vault, Shield, User, BarChart3, Settings, HelpCircle, Bot } from 'lucide-react';
 import { NeonButton } from '../ui/NeonButton';
 import { NeonText } from '../ui/NeonText';
 import { WalletConnection } from '../ui/WalletConnection';
-import { ConnectionStatus } from '../ui/ConnectionStatus';
+
 import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
 import { apiService, apiClient } from '../../lib/api';
@@ -27,7 +27,6 @@ const navigationItems = [
 ];
 
 const secondaryItems = [
-  { id: 'wallet-test', label: 'Wallet Test', icon: TestTube },
   { id: 'settings', label: 'Settings', icon: Settings },
   { id: 'help', label: 'Help', icon: HelpCircle },
 ];
@@ -205,8 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
               })}
             </div>
 
-            {/* Connection Status */}
-            <ConnectionStatus className="hidden sm:block" />
+
 
             {/* Wallet Connection */}
             {state.isWalletConnected ? (

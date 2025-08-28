@@ -7,6 +7,11 @@ import { NeonText } from '../ui/NeonText';
 import { CircularProgress } from '../charts/CircularProgress';
 import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
+import { 
+  formatSeiAmount, 
+  formatPercentage,
+  formatTime 
+} from '../../lib/utils/formatters';
 
 interface ContributeModalData {
   groupId: string;
@@ -19,6 +24,7 @@ export const Groups: React.FC = () => {
   const [activeTab, setActiveTab] = useState('browse');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [contributeModal, setContributeModal] = useState<ContributeModalData | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -29,17 +35,135 @@ export const Groups: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Demo groups data for display
+  const demoGroups = [
+    {
+      id: '1',
+      name: 'Vacation Fund 2025',
+      description: 'Saving together for an amazing group vacation to Bali',
+      targetAmount: 5000,
+      currentAmount: 3250,
+      maxParticipants: 8,
+      participants: [
+        { address: 'sei1abc123...', contribution: 800, joinedAt: '2024-01-15' },
+        { address: 'sei1def456...', contribution: 750, joinedAt: '2024-01-20' },
+        { address: 'sei1ghi789...', contribution: 900, joinedAt: '2024-01-25' },
+        { address: 'sei1jkl012...', contribution: 800, joinedAt: '2024-02-01' }
+      ],
+      creator: 'sei1abc123...',
+      status: 'active',
+      expiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: '2',
+      name: 'Emergency Fund Pool',
+      description: 'Community emergency fund for unexpected situations',
+      targetAmount: 10000,
+      currentAmount: 7500,
+      maxParticipants: 15,
+      participants: [
+        { address: 'sei1abc123...', contribution: 1200, joinedAt: '2024-01-10' },
+        { address: 'sei1mno345...', contribution: 1500, joinedAt: '2024-01-12' },
+        { address: 'sei1pqr678...', contribution: 1300, joinedAt: '2024-01-18' },
+        { address: 'sei1stu901...', contribution: 1000, joinedAt: '2024-01-22' },
+        { address: 'sei1vwx234...', contribution: 2500, joinedAt: '2024-01-28' }
+      ],
+      creator: 'sei1mno345...',
+      status: 'active',
+      expiry: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: '3',
+      name: 'Tech Startup Investment',
+      description: 'Pooling funds to invest in promising blockchain startups',
+      targetAmount: 25000,
+      currentAmount: 18750,
+      maxParticipants: 10,
+      participants: [
+        { address: 'sei1abc123...', contribution: 3000, joinedAt: '2024-02-01' },
+        { address: 'sei1xyz789...', contribution: 5000, joinedAt: '2024-02-03' },
+        { address: 'sei1def456...', contribution: 2500, joinedAt: '2024-02-05' },
+        { address: 'sei1ghi789...', contribution: 4000, joinedAt: '2024-02-08' },
+        { address: 'sei1jkl012...', contribution: 4250, joinedAt: '2024-02-10' }
+      ],
+      creator: 'sei1xyz789...',
+      status: 'active',
+      expiry: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: '4',
+      name: 'Gaming Tournament Prize Pool',
+      description: 'Prize pool for monthly SEI blockchain gaming tournament',
+      targetAmount: 2000,
+      currentAmount: 2000,
+      maxParticipants: 20,
+      participants: [
+        { address: 'sei1gamer1...', contribution: 400, joinedAt: '2024-02-15' },
+        { address: 'sei1gamer2...', contribution: 300, joinedAt: '2024-02-16' },
+        { address: 'sei1gamer3...', contribution: 500, joinedAt: '2024-02-17' },
+        { address: 'sei1gamer4...', contribution: 200, joinedAt: '2024-02-18' },
+        { address: 'sei1gamer5...', contribution: 600, joinedAt: '2024-02-19' }
+      ],
+      creator: 'sei1gamer1...',
+      status: 'completed',
+      expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: '5',
+      name: 'Community Garden Project',
+      description: 'Funding for a sustainable community garden and farming initiative',
+      targetAmount: 3500,
+      currentAmount: 1250,
+      maxParticipants: 12,
+      participants: [
+        { address: 'sei1green1...', contribution: 500, joinedAt: '2024-02-20' },
+        { address: 'sei1green2...', contribution: 350, joinedAt: '2024-02-21' },
+        { address: 'sei1green3...', contribution: 400, joinedAt: '2024-02-22' }
+      ],
+      creator: 'sei1green1...',
+      status: 'active',
+      expiry: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: '6',
+      name: 'DeFi Education Fund',
+      description: 'Educational resources and workshops about DeFi and blockchain',
+      targetAmount: 1500,
+      currentAmount: 890,
+      maxParticipants: 25,
+      participants: [
+        { address: 'sei1teacher1...', contribution: 200, joinedAt: '2024-02-25' },
+        { address: 'sei1student1...', contribution: 150, joinedAt: '2024-02-26' },
+        { address: 'sei1student2...', contribution: 180, joinedAt: '2024-02-27' },
+        { address: 'sei1student3...', contribution: 160, joinedAt: '2024-02-28' },
+        { address: 'sei1student4...', contribution: 200, joinedAt: '2024-03-01' }
+      ],
+      creator: 'sei1teacher1...',
+      status: 'active',
+      expiry: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  ];
+
   // Calculate group statistics
   const groupStats = useMemo(() => {
-    const activeGroups = state.groups.filter(g => g.status === 'active');
-    const totalPooled = state.groups.reduce((sum, g) => sum + g.currentAmount, 0);
-    const completedGroups = state.groups.filter(g => g.status === 'completed');
-    const successRate = state.groups.length > 0 ? (completedGroups.length / state.groups.length) * 100 : 0;
+    // Use demo data if no real groups available
+    const groups = Array.isArray(state.groups) && state.groups.length > 0 ? state.groups : demoGroups;
+    
+    const activeGroups = groups.filter(g => g.status === 'active');
+    const totalPooled = groups.reduce((sum, g) => sum + g.currentAmount, 0);
+    const completedGroups = groups.filter(g => g.status === 'completed');
+    const successRate = groups.length > 0 ? (completedGroups.length / groups.length) * 100 : 0;
     
     // Calculate user's total contributions
     const userAddress = state.wallet?.address;
-    const userContributions = state.groups.reduce((sum, group) => {
-      const userParticipation = group.participants.find(p => p.address === userAddress);
+    const userContributions = groups.reduce((sum, group) => {
+      const userParticipation = group.participants?.find(p => p.address === userAddress);
       return sum + (userParticipation?.contribution || 0);
     }, 0);
 
@@ -49,23 +173,24 @@ export const Groups: React.FC = () => {
       successRate,
       userContributions
     };
-  }, [state.groups, state.wallet?.address]);
+  }, [state.groups, state.wallet?.address, demoGroups]);
 
   // Filter groups based on active tab
   const filteredGroups = useMemo(() => {
     const userAddress = state.wallet?.address;
+    const groups = Array.isArray(state.groups) && state.groups.length > 0 ? state.groups : demoGroups;
     
     switch (activeTab) {
       case 'my-groups':
-        return state.groups.filter(g => 
-          g.participants.some(p => p.address === userAddress)
+        return groups.filter(g => 
+          g.participants?.some(p => p.address === userAddress)
         );
       case 'created':
-        return state.groups.filter(g => g.creator === userAddress);
+        return groups.filter(g => g.creator === userAddress);
       default:
-        return state.groups;
+        return groups;
     }
-  }, [state.groups, activeTab, state.wallet?.address]);
+  }, [state.groups, activeTab, state.wallet?.address, demoGroups]);
 
   // Form validation
   const validateForm = () => {
@@ -276,13 +401,11 @@ export const Groups: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Active Groups</p>
-              <p className="text-xl font-bold text-white">
-                {state.isLoading ? (
-                  <div className="animate-pulse bg-gray-600 h-6 w-8 rounded"></div>
-                ) : (
-                  groupStats.activeGroups
-                )}
-              </p>
+              {state.isLoading ? (
+                <div className="animate-pulse bg-gray-600 h-6 w-8 rounded"></div>
+              ) : (
+                <p className="text-xl font-bold text-white">{groupStats.activeGroups}</p>
+              )}
             </div>
           </div>
         </GlassCard>
@@ -297,13 +420,11 @@ export const Groups: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Total Pooled</p>
-              <p className="text-xl font-bold text-white">
-                {state.isLoading ? (
-                  <div className="animate-pulse bg-gray-600 h-6 w-20 rounded"></div>
-                ) : (
-                  `${groupStats.totalPooled.toFixed(0)} SEI`
-                )}
-              </p>
+              {state.isLoading ? (
+                <div className="animate-pulse bg-gray-600 h-6 w-20 rounded"></div>
+              ) : (
+                <p className="text-xl font-bold text-white">{`${groupStats.totalPooled.toFixed(0)} SEI`}</p>
+              )}
             </div>
           </div>
         </GlassCard>
@@ -318,13 +439,11 @@ export const Groups: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>Success Rate</p>
-              <p className="text-xl font-bold text-white">
-                {state.isLoading ? (
-                  <div className="animate-pulse bg-gray-600 h-6 w-12 rounded"></div>
-                ) : (
-                  `${groupStats.successRate.toFixed(1)}%`
-                )}
-              </p>
+              {state.isLoading ? (
+                <div className="animate-pulse bg-gray-600 h-6 w-12 rounded"></div>
+              ) : (
+                <p className="text-xl font-bold text-white">{`${groupStats.successRate.toFixed(1)}%`}</p>
+              )}
             </div>
           </div>
         </GlassCard>
@@ -339,13 +458,11 @@ export const Groups: React.FC = () => {
             </div>
             <div>
               <p className="text-sm" style={{ color: colors.textMuted }}>My Contributions</p>
-              <p className="text-xl font-bold text-white">
-                {state.isLoading ? (
-                  <div className="animate-pulse bg-gray-600 h-6 w-16 rounded"></div>
-                ) : (
-                  `${groupStats.userContributions.toFixed(2)} SEI`
-                )}
-              </p>
+              {state.isLoading ? (
+                <div className="animate-pulse bg-gray-600 h-6 w-16 rounded"></div>
+              ) : (
+                <p className="text-xl font-bold text-white">{`${groupStats.userContributions.toFixed(2)} SEI`}</p>
+              )}
             </div>
           </div>
         </GlassCard>
@@ -577,6 +694,7 @@ export const Groups: React.FC = () => {
                         variant="outline" 
                         color={group.status === 'completed' ? 'green' : 'purple'}
                         size="sm"
+                        onClick={() => setSelectedGroup(group)}
                       >
                         View Details
                       </NeonButton>
@@ -800,6 +918,158 @@ export const Groups: React.FC = () => {
         </motion.div>
       )}
 
+      {/* Group Details Modal */}
+      {selectedGroup && (
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => setSelectedGroup(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GlassCard className="p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <NeonText size="lg" color="purple">{selectedGroup.name}</NeonText>
+                  <div className="flex items-center mt-2 space-x-4">
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      selectedGroup.status === 'completed' 
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                    }`}>
+                      {selectedGroup.status === 'completed' ? '✓ Completed' : '🔄 Active'}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      Created {formatTime(selectedGroup.createdAt)}
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedGroup(null)}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Description */}
+                <div>
+                  <h3 className="text-white font-medium mb-2">Description</h3>
+                  <p className="text-gray-300 leading-relaxed">{selectedGroup.description}</p>
+                </div>
+
+                {/* Progress */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-white font-medium">Progress</h3>
+                    <span className="text-purple-400 font-medium">
+                      {Math.round((selectedGroup.currentAmount / selectedGroup.targetAmount) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-3 mb-3">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((selectedGroup.currentAmount / selectedGroup.targetAmount) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>{formatSeiAmount(selectedGroup.currentAmount)} raised</span>
+                    <span>{formatSeiAmount(selectedGroup.targetAmount)} target</span>
+                  </div>
+                </div>
+
+                {/* Key Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-800/50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Participants</div>
+                    <div className="text-white font-medium">
+                      {selectedGroup.participants?.length || 0} / {selectedGroup.maxParticipants}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Expires</div>
+                    <div className="text-white font-medium">
+                      {formatTime(selectedGroup.expiry)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Participants List */}
+                <div>
+                  <h3 className="text-white font-medium mb-3">Participants ({selectedGroup.participants?.length || 0})</h3>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {selectedGroup.participants?.map((participant: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+                            {participant.address.slice(3, 5).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-white text-sm font-medium">
+                              {participant.address.slice(0, 8)}...{participant.address.slice(-6)}
+                            </div>
+                            <div className="text-gray-400 text-xs">
+                              Joined {formatTime(participant.joinedAt)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-purple-400 font-medium">
+                            {formatSeiAmount(participant.contribution)}
+                          </div>
+                          <div className="text-gray-400 text-xs">
+                            {((participant.contribution / selectedGroup.currentAmount) * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+                    )) || <div className="text-gray-400 text-center py-4">No participants yet</div>}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3 pt-4 border-t border-gray-700">
+                  {selectedGroup.status === 'active' && (
+                    <NeonButton
+                      variant="gradient"
+                      color="purple"
+                      size="md"
+                      onClick={() => {
+                        setContributeModal({
+                          groupId: selectedGroup.id,
+                          amount: '',
+                          isProcessing: false
+                        });
+                        setSelectedGroup(null);
+                      }}
+                      className="flex-1"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      Contribute
+                    </NeonButton>
+                  )}
+                  <NeonButton
+                    variant="outline"
+                    color="gray"
+                    size="md"
+                    onClick={() => setSelectedGroup(null)}
+                    className="flex-1"
+                  >
+                    Close
+                  </NeonButton>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Contribute Modal */}
       {contributeModal && (
         <motion.div
@@ -852,7 +1122,8 @@ export const Groups: React.FC = () => {
                 </div>
 
                 {(() => {
-                  const group = state.groups.find(g => g.id === contributeModal.groupId);
+                  const groups = Array.isArray(state.groups) ? state.groups : [];
+                  const group = groups.find(g => g.id === contributeModal.groupId);
                   return group && (
                     <div className="p-3 rounded-lg bg-white/5">
                       <div className="flex justify-between items-center mb-2">

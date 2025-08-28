@@ -6,17 +6,12 @@ import { NeonText } from '../ui/NeonText';
 import { NeonButton } from '../ui/NeonButton';
 import { LineChart } from '../charts/LineChart';
 import { CircularProgress } from '../charts/CircularProgress';
+import { IntegrationStatus } from '../ui/IntegrationStatus';
+import { TestScenarios } from '../ui/TestScenarios';
+import { SeiNetworkGuide } from '../ui/SeiNetworkGuide';
 import { useApp } from '../../contexts/AppContext';
 import { colors } from '../../lib/colors';
 import { apiService } from '../../lib/api';
-import { 
-  formatSeiAmount, 
-  formatTransactionAmount, 
-  formatTime, 
-  formatStatus, 
-  formatBalance,
-  formatPercentage 
-} from '../../lib/utils/formatters';
 
 // Real-time data refresh interval (30 seconds)
 const REFRESH_INTERVAL = 30000;
@@ -32,172 +27,83 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   // Demo mode when wallet is not connected
-  const isDemoMode = !state.isWalletConnected || !state.wallet || !state.wallet.address;
-  
-  // Debug: isDemoMode should be true when no wallet connected
-  // console.log('Dashboard Debug:', { isDemoMode, isWalletConnected: state.isWalletConnected });
+  const isDemoMode = !state.isWalletConnected;
 
-  // Demo data for when wallet is not connected  
+  // Demo data for when wallet is not connected
   const demoData = {
-    portfolioValue: 12847.92,
-    walletBalance: 2847.92, 
-    dailyPnl: 124.75,
-    activeVaults: 5,
-    groupPools: 3,
+    portfolioValue: '1,250.75',
+    walletBalance: '1,250.75',
+    dailyPnl: '+45.50',
+    activeVaults: '3',
+    groupPools: '2',
     activities: [
-      { 
-        type: 'deposit', 
-        title: 'Deposited to Vault "High Yield SEI"', 
-        amount: 125.50, 
-        time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        status: 'completed' 
-      },
-      { 
-        type: 'transfer', 
-        title: 'Sent to @alice_crypto', 
-        amount: -50.00, 
-        time: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-        status: 'completed' 
-      },
-      { 
-        type: 'group', 
-        title: 'Joined Group Pool "Vacation Fund"', 
-        amount: 200.00, 
-        time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        status: 'completed' 
-      },
-      { 
-        type: 'pot', 
-        title: 'Auto-saved to "Emergency Fund"', 
-        amount: 25.00, 
-        time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        status: 'completed' 
-      },
-      { 
-        type: 'transfer', 
-        title: 'Received from @bob_trader', 
-        amount: 75.25, 
-        time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-        status: 'completed' 
-      },
-      { 
-        type: 'vault', 
-        title: 'Withdrew from "DeFi Yield Vault"', 
-        amount: -150.00, 
-        time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-        status: 'completed' 
-      }
+      { type: 'deposit', title: 'Deposited to Vault "High Yield SEI"', amount: '+125.50 SEI', time: '2 hours ago', status: 'completed' },
+      { type: 'transfer', title: 'Sent to @alice_crypto', amount: '-50.00 SEI', time: '5 hours ago', status: 'completed' },
+      { type: 'group', title: 'Joined Group Pool "Vacation Fund"', amount: '+200.00 SEI', time: '1 day ago', status: 'completed' },
+      { type: 'pot', title: 'Auto-saved to "Emergency Fund"', amount: '+25.00 SEI', time: '2 days ago', status: 'completed' }
     ],
     chartData: [
-      { name: 'Jan', value: 8500 },
-      { name: 'Feb', value: 9200 },
-      { name: 'Mar', value: 10500 },
-      { name: 'Apr', value: 11500 },
-      { name: 'May', value: 12000 },
-      { name: 'Jun', value: 12847 }
+      { name: 'Jan', value: 850 },
+      { name: 'Feb', value: 920 },
+      { name: 'Mar', value: 1050 },
+      { name: 'Apr', value: 1150 },
+      { name: 'May', value: 1200 },
+      { name: 'Jun', value: 1250 }
     ]
   };
 
   // Calculate portfolio metrics
   const portfolioValue = useMemo(() => {
-    if (isDemoMode) return formatSeiAmount(demoData.portfolioValue, { showSymbol: false });
+    if (isDemoMode) return demoData.portfolioValue;
     
     if (!state.wallet?.balance || typeof state.wallet.balance !== 'number') return '0.00';
-    return formatSeiAmount(state.wallet.balance, { showSymbol: false });
+    const value = state.wallet.balance;
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }, [state.wallet?.balance, isDemoMode]);
 
   const walletBalance = useMemo(() => {
-    if (isDemoMode) return formatSeiAmount(demoData.walletBalance, { showSymbol: false });
+    if (isDemoMode) return demoData.walletBalance;
     
     if (!state.wallet?.balance || typeof state.wallet.balance !== 'number') return '0.00';
-    return formatSeiAmount(state.wallet.balance, { showSymbol: false });
+    const balance = state.wallet.balance;
+    return balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }, [state.wallet?.balance, isDemoMode]);
 
   const dailyPnl = useMemo(() => {
-    if (isDemoMode) {
-      const sign = demoData.dailyPnl >= 0 ? '+' : '';
-      return `${sign}${formatSeiAmount(Math.abs(demoData.dailyPnl), { showSymbol: false })}`;
-    }
+    if (isDemoMode) return demoData.dailyPnl;
     
     // Calculate based on last 24h activity
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const transfers = Array.isArray(state.transfers) ? state.transfers : [];
-    const recentTransfers = transfers.filter(t => new Date(t.timestamp) > oneDayAgo);
+    const recentTransfers = state.transfers.filter(t => new Date(t.timestamp) > oneDayAgo);
     const pnl = recentTransfers.reduce((acc, transfer) => acc + transfer.amount, 0);
-    const sign = pnl >= 0 ? '+' : '';
-    return `${sign}${formatSeiAmount(Math.abs(pnl), { showSymbol: false })}`;
+    return pnl >= 0 ? `+${pnl.toFixed(2)}` : pnl.toFixed(2);
   }, [state.transfers, isDemoMode]);
 
   const recentActivities = useMemo(() => {
-    if (isDemoMode) {
-      return demoData.activities.map(activity => {
-        const transactionType = activity.amount >= 0 ? 'received' : 'sent';
-        const formattedAmount = formatTransactionAmount(
-          Math.abs(activity.amount), 
-          transactionType, 
-          { decimals: 2 }
-        );
-        const formattedStatus = formatStatus(activity.status, 'transaction');
-        
-        return {
-          ...activity,
-          formattedAmount: formattedAmount.formatted,
-          amountColorClass: formattedAmount.colorClass,
-          time: formatTime(activity.time, { relative: true }),
-          statusFormatted: formattedStatus
-        };
-      }).slice(0, 4);
-    }
-    
-    // Ensure arrays exist before mapping
-    const transfers = Array.isArray(state.transfers) ? state.transfers : [];
-    const groups = Array.isArray(state.groups) ? state.groups : [];
-    const vaults = Array.isArray(state.vaults) ? state.vaults : [];
+    if (isDemoMode) return demoData.activities;
     
     const allActivities: any[] = [
-      ...transfers.map(t => {
-        const transactionType = t.type === 'received' ? 'received' : 'sent';
-        const formattedAmount = formatTransactionAmount(t.amount, transactionType);
-        const formattedStatus = formatStatus(t.status, 'transaction');
-        
-        return {
-          type: 'transfer',
-          title: `${t.type === 'received' ? 'Received from' : 'Sent to'} ${t.recipient || t.sender}`,
-          formattedAmount: formattedAmount.formatted,
-          amountColorClass: formattedAmount.colorClass,
-          time: formatTime(t.timestamp, { relative: true }),
-          statusFormatted: formattedStatus,
-          status: t.status
-        };
-      }),
-      ...groups.map(g => {
-        const formattedAmount = formatTransactionAmount(g.contributedAmount, 'deposit');
-        const formattedStatus = formatStatus(g.status, 'general');
-        
-        return {
-          type: 'group',
-          title: `Joined Group "${g.name}"`,
-          formattedAmount: formattedAmount.formatted,
-          amountColorClass: formattedAmount.colorClass,
-          time: formatTime(g.createdAt, { relative: true }),
-          statusFormatted: formattedStatus,
-          status: g.status
-        };
-      }),
-      ...vaults.map(v => {
-        const formattedAmount = formatTransactionAmount(v.depositedAmount, 'deposit');
-        const formattedStatus = formatStatus(v.status, 'general');
-        
-        return {
-          type: 'vault',
-          title: `Deposited to Vault "${v.name}"`,
-          formattedAmount: formattedAmount.formatted,
-          amountColorClass: formattedAmount.colorClass,
-          time: formatTime(v.createdAt, { relative: true }),
-          statusFormatted: formattedStatus,
-          status: v.status
-        };
-      }),
+      ...state.transfers.map(t => ({
+        type: 'transfer',
+        title: `${t.type === 'received' ? 'Received from' : 'Sent to'} ${t.recipient || t.sender}`,
+        amount: `${t.type === 'received' ? '+' : '-'}${t.amount} SEI`,
+        time: new Date(t.timestamp).toLocaleString(),
+        status: t.status
+      })),
+      ...state.groups.map(g => ({
+        type: 'group',
+        title: `Joined Group "${g.name}"`,
+        amount: `+${g.contributedAmount} SEI`,
+        time: new Date(g.createdAt).toLocaleString(),
+        status: g.status
+      })),
+      ...state.vaults.map(v => ({
+        type: 'vault',
+        title: `Deposited to Vault "${v.name}"`,
+        amount: `+${v.depositedAmount} SEI`,
+        time: new Date(v.createdAt).toLocaleString(),
+        status: v.status
+      })),
     ];
     
     return allActivities
@@ -234,14 +140,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     setIsRefreshing(true);
     try {
       if (!isDemoMode) {
-      await Promise.all([
-        actions.loadUserData(),
-        actions.loadTransfers(),
-        actions.loadVaults(),
-        actions.loadGroups(),
-        actions.loadPots(),
-        actions.loadMarketData()
-      ]);
+        await Promise.all([
+          actions.loadUserData(),
+          actions.loadTransfers(),
+          actions.loadVaults(),
+          actions.loadGroups(),
+          actions.loadPots(),
+          actions.loadMarketData()
+        ]);
       }
       setLastRefresh(new Date());
     } catch (error) {
@@ -260,17 +166,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     }
   }, [state.isWalletConnected]);
 
-    return (
+  return (
     <div className="min-h-screen p-6 space-y-8">
-
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-        <motion.div
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+            transition={{ duration: 0.5 }}
+          >
             <h1 className="text-3xl font-bold text-white mb-2">
               Welcome back, <span className="text-green-400">{isDemoMode ? 'DeFi Trader' : (state.user?.username || 'Trader')}</span>
             </h1>
@@ -341,34 +246,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
           )}
         </div>
-        </div>
+      </div>
 
       {/* Portfolio Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Portfolio */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-      >
+        >
           <GlassCard className="p-6">
             <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-white" />
-              </div>
-              <div>
+                </div>
+                <div>
                   <p className="text-gray-400 text-sm">Total Portfolio</p>
                   <p className="text-2xl font-bold text-white">{portfolioValue} SEI</p>
                   <p className="text-gray-400 text-xs">Wallet: {walletBalance} SEI</p>
-          </div>
+                </div>
               </div>
               <div className="flex items-center space-x-1 text-green-400">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-sm">--</span>
               </div>
-          </div>
-        </GlassCard>
+            </div>
+          </GlassCard>
         </motion.div>
 
         {/* Daily P&L */}
@@ -377,15 +282,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-        <GlassCard className="p-6">
+          <GlassCard className="p-6">
             <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
                   <Activity className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Daily P&L</p>
-                  <p className="text-2xl font-bold text-white">{isDemoMode ? demoData.dailyPnl : dailyPnl} SEI</p>
+                  <p className="text-2xl font-bold text-white">{dailyPnl} SEI</p>
                   <p className="text-gray-400 text-xs">Profitable today</p>
                 </div>
               </div>
@@ -393,8 +298,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <ArrowUpRight className="w-4 h-4" />
                 <span className="text-sm">--</span>
               </div>
-          </div>
-        </GlassCard>
+            </div>
+          </GlassCard>
         </motion.div>
 
         {/* Active Vaults */}
@@ -403,22 +308,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-        <GlassCard className="p-6">
+          <GlassCard className="p-6">
             <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center">
                   <PieChart className="w-6 h-6 text-white" />
-              </div>
-              <div>
+                </div>
+                <div>
                   <p className="text-gray-400 text-sm">Active Vaults</p>
-                  <p className="text-2xl font-bold text-white">{isDemoMode ? demoData.activeVaults : (Array.isArray(state.vaults) ? state.vaults.length : 0)}</p>
+                  <p className="text-2xl font-bold text-white">{isDemoMode ? demoData.activeVaults : state.vaults.length}</p>
                   <p className="text-purple-400 text-xs text-white">Running</p>
                   <p className="text-gray-400 text-xs">Avg APY: --</p>
                 </div>
               </div>
-          </div>
-        </GlassCard>
-      </motion.div>
+            </div>
+          </GlassCard>
+        </motion.div>
 
         {/* Group Pools */}
         <motion.div
@@ -432,9 +337,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-              <div>
+                <div>
                   <p className="text-gray-400 text-sm">Group Pools</p>
-                  <p className="text-2xl font-bold text-white">{isDemoMode ? demoData.groupPools : (Array.isArray(state.groups) ? state.groups.length : 0)}</p>
+                  <p className="text-2xl font-bold text-white">{isDemoMode ? demoData.groupPools : state.groups.length}</p>
                   <p className="text-orange-400 text-xs">Active</p>
                   <p className="text-gray-400 text-xs">Total contributed: 0.00 SEI</p>
                 </div>
@@ -473,14 +378,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <LineChart 
                   data={portfolioData} 
                   height={300}
-                  color={colors.neonGreen}
+                  color={colors.green[400]}
                 />
               ) : (
                 <div className="h-64 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
                       <PieChart className="w-8 h-8 text-gray-500" />
-            </div>
+                    </div>
                     <p className="text-gray-500">No portfolio data available</p>
                     <p className="text-gray-600 text-sm">
                       {isDemoMode ? 
@@ -488,11 +393,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         "Connect your wallet and start trading to see performance"
                       }
                     </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </GlassCard>
-        </motion.div>
+              )}
+            </GlassCard>
+          </motion.div>
         </div>
 
         {/* Quick Actions & Activity */}
@@ -503,43 +408,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-          <GlassCard className="p-6">
+            <GlassCard className="p-6">
               <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <NeonButton 
-                className="w-full justify-start" 
-                variant="outline" 
-                color="green"
+              <div className="space-y-3">
+                <NeonButton 
+                  className="w-full justify-start" 
+                  variant="outline" 
+                  color="green"
                   onClick={() => onNavigate?.('payments')}
-              >
-                Create Transfer
-              </NeonButton>
-              <NeonButton 
-                className="w-full justify-start" 
-                variant="outline" 
-                color="purple"
+                >
+                  Create Transfer
+                </NeonButton>
+                <NeonButton 
+                  className="w-full justify-start" 
+                  variant="outline" 
+                  color="purple"
                   onClick={() => onNavigate?.('vaults')}
-              >
-                Deposit to Vault
-              </NeonButton>
-              <NeonButton 
-                className="w-full justify-start" 
-                variant="outline" 
-                color="orange"
+                >
+                  Deposit to Vault
+                </NeonButton>
+                <NeonButton 
+                  className="w-full justify-start" 
+                  variant="outline" 
+                  color="orange"
                   onClick={() => onNavigate?.('groups')}
-              >
-                Join Group Pool
-              </NeonButton>
-              <NeonButton 
-                className="w-full justify-start" 
-                variant="outline" 
+                >
+                  Join Group Pool
+                </NeonButton>
+                <NeonButton 
+                  className="w-full justify-start" 
+                  variant="outline" 
                   color="blue"
                   onClick={() => onNavigate?.('pots')}
-              >
-                Create Savings Pot
-              </NeonButton>
-            </div>
-          </GlassCard>
+                >
+                  Create Savings Pot
+                </NeonButton>
+              </div>
+            </GlassCard>
           </motion.div>
 
           {/* Savings Goals */}
@@ -548,15 +453,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-          <GlassCard className="p-6">
+            <GlassCard className="p-6">
               <h3 className="text-lg font-bold text-white mb-4">Savings Goals</h3>
               {isDemoMode ? (
-              <div className="space-y-4">
+                <div className="space-y-4">
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-white text-sm">Emergency Fund</span>
                       <span className="text-gray-400 text-sm">65%</span>
-              </div>
+                    </div>
                     <CircularProgress progress={65} color="green" size={60} />
                     <p className="text-gray-400 text-xs mt-2">650 / 1,000 SEI</p>
                   </div>
@@ -568,25 +473,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     <CircularProgress progress={32} color="purple" size={60} />
                     <p className="text-gray-400 text-xs mt-2">160 / 500 SEI</p>
                   </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
+                </div>
+              ) : (
+                <div className="text-center py-8">
                   <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
                     <DollarSign className="w-6 h-6 text-gray-500" />
                   </div>
                   <p className="text-gray-500 text-sm">No savings goals yet</p>
-                <NeonButton 
-                  size="sm" 
-                  color="green"
+                  <NeonButton 
+                    size="sm" 
+                    color="green" 
                     className="mt-3"
                     onClick={() => onNavigate?.('pots')}
-                >
+                  >
                     Create Goal
-                </NeonButton>
-              </div>
-            )}
-          </GlassCard>
-        </motion.div>
+                  </NeonButton>
+                </div>
+              )}
+            </GlassCard>
+          </motion.div>
         </div>
       </div>
 
@@ -607,7 +512,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               View All
             </NeonButton>
           </div>
-          
+
           {recentActivities.length > 0 ? (
             <div className="space-y-4">
               {recentActivities.map((activity, index) => (
@@ -635,21 +540,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold ${activity.amountColorClass || (typeof activity.amount === 'number' && activity.amount >= 0 ? 'text-green-400' : 'text-red-400')}`}>
-                      {activity.formattedAmount || 
-                        (typeof activity.amount === 'number' ? 
-                          `${activity.amount >= 0 ? '+' : ''}${Math.abs(activity.amount).toFixed(2)} SEI` :
-                          activity.amount || 'N/A'
-                        )
-                      }
+                    <p className={`font-bold ${activity.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                      {activity.amount}
                     </p>
                     <p className={`text-xs ${
-                      activity.statusFormatted ? activity.statusFormatted.colorClass :
                       activity.status === 'completed' ? 'text-green-400' :
                       activity.status === 'pending' ? 'text-yellow-400' :
                       'text-red-400'
                     }`}>
-                      {activity.statusFormatted ? activity.statusFormatted.text : activity.status}
+                      {activity.status}
                     </p>
                   </div>
                 </div>
@@ -672,9 +571,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </GlassCard>
       </motion.div>
 
+      {/* Integration Status */}
+      <IntegrationStatus />
 
+      {/* Test Scenarios (Development Mode) */}
+      {process.env.NODE_ENV === 'development' && (
+        <TestScenarios onNavigate={onNavigate} />
+      )}
 
-
+      {/* Sei Network Guide */}
+      <SeiNetworkGuide />
 
       {/* Refresh indicator */}
       {lastRefresh && (

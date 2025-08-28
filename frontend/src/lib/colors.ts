@@ -39,6 +39,8 @@ export const colors = {
   gradientPurple: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
   gradientBlue: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
   gradientWarm: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+  gradientPink: 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)',
+  gradientOrange: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
   
   // Enhanced Glassmorphism
   glass: 'rgba(17, 24, 39, 0.75)',

@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
+// Buffer polyfill for crypto libraries
+import { Buffer } from 'buffer';
+(window as any).global = window;
+(window as any).Buffer = Buffer;
+
 // Import testing infrastructure for development
 if (import.meta.env.DEV) {
   import('./testing').then(({ comprehensiveTester }) => {

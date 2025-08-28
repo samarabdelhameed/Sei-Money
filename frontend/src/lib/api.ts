@@ -103,7 +103,7 @@ export const apiClient = new ApiClient(API_BASE_URL);
 // API Endpoints
 export const API_ENDPOINTS = {
   // Health check
-  HEALTH: '/health/health',
+  HEALTH: '/health',
   
   // Transfers
   TRANSFERS: '/api/v1/transfers',
