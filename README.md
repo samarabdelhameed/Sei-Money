@@ -4,19 +4,65 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-sei--money.netlify.app-brightgreen)](https://sei-money.netlify.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<div align="center">
+
+## 👆 **[CLICK HERE TO TRY THE LIVE DEMO!](https://sei-money.netlify.app)** 👆
+
+</div>
+
 A comprehensive DeFi platform built on the Sei Network, featuring smart payments, investment vaults, group savings, and AI-powered financial management.
 
-## 🌟 Live Demo
+## 📋 Table of Contents
 
-**🚀 [Try SeiMoney Live](https://sei-money.netlify.app)**
+- [🌐 **LIVE DEMO**](#-live-demo---try-it-now) 👈 **START HERE!**
+- [🚀 Quick Start](#-quick-start)
+- [📊 Service URLs](#-service-urls)
+- [🌐 Features](#-features)
+- [🌐 Deployment](#-deployment)
+- [🤝 Contributing](#-contributing)
 
-Experience the full platform with all features including:
-- Smart Payments & Escrow Services
-- Investment Vaults & Group Savings 
-- AI-Powered Financial Management
-- Multi-Wallet Support (Keplr, Leap, MetaMask)
+---
 
-> **Note**: The demo is deployed on Netlify with automatic updates from the main branch.
+# 🌐 **LIVE DEMO - TRY IT NOW!** 
+
+<div align="center">
+
+## 🚀 **[SEI-MONEY.NETLIFY.APP](https://sei-money.netlify.app)** 🚀
+
+### ⚡ **FULLY FUNCTIONAL DEFI PLATFORM** ⚡
+
+</div>
+
+---
+
+### 🎯 **Experience the Complete Platform:**
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 💸 **Smart Payments** | ✅ Live | Send payments with expiry and auto-refund |
+| 🔒 **Escrow Services** | ✅ Live | Secure transaction mediation |
+| 💰 **Investment Vaults** | ✅ Live | Automated yield farming strategies |
+| 👥 **Group Savings** | ✅ Live | Collaborative savings pools |
+| 🤖 **AI Management** | ✅ Live | AI-powered financial insights |
+| 🔗 **Multi-Wallet** | ✅ Live | Keplr, Leap & MetaMask support |
+
+<div align="center">
+
+### 📱 **MOBILE RESPONSIVE** | 🌍 **GLOBAL CDN** | ⚡ **INSTANT LOADING**
+
+[![Deploy Status](https://img.shields.io/badge/Status-LIVE-brightgreen?style=for-the-badge)](https://sei-money.netlify.app)
+[![Demo](https://img.shields.io/badge/DEMO-TRY%20NOW-blue?style=for-the-badge&logo=rocket)](https://sei-money.netlify.app)
+
+### 🔥 **No Installation Required - Works in Any Browser!**
+
+**💡 Quick Start Guide:**
+1. 🌐 **[Open Demo](https://sei-money.netlify.app)** 
+2. 🔗 **Connect Wallet** (Keplr, Leap, or MetaMask)
+3. 🚀 **Start Using DeFi Features** immediately!
+
+</div>
+
+---
 
 ## 🚀 Quick Start
 
@@ -31,6 +77,7 @@ chmod +x start-all.sh stop-all.sh
 ```
 
 This will start all services with **fixed ports**:
+
 - **Frontend**: http://localhost:5175
 - **Backend API**: http://localhost:3001
 - **MCP Agent**: http://localhost:3002 (if available)
@@ -44,14 +91,14 @@ This will start all services with **fixed ports**:
 
 ## 📊 Service URLs
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| Frontend | http://localhost:5175 | Main application interface |
-| Backend API | http://localhost:3001 | REST API server |
-| API Health | http://localhost:3001/health/health | Health check endpoint |
-| API Docs | http://localhost:3001/docs | API documentation |
-| MCP Agent | http://localhost:3002 | Model Context Protocol agent |
-| Bots Service | http://localhost:3003 | Automated trading bots |
+| Service      | URL                                 | Description                  |
+| ------------ | ----------------------------------- | ---------------------------- |
+| Frontend     | http://localhost:5175               | Main application interface   |
+| Backend API  | http://localhost:3001               | REST API server              |
+| API Health   | http://localhost:3001/health/health | Health check endpoint        |
+| API Docs     | http://localhost:3001/docs          | API documentation            |
+| MCP Agent    | http://localhost:3002               | Model Context Protocol agent |
+| Bots Service | http://localhost:3003               | Automated trading bots       |
 
 ## 🛠 Development Commands
 
@@ -120,6 +167,7 @@ npm run dev
 ## 🌐 Features
 
 ### Core Features
+
 - **Smart Payments**: Send payments with expiry and auto-refund
 - **Investment Vaults**: Automated yield farming strategies
 - **Group Savings**: Collaborative savings pools
@@ -127,11 +175,13 @@ npm run dev
 - **Escrow Services**: Secure transaction mediation
 
 ### Wallet Support
+
 - **Keplr Wallet**: Native Cosmos wallet
 - **Leap Wallet**: Alternative Cosmos wallet
 - **MetaMask**: Ethereum wallet with Cosmos bridge
 
 ### Technical Features
+
 - Real-time market data and analytics
 - Comprehensive error handling and user feedback
 - Responsive design for all devices
@@ -141,6 +191,7 @@ npm run dev
 ## 🔍 Monitoring & Logs
 
 ### Real-time Logs
+
 ```bash
 # Watch all service logs
 tail -f logs/*.log
@@ -151,6 +202,7 @@ tail -f logs/frontend.log
 ```
 
 ### Health Checks
+
 - Backend: http://localhost:3001/health/health
 - Frontend: Check console for errors
 - All services are monitored automatically by the start script
@@ -158,10 +210,13 @@ tail -f logs/frontend.log
 ## 🚨 Troubleshooting
 
 ### Port Conflicts
+
 The start script automatically detects and handles port conflicts. If a port is in use, it will ask if you want to kill the existing process.
 
 ### Service Failures
+
 If any service fails to start, check the logs:
+
 ```bash
 cat logs/backend.log
 cat logs/frontend.log
@@ -175,6 +230,7 @@ cat logs/frontend.log
 4. **API errors**: Verify backend is running and accessible
 
 ### Reset Everything
+
 ```bash
 ./stop-all.sh
 npm run clean
@@ -185,6 +241,7 @@ npm run setup
 ## 📝 Environment Variables
 
 ### Backend (.env)
+
 ```bash
 PORT=3001
 NODE_ENV=development
@@ -194,13 +251,16 @@ RPC_URL=https://rpc.atlantic-2.seinetwork.io:443
 ```
 
 ### Frontend
+
 Environment variables are automatically set by the start script:
+
 - `VITE_PORT=5175`
 - `VITE_API_URL=http://localhost:3001`
 
 ## 🧪 Testing
 
 ### Automated Testing
+
 ```bash
 npm run test              # Run all tests
 npm run test:backend      # Backend tests only
@@ -208,6 +268,7 @@ npm run test:frontend     # Frontend tests only
 ```
 
 ### Manual Testing
+
 1. Open http://localhost:5175
 2. Connect a wallet (Keplr, Leap, or MetaMask)
 3. Test core features:
@@ -219,6 +280,7 @@ npm run test:frontend     # Frontend tests only
 ## 🌐 Deployment
 
 ### Live Production
+
 - **Main Site**: https://sei-money.netlify.app
 - **Platform**: Netlify with auto-deployment from GitHub
 - **Updates**: Automatic on every push to main branch
@@ -226,6 +288,7 @@ npm run test:frontend     # Frontend tests only
 ### Deploy Your Own Instance
 
 #### Option 1: Netlify (Recommended)
+
 1. Fork this repository
 2. Connect to [Netlify](https://netlify.com)
 3. Deploy with these settings:
@@ -235,11 +298,13 @@ npm run test:frontend     # Frontend tests only
    ```
 
 #### Option 2: Vercel
-1. Fork this repository  
+
+1. Fork this repository
 2. Connect to [Vercel](https://vercel.com)
 3. Import project - settings are auto-detected from `vercel.json`
 
 #### Option 3: Manual Build
+
 ```bash
 cd frontend
 npm install
