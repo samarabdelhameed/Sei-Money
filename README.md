@@ -15,6 +15,7 @@ A comprehensive DeFi platform built on the Sei Network, featuring smart payments
 ## 📋 Table of Contents
 
 - [🌐 **LIVE DEMO**](#-live-demo---try-it-now) 👈 **START HERE!**
+- [🎨 **Design Mockups**](https://www.canva.com/design/DAGxFZAJN-w/fPuZK-B0z3TP5fOlSPY39Q/edit?utm_content=DAGxFZAJN-w&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) 👈 **VIEW DESIGNS!**
 - [🚀 Quick Start](#-quick-start)
 - [📊 Service URLs](#-service-urls)
 - [🌐 Features](#-features)
@@ -52,6 +53,7 @@ A comprehensive DeFi platform built on the Sei Network, featuring smart payments
 
 [![Deploy Status](https://img.shields.io/badge/Status-LIVE-brightgreen?style=for-the-badge)](https://sei-money.netlify.app)
 [![Demo](https://img.shields.io/badge/DEMO-TRY%20NOW-blue?style=for-the-badge&logo=rocket)](https://sei-money.netlify.app)
+[![Design](https://img.shields.io/badge/DESIGN-VIEW%20MOCKUPS-purple?style=for-the-badge&logo=canva)](https://www.canva.com/design/DAGxFZAJN-w/fPuZK-B0z3TP5fOlSPY39Q/edit?utm_content=DAGxFZAJN-w&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ### 🔥 **No Installation Required - Works in Any Browser!**
 
@@ -59,6 +61,23 @@ A comprehensive DeFi platform built on the Sei Network, featuring smart payments
 1. 🌐 **[Open Demo](https://sei-money.netlify.app)** 
 2. 🔗 **Connect Wallet** (Keplr, Leap, or MetaMask)
 3. 🚀 **Start Using DeFi Features** immediately!
+
+### 🎨 **[View Project Design & Mockups](https://www.canva.com/design/DAGxFZAJN-w/fPuZK-B0z3TP5fOlSPY39Q/edit?utm_content=DAGxFZAJN-w&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)**
+📐 **Design Documentation & Visual Guide**
+
+</div>
+
+---
+
+## 🎨 **Design Documentation**
+
+<div align="center">
+
+### 📐 **[VIEW PROJECT MOCKUPS & DESIGNS](https://www.canva.com/design/DAGxFZAJN-w/fPuZK-B0z3TP5fOlSPY39Q/edit?utm_content=DAGxFZAJN-w&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)**
+
+[![Canva Design](https://img.shields.io/badge/Canva-Design%20Document-00C4CC?style=for-the-badge&logo=canva)](https://www.canva.com/design/DAGxFZAJN-w/fPuZK-B0z3TP5fOlSPY39Q/edit?utm_content=DAGxFZAJN-w&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
+**🖼️ Complete Visual Guide | 📱 UI/UX Mockups | 🎯 Feature Overview**
 
 </div>
 
